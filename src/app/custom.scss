@@ -1,0 +1,22 @@
+
+$primary : #2A7E7D;
+$secondary : #E4DDCD;
+$success : #D3F3D0;
+$warning : #FFF8DC;
+$danger: #FFE2E2;
+
+$white : white;
+
+
+
+@import "../../node_modules/bootstrap/scss/bootstrap.scss";
+
+:root {
+     font-size: 14px;
+}
+
+body{
+    //  font: 1rem/1;
+     background-color:$white;
+}
+
