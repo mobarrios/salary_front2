@@ -6,7 +6,7 @@ const EditButton = ({ url, id }) => {
 
         <Link
             href={`/admin/${url}/form/${id}`}
-            className="btn btn-warning">
+            className="btn btn-warning m-1">
             Edit
         </Link>
 

@@ -5,7 +5,6 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import './custom.scss'
 
 import Bootstrap from "@/components/Boostrap"
-import Navbar from "@/components/NavBar";
 import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,10 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <Bootstrap />
       <body className={sora.className}>
-        <Navbar />
-        <main className="container ">
           {children}
-        </main>
       </body>
     </html>
     </SessionProvider>

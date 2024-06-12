@@ -56,6 +56,6 @@ export default function RemoveItem({ id, url }: { id: number, url: string }) {
     };
 
     return <button onClick={() => handleDelete(id)}
-        className="btn btn-danger">
+        className="btn btn-danger m-1">
         Delete</button>;
 }

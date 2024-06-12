@@ -5,6 +5,7 @@ import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name } from './model';
 import Link from 'next/link';
+import Head from 'next/head';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -22,18 +23,23 @@ export default async function Employees({ searchParams }: Params) {
   console.log(data)
 
   return (
-    <div className="mt-5">
-      <h1>Employees</h1>
-
-      <Link
-        href={`/admin/${name}/form`}
-        className="btn btn-primary">
-        New
-      </Link>
-
-      <TableComponent data={data.data} model={name} headers={headers} />
-
-      <Pagination page={page} totalPages={totalPages} />
+    <div className="row mt-5">
+      <div className='col-12'>
+           <h1 className='text-primary'>Employees</h1>
+      </div>
+      <div className='col-12'>
+        <Link
+          href={`/admin/${name}/form`}
+          className="btn btn-primary mt-3" >
+          New
+        </Link>
+      </div>
+      <div className='col-12 mt-3'>
+        <TableComponent data={data.data} model={name} headers={headers} />
+      </div>
+      <div className='col-12 mt-3'>
+        <Pagination page={page} totalPages={totalPages} />
+      </div>
     </div>
   )
 };
