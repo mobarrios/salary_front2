@@ -6,6 +6,7 @@ const TableComponent = ({ data, model, headers }) => {
         <table className="table table-striped">
             <thead>
                 <tr>
+                    <th>#</th>
                     {
                         headers.map((header, key: number) => (
                             <th scope="col">{header.name}</th>
@@ -15,7 +16,8 @@ const TableComponent = ({ data, model, headers }) => {
             </thead>
             <tbody>
                 {data.map((item, rowIndex) => (
-                    <tr>
+                    <tr className="align-middle">
+                        <td>{item.id}</td>
                         {headers.map((header, colIndex) => (
                             <td>
                                 {item[header.key]}
@@ -23,9 +25,7 @@ const TableComponent = ({ data, model, headers }) => {
 
                         ))}
                         <td>
-                            <EditButton url={model} id={item.id} />
-                        </td>
-                        <td>
+                            <EditButton url={model} id={item.id} data={item} />
                             <RemoveItem url={model} id={item.id} />
                         </td>
 

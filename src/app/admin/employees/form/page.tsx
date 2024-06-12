@@ -26,18 +26,29 @@ const FormEmployees: React.FC = () => {
 
 
     return (
-     
-            <div>
-                <h1>Employees new</h1>
-
-                <FormComponent
-                    initialValues={model}
-                    onSubmit={handleSubmit}
-                    isEditing={false} // Cambiar a true si se está editando
-                    fields={fields}
-                />
-
+        <div className="row">
+            <div className='col-12'>
+                <h1 className='text-primary'>New Employee</h1>
             </div>
+            <div className='col-12'>
+                <FormComponent
+                initialValues={model}
+                onSubmit={handleSubmit}
+                isEditing={false} // Cambiar a true si se está editando
+                fields={fields}
+                />
+            </div>
+        </div>
+
+        // <div className="row">
+        //     <h1>Employees new</h1>
+        //     <FormComponent
+        //         initialValues={model}
+        //         onSubmit={handleSubmit}
+        //         isEditing={false} // Cambiar a true si se está editando
+        //         fields={fields}
+        //     />
+        // </div>
     );
 };
 

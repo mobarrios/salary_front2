@@ -18,7 +18,7 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
+    
     const fetchData = async () => {
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/v1/${name}/${id}`, {
@@ -74,10 +74,11 @@ const FormEmployees: React.FC = () => {
     };
 
     return (
-
-      
-            <div>
-                <h1>Employees form # {id}</h1>
+        <div className="row">
+            <div className='col-12'>
+                <h1 className='text-primary'>Edit Data</h1>
+            </div>
+            <div className='col-12'>
                 {!item ?
                     <div>{formSuccessMessage}</div>
                     :
@@ -93,6 +94,25 @@ const FormEmployees: React.FC = () => {
                     )
                 }
             </div>
+        </div>
+
+            // <div>
+            //     <h1>Employees form # {id}</h1>
+                // {!item ?
+                //     <div>{formSuccessMessage}</div>
+                //     :
+
+                //     (!loading ?
+                //         <FormComponent
+                //             initialValues={item}
+                //             onSubmit={handleSubmit}
+                //             isEditing={true} // Cambiar a true si se está editando
+                //             fields={fields}
+                //         />
+                //         : <div>cargando...</div>
+                //     )
+                // }
+            // </div>
    
     );
 };

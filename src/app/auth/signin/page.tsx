@@ -48,10 +48,10 @@ export default function SignIn({ searchParams }: PageProps) {
 
   return (
     <div className="container">
-      <div className="row justify-content-center align-items-center min-vh-100">
+      <div className="row justify-content-center align-items-center p-5 ">
         <div className="col-12 col-md-8 col-lg-6">
           <div className="p-4 bg-white rounded shadow-sm">
-            <h3 className="text-center mb-4">Salary login</h3>
+            <h1 className="text-center mb-4">Salary</h1>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">Email address</label>
