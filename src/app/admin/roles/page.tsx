@@ -25,7 +25,7 @@ export default async function Employees({ searchParams }: Params) {
   return (
     <div className="row">
       <div className='col-12'>
-        <h1 className='text-primary'>Roles</h1>
+           <h1 className='text-primary'>Roles</h1>
       </div>
       <div className='col-12'>
         <Link

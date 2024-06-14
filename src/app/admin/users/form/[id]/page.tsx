@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import {model, fields, name, Model} from '../../model';
+import { model, fields, name, Model } from '../../model';
 
 const FormEmployees: React.FC = () => {
 
@@ -18,7 +18,7 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-    
+
     const fetchData = async () => {
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/v1/${name}/${id}`, {
@@ -39,9 +39,9 @@ const FormEmployees: React.FC = () => {
     const updateItemState = (jsonData: Model) => {
         setItem(prevItem => ({
             ...prevItem,
-            name: jsonData?.name,
-            last_name: jsonData?.last_name,
-            associate_id: jsonData?.associate_id
+            user_name: jsonData?.user_name,
+            email: jsonData?.email,
+            active: jsonData?.active
         }));
     };
 
@@ -49,7 +49,8 @@ const FormEmployees: React.FC = () => {
         const fetchDataAndUpdateItem = async () => {
             const jsonData = await fetchData();
             if (jsonData) {
-                updateItemState(jsonData);
+                console.log(jsonData)
+                updateItemState(jsonData.data[0]);
                 setLoading(false);
             }
         };
@@ -63,7 +64,7 @@ const FormEmployees: React.FC = () => {
             setFormSuccess(true)
 
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
-            
+
             // Redirigir al usuario después de que se haya completado la solicitud
             router.push(`/admin/${name}`);
             router.refresh()
@@ -96,24 +97,24 @@ const FormEmployees: React.FC = () => {
             </div>
         </div>
 
-            // <div>
-            //     <h1>Employees form # {id}</h1>
-                // {!item ?
-                //     <div>{formSuccessMessage}</div>
-                //     :
+        // <div>
+        //     <h1>Employees form # {id}</h1>
+        // {!item ?
+        //     <div>{formSuccessMessage}</div>
+        //     :
 
-                //     (!loading ?
-                //         <FormComponent
-                //             initialValues={item}
-                //             onSubmit={handleSubmit}
-                //             isEditing={true} // Cambiar a true si se está editando
-                //             fields={fields}
-                //         />
-                //         : <div>cargando...</div>
-                //     )
-                // }
-            // </div>
-   
+        //     (!loading ?
+        //         <FormComponent
+        //             initialValues={item}
+        //             onSubmit={handleSubmit}
+        //             isEditing={true} // Cambiar a true si se está editando
+        //             fields={fields}
+        //         />
+        //         : <div>cargando...</div>
+        //     )
+        // }
+        // </div>
+
     );
 };
 

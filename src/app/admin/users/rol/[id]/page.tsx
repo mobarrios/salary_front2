@@ -1,87 +1,103 @@
+'use client';
 
-import React from "react";
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import Swal from 'sweetalert2'
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { apiRequest } from "@/server/services/core/apiRequest";
+import { useParams } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { apiRequest } from '@/server/services/core/apiRequest';
 
+const FormEmployees: React.FC = () => {
 
-export default async function Rol() {
+    const { data: session, status } = useSession()
 
-    const [options, setOptions] = useState([]);
-    const [selectedOption, setSelectedOption] = useState('');
-    
-    const res = await apiRequest(`roles/all/?skip=0&limit=10`, 'GET');
+    const [formData, setFormData] = useState({});
+    const [options, setOptions] = useState();
+    const [user, setUser] = useState();
+    const { id } = useParams();
 
-    if (!res?.status) {
-        throw new Error('Failed to fetch data');
-    }
-
-    const data = await res.json();
-    setOptions(data)
-
-    /*
-    useEffect(() => {
-      // Llamada a la API externa para obtener las opciones del select
-
-      
-      fetch('URL_DE_TU_API')
-        .then(response => response.json())
-        .then(data => setOptions(data))
-        .catch(error => console.error(error));
-    }, []);
-    */
-
-    const handleChange = (e) => {
-      setSelectedOption(e.target.value);
-    };
-
-    const handleSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-
+    const userData = async () => {
         try {
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session?.user.token}`
+                },
+            });
+            const jsonData = await response.json();
+            setUser(jsonData.data[0])
 
         } catch (error) {
-            // Manejar el error aquí
-            console.error('front:', error);
-            // Puedes guardar el error en un estado para mostrarlo en la interfaz de usuario
-            //setError('Error al autenticar. Por favor, verifica tus credenciales.');
+            console.error('Error fetching data:', error);
+            return null;
         }
+    };
+
+    const fetchData = async () => {
+        try {
+            ///api/v1/roles/all/?skip=0&limit=5
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/roles/all/?skip=0&limit=10`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session?.user.token}`
+                },
+            });
+            const jsonData = await response.json();
+            setOptions(jsonData.data)
+
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        if (session?.user.token) {
+            userData();
+            fetchData();
+        }
+    }, [id, session?.user.token]);
+
+    if (status === 'loading') {
+        return <p>Loading...</p>;
+    }
+
+    const handleCheckboxChange = async (e) => {
+        setFormData({ users_id: id, roles_id: e })
+        const result = await apiRequest(`users_roles/`, 'POST', formData)
+        console.log(result)
     }
 
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>Users Rol</h1>
-                
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label htmlFor="email" className="form-label">Roles </label>
-                        <select
-                            id="select"
-                            name="select"
-                            value={selectedOption}
-                            onChange={handleChange}
-                            className="form-select"
-                        >
-                            <option value="">Select an option</option>
-                            {options.map(option => (
-                            <option key={option.id} value={option.value}>{option.label}</option>
-                            ))}
-                        </select>
+                <h1 className='text-primary'>Edit Data</h1>
+            </div>
+            <div className='col-12'>
+
+                <div>
+                    <p><strong>Username</strong> {user != 'undefined' ? user?.user_name : null}</p>
+                </div>
+
+                {options && options.map((option) => (
+                    <div key={option.id}>
+                        <input
+                            type="checkbox"
+                            id={option.id}
+                            name="roles_id"
+                            value={option.id}
+                            checked={user && user.roles ? user.roles.some(role => role.id === option.id) : ''}
+                            onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                        />
+                        <label htmlFor={option.id}>{option.name}</label>
                     </div>
-
-                    <button
-                        type="submit"
-                        className="btn btn-primary mt-3">
-                        Save
-                    </button>
-
-                </form>
+                ))}
 
             </div>
-
         </div>
-    )
+
+    );
 };
+
+export default FormEmployees;
