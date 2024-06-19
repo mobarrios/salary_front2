@@ -26,9 +26,6 @@ const Navbar = () => {
               <a className="nav-link" href="/admin/employees">Employees</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/admin/items">Items</a>
-            </li>
-            <li className="nav-item">
               <a className="nav-link" href="/admin/teams">Teams</a>
             </li>
             <li className="nav-item dropdown">

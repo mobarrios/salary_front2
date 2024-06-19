@@ -2,17 +2,19 @@
 
 import { useParams } from 'next/navigation';
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
+import Swal from 'sweetalert2'
 
 const FormEmployees: React.FC = () => {
 
     const { data: session, status } = useSession()
-
-    const [formData, setFormData] = useState({});
     const [options, setOptions] = useState();
     const [user, setUser] = useState();
     const { id } = useParams();
+    const router = useRouter()
+
 
     const userData = async () => {
         try {
@@ -57,17 +59,52 @@ const FormEmployees: React.FC = () => {
             userData();
             fetchData();
         }
+
+
+
     }, [id, session?.user.token]);
 
     if (status === 'loading') {
         return <p>Loading...</p>;
     }
 
-    const handleCheckboxChange = async (e) => {
-        setFormData({ users_id: id, roles_id: e })
-        const result = await apiRequest(`users_roles/`, 'POST', formData)
-        console.log(result)
-    }
+    const handleCheckboxChange = async (roleId, isChecked) => {
+
+        const updatedRoles = isChecked
+        ? [...user.roles, { id: roleId }]
+        : user.roles.filter(role => role.id !== roleId);
+
+        setUser(prevUser => ({ ...prevUser, roles: updatedRoles }));
+
+
+        if (isChecked) {
+            // El checkbox está marcado
+            const response = await fetch('http://127.0.0.1:8000/api/v1/users_roles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.user.token}`
+                },
+                body: JSON.stringify({users_id: id, roles_id: roleId}) // Enviar formData como cuerpo en formato JSON
+            });
+            const data = await response.json();
+            console.log(data)
+            console.log('El checkbox está marcado');
+        } else {
+            // El checkbox está desmarcado
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/users_roles/delete/${id}/${roleId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.user.token}`
+                },
+            });
+            const data = await response.json();
+            console.log(data)
+            console.log('El checkbox está desmarcado');
+        }
+        router.refresh();
+    };
 
     return (
         <div className="row">
@@ -81,16 +118,21 @@ const FormEmployees: React.FC = () => {
                 </div>
 
                 {options && options.map((option) => (
-                    <div key={option.id}>
+                    <div className="form-check form-switch" key={option.id}>
                         <input
+                            className="form-check-input"
+                            checked={user && user.roles && user.roles.some(role => role.id === option.id)}
+
+                            //checked={user && user.roles ? user.roles.some(role => role.id === option.id) : ''}
                             type="checkbox"
-                            id={option.id}
+                            role="switch"
                             name="roles_id"
+                            id={option.id}
                             value={option.id}
-                            checked={user && user.roles ? user.roles.some(role => role.id === option.id) : ''}
                             onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+
                         />
-                        <label htmlFor={option.id}>{option.name}</label>
+                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
                     </div>
                 ))}
 

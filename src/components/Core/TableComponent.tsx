@@ -9,14 +9,14 @@ const TableComponent = ({ data, model, headers }) => {
                     <th>#</th>
                     {
                         headers.map((header, key: number) => (
-                            <th scope="col">{header.name}</th>
+                            <th scope="col" key={key}>{header.name}</th>
                         ))
                     }
                 </tr>
             </thead>
             <tbody>
                 {data.map((item, rowIndex) => (
-                    <tr className="align-middle">
+                    <tr className="align-middle" key={rowIndex}>
                         <td>{item.id}</td>
                         {headers.map((header, colIndex) => (
                             <td>
