@@ -21,10 +21,9 @@ export default async function Employees({ searchParams }: Params) {
   const totalPages = Math.ceil(data.count / limit);
 
   return (
+    <div className='container'>
+    <h2 className='text-primary '>Teams</h2>
     <div className="row">
-      <div className='col-12'>
-           <h1 className='text-primary'>Teams</h1>
-      </div>
       <div className='col-12'>
         <Link
           href={`/admin/${name}/form`}
@@ -38,6 +37,7 @@ export default async function Employees({ searchParams }: Params) {
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
       </div>
+    </div>
     </div>
   )
 };

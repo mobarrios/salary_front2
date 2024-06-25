@@ -26,10 +26,9 @@ export default async function Employees({ searchParams }: Params) {
   }]
 
   return (
+  <div className='container'>
+    <h2 className='text-primary '>Employees</h2>
     <div className="row">
-      <div className='col-12'>
-           <h1 className='text-primary'>Employees</h1>
-      </div>
       <div className='col-12'>
         <Link
           href={`/admin/${name}/form`}
@@ -44,5 +43,6 @@ export default async function Employees({ searchParams }: Params) {
         <Pagination page={page} totalPages={totalPages} />
       </div>
     </div>
+  </div>
   )
 };
