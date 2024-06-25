@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { model, headers, name, Model } from '../../model';
+import {model, fields, name, Model} from '../../model';
 
 const FormEmployees: React.FC = () => {
 
@@ -18,22 +18,17 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
+    
     const fetchData = async () => {
         try {
-
-
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/${name}/${id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${session?.user.token}`
                 },
             });
-
-
             const jsonData = await response.json();
-            console.log(jsonData)
             return jsonData;
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -68,7 +63,7 @@ const FormEmployees: React.FC = () => {
             setFormSuccess(true)
 
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
-
+            
             // Redirigir al usuario después de que se haya completado la solicitud
             router.push(`/admin/${name}`);
             router.refresh()
@@ -77,8 +72,6 @@ const FormEmployees: React.FC = () => {
             console.error('Error:', error);
         }
     };
-
-    const fields = headers.map(header => header.key);
 
     return (
         <div className="row">
@@ -102,7 +95,6 @@ const FormEmployees: React.FC = () => {
                 }
             </div>
         </div>
-
     );
 };
 

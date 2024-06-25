@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { model, headers, name, Model } from '../../model';
+import {model, headers, name, Model} from '../../model';
 
 const FormEmployees: React.FC = () => {
 
@@ -18,11 +18,9 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
+    
     const fetchData = async () => {
         try {
-
-
             const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
                 method: "GET",
                 headers: {
@@ -30,10 +28,7 @@ const FormEmployees: React.FC = () => {
                     "Authorization": `Bearer ${session?.user.token}`
                 },
             });
-
-
             const jsonData = await response.json();
-            console.log(jsonData)
             return jsonData;
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -62,13 +57,15 @@ const FormEmployees: React.FC = () => {
     }, [id]);
 
 
+    const fields = headers.map(header => header.key);
+
     const handleSubmit = async (values) => {
         try {
             // Lógica para enviar los datos del formulario
             setFormSuccess(true)
 
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
-
+            
             // Redirigir al usuario después de que se haya completado la solicitud
             router.push(`/admin/${name}`);
             router.refresh()
@@ -77,8 +74,6 @@ const FormEmployees: React.FC = () => {
             console.error('Error:', error);
         }
     };
-
-    const fields = headers.map(header => header.key);
 
     return (
         <div className="row">
@@ -102,7 +97,7 @@ const FormEmployees: React.FC = () => {
                 }
             </div>
         </div>
-
+   
     );
 };
 

@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
         formData.append('password', password);
 
         try {
-          const res = await fetch("http://127.0.0.1:8000/api/v1/token", {
+          const res = await fetch(process.env.NEXT_PUBLIC_SALARY + "/token", {
             method: "POST",
             body: formData,
           });
@@ -67,7 +67,8 @@ export const authOptions: NextAuthOptions = {
           if (res.ok && data) {
 
             const user = {
-              token: data.access_token
+              token: data.access_token,
+              name: data.user_data.user_name,
             }
 
             return user;

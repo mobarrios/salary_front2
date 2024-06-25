@@ -18,20 +18,23 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="/">
+              <a className="nav-link active" aria-current="page" href="/admin/dashboard">
                 Dashboard
               </a>
             </li>
             <li className="nav-item">
               <a className="nav-link" href="/admin/employees">Employees</a>
             </li>
+            <li className="nav-item">
+              <a className="nav-link" href="/admin/teams">Teams</a>
+            </li>
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Administration
               </a>
               <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="#">Users</a></li>
-                <li><a className="dropdown-item" href="#">Roles</a></li>
+                <li><a className="dropdown-item" href="/admin/users">Users</a></li>
+                <li><a className="dropdown-item" href="/admin/roles">Roles</a></li>
                 <li><hr className="dropdown-divider" /></li>
                 <li><a className="dropdown-item" href="#">Something else here</a></li>
               </ul>
