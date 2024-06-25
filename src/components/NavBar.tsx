@@ -31,17 +31,11 @@ const NavbarComp = () => {
           <Nav className="me-auto " variant="underline" defaultActiveKey="/admin/dashboard" >
             <Nav.Link href="/admin/dashboard">Home</Nav.Link>
             <Nav.Link href="/admin/employees">Employees</Nav.Link>
+            <Nav.Link href="/admin/teams">Teams</Nav.Link>
+
             <NavDropdown title="Administration" id="basic-nav-dropdown">
               <NavDropdown.Item href="/admin/users">Users</NavDropdown.Item>
               <NavDropdown.Item href="/admin/roles">Roles</NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.4">
-                Separated link
-              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
            <Nav>
