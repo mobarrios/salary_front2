@@ -95,25 +95,6 @@ const FormEmployees: React.FC = () => {
                 }
             </div>
         </div>
-
-            // <div>
-            //     <h1>Employees form # {id}</h1>
-                // {!item ?
-                //     <div>{formSuccessMessage}</div>
-                //     :
-
-                //     (!loading ?
-                //         <FormComponent
-                //             initialValues={item}
-                //             onSubmit={handleSubmit}
-                //             isEditing={true} // Cambiar a true si se está editando
-                //             fields={fields}
-                //         />
-                //         : <div>cargando...</div>
-                //     )
-                // }
-            // </div>
-   
     );
 };
 

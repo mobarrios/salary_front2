@@ -61,30 +61,30 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                         <form  onSubmit={formik.handleSubmit}>
                         
                             {
-                                            fields.map((field, key: number) => (
+                                fields.map((field, key: number) => (
 
-                                                <div key={key}>
-                                                    <label htmlFor="name" className="form-label mt-2">{field}</label>
+                                    <div key={key}>
+                                        <label htmlFor="name" className="form-label mt-2">{field}</label>
 
-                                                    {/* <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                                        {field}
-                                                    </label> */}
-                                                    <input
-                                                        // type="text"
-                                                        placeholder={field}
-                                                        className="form-control mt-2"
-                                                        id={field}
-                                                        name={field}
-                                                        onChange={formik.handleChange}
-                                                        onBlur={formik.handleBlur}
-                                                        value={formik.values[field]}
+                                        {/* <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                                            {field}
+                                        </label> */}
+                                        <input
+                                            // type="text"
+                                            placeholder={field}
+                                            className="form-control mt-2"
+                                            id={field}
+                                            name={field}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            value={formik.values[field]}
 
-                                                    />
-                                                    {formik.touched[field] && formik.errors[field] ? ( // Cambio de formik.errors.name a formik.errors[field]
-                                                        <div>{formik.errors[field]}</div> // Concatenación del mensaje de error con el nombre del campo
-                                                    ) : null}
-                                                </div>
-                                            ))
+                                        />
+                                        {formik.touched[field] && formik.errors[field] ? ( // Cambio de formik.errors.name a formik.errors[field]
+                                            <div>{formik.errors[field]}</div> // Concatenación del mensaje de error con el nombre del campo
+                                        ) : null}
+                                    </div>
+                                ))
                             }
 
                             <button

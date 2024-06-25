@@ -18,7 +18,7 @@ const FormEmployees: React.FC = () => {
 
     const userData = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${id}`, {
+            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/users/${id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -37,7 +37,7 @@ const FormEmployees: React.FC = () => {
     const fetchData = async () => {
         try {
             ///api/v1/roles/all/?skip=0&limit=5
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/roles/all/?skip=0&limit=10`, {
+            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/roles/all/?skip=0&limit=10`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -79,20 +79,14 @@ const FormEmployees: React.FC = () => {
 
         if (isChecked) {
             // El checkbox está marcado
-            const response = await fetch('http://127.0.0.1:8000/api/v1/users_roles', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.user.token}`
-                },
-                body: JSON.stringify({users_id: id, roles_id: roleId}) // Enviar formData como cuerpo en formato JSON
-            });
-            const data = await response.json();
-            console.log(data)
+            const response = await apiRequest(`users_roles/`, 'POST', {users_id: id, roles_id: roleId})
+            
+            //const data = await response.json();
+            console.log(response)
             console.log('El checkbox está marcado');
         } else {
             // El checkbox está desmarcado
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/users_roles/delete/${id}/${roleId}`, {
+            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/users_roles/delete/${id}/${roleId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

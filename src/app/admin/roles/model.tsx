@@ -14,7 +14,3 @@ export const model: Model = {
 export const headers = [
     { name: 'Name', span: 3, key: 'name' }
 ];
-
-export const fields = [
-    'name'
-]

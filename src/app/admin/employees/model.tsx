@@ -23,7 +23,10 @@ export const headers = [
     { name: 'Associate ID', span: 1, key: 'associate_id' }
 ];
 
-// los campos de los formularios
-export const fields = [
-    'name', 'last_name', 'associate_id'
-];
+
+export const buttonExtra = [
+    {
+        url: 'admin/employees/teams',
+        name: 'teams'
+    }
+]

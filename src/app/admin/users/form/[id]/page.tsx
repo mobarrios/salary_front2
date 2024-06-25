@@ -21,7 +21,7 @@ const FormEmployees: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/${name}/${id}`, {
+            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -96,24 +96,6 @@ const FormEmployees: React.FC = () => {
                 }
             </div>
         </div>
-
-        // <div>
-        //     <h1>Employees form # {id}</h1>
-        // {!item ?
-        //     <div>{formSuccessMessage}</div>
-        //     :
-
-        //     (!loading ?
-        //         <FormComponent
-        //             initialValues={item}
-        //             onSubmit={handleSubmit}
-        //             isEditing={true} // Cambiar a true si se está editando
-        //             fields={fields}
-        //         />
-        //         : <div>cargando...</div>
-        //     )
-        // }
-        // </div>
 
     );
 };
