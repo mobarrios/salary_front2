@@ -26,7 +26,7 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
 
                         ))}
                         <td>
-                            <EditButton url={model} id={item.id} data={item} />
+                            <EditButton url={model} id={item.id} />
                             <RemoveItem url={model} id={item.id} />
                             
                             {buttonExtra && buttonExtra.map((campo) => (
