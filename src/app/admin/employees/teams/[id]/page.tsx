@@ -80,7 +80,7 @@ const FormEmployees: React.FC = () => {
       console.log('El checkbox está marcado');
     } else {
       // El checkbox está desmarcado
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/delete/${id}/${teamId}`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/delete/${teamId}/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
