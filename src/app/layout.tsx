@@ -20,7 +20,7 @@ export default function RootLayout({
     <SessionProvider>
     <html lang="en">
       <Bootstrap />
-      <body className={sora.className}>
+      <body className={inter.className}>
           {children}
       </body>
     </html>
