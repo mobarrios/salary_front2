@@ -87,7 +87,6 @@ const FormEmployees: React.FC = () => {
           'Authorization': `Bearer ${session?.user.token}`
         },
       });
-      console.log(response)
       const data = await response.json();
       console.log(data);
       console.log('El checkbox está desmarcado');
