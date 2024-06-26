@@ -53,6 +53,7 @@ const FormEmployees: React.FC = () => {
     useEffect(() => {
         const fetchDataAndUpdateItem = async () => {
             const jsonData = await fetchData();
+            
             if (jsonData) {
                 updateItemState(jsonData);
                 setLoading(false);

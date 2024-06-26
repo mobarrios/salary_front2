@@ -7,6 +7,7 @@ import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { model, fields, name, Model } from '../../model';
+import { fetchData } from "@/server/services/core/getApiRequest";
 
 const FormEmployees: React.FC = () => {
 
@@ -18,7 +19,7 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
+    
     const fetchData = async () => {
         try {
             const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
