@@ -5,7 +5,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import Swal from 'sweetalert2'
 
 const FormEmployees: React.FC = () => {
 
@@ -59,8 +58,6 @@ const FormEmployees: React.FC = () => {
             userData();
             fetchData();
         }
-
-
 
     }, [id, session?.user.token]);
 
