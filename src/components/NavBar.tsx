@@ -25,7 +25,7 @@ const NavbarComp = () => {
     <Navbar expand="lg" className="bg-body-tertiary shadow-sm">
       <Container>
         <Navbar.Brand href="#home">
-        {/* <img
+          {/* <img
               src="/img/logo.svg"
               width="30"
               height="30"
@@ -40,6 +40,7 @@ const NavbarComp = () => {
             <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
             <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>Employees</Nav.Link>
             <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link>
+            <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Reviews</Nav.Link>
 
             <NavDropdown title="Administration" id="basic-nav-dropdown"  active={activePath === '/admin/users' || activePath === '/admin/roles' }>
               <NavDropdown.Item href="/admin/users" active={activePath === '/admin/users'}>Users</NavDropdown.Item>
@@ -50,14 +51,14 @@ const NavbarComp = () => {
             <NavDropdown title={session?.user.name} id="basic-nav-dropdown">
               <NavDropdown.Item href="/admin/users" >Profile</NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.3"><a onClick={()=>(handleLogout())} >Logout</a></NavDropdown.Item>
-              </NavDropdown>
+              <NavDropdown.Item href="#action/3.3"><a onClick={() => (handleLogout())} >Logout</a></NavDropdown.Item>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>
 
-  ) 
+  )
 }
 
 export default NavbarComp;

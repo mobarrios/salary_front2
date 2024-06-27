@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { model, headers, name, Model } from '../../model';
+import {model, headers, name, Model} from '../../model';
 
 const FormEmployees: React.FC = () => {
 
@@ -18,11 +18,10 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
+    
     const fetchData = async () => {
         try {
-
-
+ 
             const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
                 method: "GET",
                 headers: {
@@ -31,9 +30,7 @@ const FormEmployees: React.FC = () => {
                 },
             });
 
-
             const jsonData = await response.json();
-            console.log(jsonData)
             return jsonData;
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -45,15 +42,16 @@ const FormEmployees: React.FC = () => {
         setItem(prevItem => ({
             ...prevItem,
             name: jsonData?.name,
-            last_name: jsonData?.last_name,
-            associate_id: jsonData?.associate_id
+            price: jsonData?.price,
+            form: jsonData?.form,
+            to: jsonData?.to,
+            status: jsonData?.status,
         }));
     };
 
     useEffect(() => {
         const fetchDataAndUpdateItem = async () => {
             const jsonData = await fetchData();
-            
             if (jsonData) {
                 updateItemState(jsonData);
                 setLoading(false);
@@ -62,6 +60,7 @@ const FormEmployees: React.FC = () => {
         fetchDataAndUpdateItem();
     }, [id]);
 
+    const fields = headers.map(header => header.key);
 
     const handleSubmit = async (values) => {
         try {
@@ -69,7 +68,7 @@ const FormEmployees: React.FC = () => {
             setFormSuccess(true)
 
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
-
+            
             // Redirigir al usuario después de que se haya completado la solicitud
             router.push(`/admin/${name}`);
             router.refresh()
@@ -79,8 +78,6 @@ const FormEmployees: React.FC = () => {
         }
     };
 
-    const fields = headers.map(header => header.key);
-    
     return (
         <div className="row">
             <div className='col-12'>
@@ -103,7 +100,6 @@ const FormEmployees: React.FC = () => {
                 }
             </div>
         </div>
-
     );
 };
 

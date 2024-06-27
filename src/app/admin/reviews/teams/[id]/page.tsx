@@ -17,7 +17,7 @@ const FormEmployees: React.FC = () => {
 
   const userData = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/all/?skip=0&limit=10`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/all/?skip=0&limit=10`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -25,7 +25,7 @@ const FormEmployees: React.FC = () => {
         },
       });
       const jsonData = await response.json();
-      const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
+      const employeesWithIdOne = jsonData.data.filter(item => item.reviews_id === parseInt(id));
       console.log(employeesWithIdOne)
       setUserTeams(employeesWithIdOne)
 
@@ -76,11 +76,12 @@ const FormEmployees: React.FC = () => {
 
     if (isChecked) {
       // El checkbox está marcado
-      const response = await apiRequest(`teams_employees/`, 'POST', { employees_id: id, teams_id: teamId });
+      const response = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
+      console.log(response)
       console.log('El checkbox está marcado');
     } else {
       // El checkbox está desmarcado
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/delete/${teamId}/${id}`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/delete/${teamId}/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +98,7 @@ const FormEmployees: React.FC = () => {
   return (
     <div className="row">
       <div className='col-12'>
-        <h1 className='text-primary'>Employees Teams</h1>
+        <h1 className='text-primary'>Reviews Teams</h1>
       </div>
       <div className='col-12'>
 

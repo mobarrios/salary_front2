@@ -25,19 +25,18 @@ const FormEmployees: React.FC = () => {
     }
 
     const fields = headers.map(header => header.key);
-    
-    console.log(fields)
+
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>New Employee</h1>
+                <h1 className='text-primary'>New Review</h1>
             </div>
             <div className='col-12'>
                 <FormComponent
-                initialValues={model}
-                onSubmit={handleSubmit}
-                isEditing={false} // Cambiar a true si se está editando
-                fields={fields}
+                    initialValues={model}
+                    onSubmit={handleSubmit}
+                    isEditing={false} // Cambiar a true si se está editando
+                    fields={fields}
                 />
             </div>
         </div>
