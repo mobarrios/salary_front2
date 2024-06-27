@@ -13,7 +13,17 @@ export async function middleware(req: NextRequest) {
         url.pathname = '/auth/signin';
         return NextResponse.redirect(url);
     }
-    return NextResponse.next();
+    
+    const response = await NextResponse.next();
+    console.log(response)
+    if (response.status === 403) {
+        // Realizar la redirección a una página de error personalizada para el código de estado 403
+        const url = req.nextUrl.clone();
+        url.pathname = '/error/403'; // Ruta de la página de error 403
+        return NextResponse.redirect(url);
+    }
+
+    return response;
 }
 
 export const config = {
