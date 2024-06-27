@@ -20,8 +20,6 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const totalPages = Math.ceil(data.count / limit);
 
-  console.log(data)
-
   return (
     <div className="row">
       <div className='col-12'>
@@ -35,7 +33,7 @@ export default async function Employees({ searchParams }: Params) {
         </Link>
       </div>
       <div className='col-12 mt-3'>
-        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra}  />
+        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra}/>
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />

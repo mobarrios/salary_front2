@@ -1,68 +1,56 @@
 'use client';
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 
-const Navbar = () => {
+const NavbarComp = () => {
 
+  const { data: session, status } = useSession()
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
   }
 
 
   return (
-    <nav className="navbar navbar-expand-lg shadow-sm navbar-dark bg-primary ">
-      <div className="container-fluid ">
-        <a className="navbar-brand" href="#"><h3>Salary</h3></a>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <a className="nav-link active" aria-current="page" href="/admin/dashboard">
-                Dashboard
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/admin/employees">Employees</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/admin/teams">Teams</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/admin/reviews">Reviews</a>
-            </li>
-            <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Administration
-              </a>
-              <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="/admin/users">Users</a></li>
-                <li><a className="dropdown-item" href="/admin/roles">Roles</a></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><a className="dropdown-item" href="#">Something else here</a></li>
-              </ul>
-            </li>
-            <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i className="bi bi-person-circle"></i>
-              </a>
-              <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="#">Profile</a></li>
-                <li><hr className="dropdown-divider" /></li>
+    <Navbar expand="lg" className="bg-body-tertiary shadow-sm">
+      <Container>
+        <Navbar.Brand href="#home">
+          {/* <img
+              src="/img/logo.svg"
+              width="30"
+              height="30"
+              className="d-inline-block align-top"
+              alt="React Bootstrap logo"
+            /> */}
+          <strong>S</strong>alary
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav  " />
+        <Navbar.Collapse id="basic-navbar-nav ">
+          <Nav className="me-auto " variant="underline" defaultActiveKey="/admin/dashboard" >
+            <Nav.Link href="/admin/dashboard">Home</Nav.Link>
+            <Nav.Link href="/admin/employees">Employees</Nav.Link>
+            <Nav.Link href="/admin/teams">Teams</Nav.Link>
+            <Nav.Link href="/admin/reviews">Reviews</Nav.Link>
 
-                <li><button className="dropdown-item" onClick={() => handleLogout()}>Logout</button></li>
-              </ul>
-            </li>
+            <NavDropdown title="Administration" id="basic-nav-dropdown">
+              <NavDropdown.Item href="/admin/users">Users</NavDropdown.Item>
+              <NavDropdown.Item href="/admin/roles">Roles</NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+          <Nav>
+            <NavDropdown title="userName" id="basic-nav-dropdown">
+              <NavDropdown.Item href="/admin/users">Profile</NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item href="#action/3.3"><a onClick={() => (handleLogout())} >Logout</a></NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
 
-          </ul>
-          {/* <form className="d-flex" role="search">
-              <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-              <button className="btn btn-success" type="submit">Search</button>
-            </form> */}
-        </div>
-      </div>
-    </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default NavbarComp;
