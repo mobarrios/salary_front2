@@ -26,3 +26,10 @@ export const headers = [
     { name: 'Price', span: 3, key: 'price' },
     { name: 'Name', span: 3, key: 'name' },
 ];
+
+export const buttonExtra = [
+    {
+        url: 'admin/reviews/teams',
+        name: 'teams'
+    }
+]

@@ -24,7 +24,6 @@ export const apiRequest = async (url, method, data) => {
     console.log(response)
     if (response.status === 403) {
         redirect('/admin/dashboard')
-
     }
     const result = data ? response.json() : response
 
