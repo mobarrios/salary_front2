@@ -7,8 +7,7 @@ export default async function Dashboard({searchParams}: Params) {
 
  
   return (
-    <div className="mt-5">
+    <div className="container">
         <h1>Dashboard</h1>
-       
     </div>
   )};

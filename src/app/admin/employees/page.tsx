@@ -20,16 +20,10 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const totalPages = Math.ceil(data.count / limit);
 
-  const extra_button=[{
-    'name': 'Teams',
-    'url':'/admin/employees/teams'
-  }]
-
   return (
+  <div className='container'>
+    <h2 className='text-primary '>Employees</h2>
     <div className="row">
-      <div className='col-12'>
-           <h1 className='text-primary'>Employees</h1>
-      </div>
       <div className='col-12'>
         <Link
           href={`/admin/${name}/form`}
@@ -38,11 +32,12 @@ export default async function Employees({ searchParams }: Params) {
         </Link>
       </div>
       <div className='col-12 mt-3'>
-        <TableComponent data={data.data} model={name} headers={headers} buttons={extra_button}/>
+        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra}/>
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
       </div>
     </div>
+  </div>
   )
 };
