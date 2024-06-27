@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useRouter, } from 'next/navigation'
 import { apiRequest } from "@/server/services/core/apiRequest";
-import { model, name, headers } from '../model'
+import { model, name, fields } from '../model'
 import FormComponent from "@/components/Core/FormComponent";
 
 const FormEmployees: React.FC = () => {
@@ -24,7 +24,6 @@ const FormEmployees: React.FC = () => {
 
     }
 
-    const fields = headers.map(header => header.key);
 
     return (
         <div className="row">
@@ -40,6 +39,7 @@ const FormEmployees: React.FC = () => {
                 />
             </div>
         </div>
+
     );
 };
 

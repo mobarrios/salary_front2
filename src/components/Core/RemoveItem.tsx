@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"
 import Swal from 'sweetalert2'
-import { apiRequest } from "@/server/services/core/apiRequest";
 
 export default function RemoveItem({ id, url }: { id: number, url: string }) {
     const router = useRouter();
@@ -23,7 +22,7 @@ export default function RemoveItem({ id, url }: { id: number, url: string }) {
 
     const deleteRecord = async (id) => {
 
-        const resp = await fetch(`http://127.0.0.1:8000/api/v1/${url}/delete/${id}`, {
+        const resp = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${url}/delete/${id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -31,7 +30,6 @@ export default function RemoveItem({ id, url }: { id: number, url: string }) {
             }
         });
 
-        //const res = await apiRequest(`${url}/delete/${id}`, 'DELETE');
         return resp;
     };
 

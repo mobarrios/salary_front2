@@ -1,8 +1,8 @@
-import EditButton from "./EditButton";
-import RemoveItem from "./RemoveItem";
+import EditButton from "../Core/EditButton";
+import RemoveItem from "../Core/RemoveItem";
 import Link from "next/link";
 
-const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
+const TableComponentUser = ({ data, model, headers }) => {
     return (
         <table className="table table-striped">
             <thead>
@@ -10,14 +10,14 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
                     <th>#</th>
                     {
                         headers.map((header, key: number) => (
-                            <th scope="col" key={key}>{header.name}</th>
+                            <th scope="col">{header.name}</th>
                         ))
                     }
                 </tr>
             </thead>
             <tbody>
                 {data.map((item, rowIndex) => (
-                    <tr className="align-middle" key={rowIndex}>
+                    <tr className="align-middle">
                         <td>{item.id}</td>
                         {headers.map((header, colIndex) => (
                             <td>
@@ -26,18 +26,13 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
 
                         ))}
                         <td>
-                            <EditButton url={model} id={item.id} />
+                            <EditButton url={model} id={item.id} data={item} />
                             <RemoveItem url={model} id={item.id} />
-                            
-                            {buttonExtra && buttonExtra.map((campo) => (
-                                <Link
-                                    key={item.id}
-                                    href={`/${campo.url}/${item.id}`}
-                                    className="btn btn-warning m-1"
-                                >
-                                    {campo.name}
-                                </Link>
-                            ))}
+                            <Link
+                                href={`/admin/users/rol/${item.id}`}
+                                className="btn btn-warning m-1">
+                                Rol
+                            </Link>
 
                         </td>
 
@@ -45,8 +40,8 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
                 ))}
             </tbody>
         </table>
-        
+
     );
 }
 
-export default TableComponent;
+export default TableComponentUser;

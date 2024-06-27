@@ -31,8 +31,8 @@ export default function SignIn({ searchParams }: PageProps) {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-
-    try {
+    
+   try {
       await signIn('credentials', {
         username: inputs.username,
         password: inputs.password,

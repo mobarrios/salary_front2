@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useRouter, } from 'next/navigation'
 import { apiRequest } from "@/server/services/core/apiRequest";
-import { model, name, headers } from '../model'
+import { model, name, fields } from '../model'
 import FormComponent from "@/components/Core/FormComponent";
 
 const FormEmployees: React.FC = () => {
@@ -24,22 +24,22 @@ const FormEmployees: React.FC = () => {
 
     }
 
-    const fields = headers.map(header => header.key);
 
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>New Employee</h1>
+                <h1 className='text-primary'>New User</h1>
             </div>
             <div className='col-12'>
                 <FormComponent
-                initialValues={model}
-                onSubmit={handleSubmit}
-                isEditing={false} // Cambiar a true si se está editando
-                fields={fields}
+                    initialValues={model}
+                    onSubmit={handleSubmit}
+                    isEditing={false} // Cambiar a true si se está editando
+                    fields={fields}
                 />
             </div>
         </div>
+
     );
 };
 

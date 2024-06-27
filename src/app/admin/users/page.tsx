@@ -1,9 +1,9 @@
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
-import TableComponent from '@/components/Core/TableComponent';
+import TableComponentUser from '@/components/User/TableComponentUser';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name, buttonExtra } from './model';
+import { headers, name } from './model';
 import Link from 'next/link';
 import Head from 'next/head';
 
@@ -20,15 +20,10 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const totalPages = Math.ceil(data.count / limit);
 
-  const extra_button=[{
-    'name': 'Teams',
-    'url':'/admin/employees/teams'
-  }]
-
   return (
     <div className="row">
       <div className='col-12'>
-           <h1 className='text-primary'>Employees</h1>
+           <h1 className='text-primary'>Users</h1>
       </div>
       <div className='col-12'>
         <Link
@@ -38,7 +33,7 @@ export default async function Employees({ searchParams }: Params) {
         </Link>
       </div>
       <div className='col-12 mt-3'>
-        <TableComponent data={data.data} model={name} headers={headers} buttons={extra_button}/>
+        <TableComponentUser data={data.data} model={name} headers={headers} />
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
