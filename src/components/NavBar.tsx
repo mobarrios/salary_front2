@@ -32,7 +32,7 @@ const NavbarComp = () => {
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
             /> */}
-            <h4 className="text-primary "><strong>Salary</strong></h4>
+          <h4 className="text-primary "><strong>Salary</strong></h4>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav  " />
         <Navbar.Collapse id="basic-navbar-nav ">
@@ -41,13 +41,14 @@ const NavbarComp = () => {
             <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>Employees</Nav.Link>
             <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link>
             <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Reviews</Nav.Link>
+            <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
 
-            <NavDropdown title="Administration" id="basic-nav-dropdown"  active={activePath === '/admin/users' || activePath === '/admin/roles' }>
+            <NavDropdown title="Administration" id="basic-nav-dropdown" active={activePath === '/admin/users' || activePath === '/admin/roles'}>
               <NavDropdown.Item href="/admin/users" active={activePath === '/admin/users'}>Users</NavDropdown.Item>
               <NavDropdown.Item href="/admin/roles" active={activePath === '/admin/roles'} >Roles</NavDropdown.Item>
             </NavDropdown>
           </Nav>
-           <Nav>
+          <Nav>
             <NavDropdown title={session?.user.name} id="basic-nav-dropdown">
               <NavDropdown.Item href="/admin/users" >Profile</NavDropdown.Item>
               <NavDropdown.Divider />

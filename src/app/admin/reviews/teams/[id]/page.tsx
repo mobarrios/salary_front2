@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
+import Link from 'next/link';
 
 const FormEmployees: React.FC = () => {
 
@@ -26,7 +27,6 @@ const FormEmployees: React.FC = () => {
       });
       const jsonData = await response.json();
       const employeesWithIdOne = jsonData.data.filter(item => item.reviews_id === parseInt(id));
-      console.log(employeesWithIdOne)
       setUserTeams(employeesWithIdOne)
 
     } catch (error) {
@@ -81,7 +81,7 @@ const FormEmployees: React.FC = () => {
       console.log('El checkbox está marcado');
     } else {
       // El checkbox está desmarcado
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/delete/${teamId}/${id}`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/delete/${id}/${teamId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +89,6 @@ const FormEmployees: React.FC = () => {
         },
       });
       const data = await response.json();
-      console.log(data);
       console.log('El checkbox está desmarcado');
     }
     router.refresh();
@@ -117,9 +116,18 @@ const FormEmployees: React.FC = () => {
 
             />
             <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
+            {
+              userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                ?
+                <Link
+                  href={`/admin/reviews/teams/${option.id}/employees`}
+                  className="m-5">
+                  Empleados
+                </Link>
+                : null
+            }
           </div>
         ))}
-
       </div>
     </div>
 

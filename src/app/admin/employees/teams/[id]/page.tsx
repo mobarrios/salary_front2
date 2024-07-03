@@ -100,8 +100,6 @@ const FormEmployees: React.FC = () => {
         <h1 className='text-primary'>Employees Teams</h1>
       </div>
       <div className='col-12'>
-
-
         {options && options.map((option) => (
           <div className="form-check form-switch" key={option.id}>
             <input
@@ -118,7 +116,6 @@ const FormEmployees: React.FC = () => {
             <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
           </div>
         ))}
-
       </div>
     </div>
 
