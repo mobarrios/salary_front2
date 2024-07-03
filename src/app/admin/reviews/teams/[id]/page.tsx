@@ -122,7 +122,7 @@ const FormEmployees: React.FC = () => {
                 <Link
                   href={`/admin/reviews/teams/${option.id}/employees`}
                   className="m-5">
-                  Empleados
+                  Employees
                 </Link>
                 : null
             }
