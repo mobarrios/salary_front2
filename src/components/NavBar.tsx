@@ -32,7 +32,7 @@ const NavbarComp = () => {
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
             /> */}
-          <h4 className="text-primary "><strong>Salary</strong></h4>
+          <h4 className="text-primary "><strong>$alary</strong></h4>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav  " />
         <Navbar.Collapse id="basic-navbar-nav ">

@@ -95,42 +95,56 @@ const FormEmployees: React.FC = () => {
   };
 
   return (
+    <>
     <div className="row">
       <div className='col-12'>
         <h1 className='text-primary'>Reviews Teams</h1>
       </div>
-      <div className='col-12'>
-
-
-        {options && options.map((option) => (
-          <div className="form-check form-switch" key={option.id}>
-            <input
-              className="form-check-input"
-              checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-              type="checkbox"
-              role="switch"
-              name="roles_id"
-              id={option.id}
-              value={option.id}
-              onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-
-            />
-            <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
-            {
-              userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                ?
-                <Link
-                  href={`/admin/reviews/teams/${option.id}/employees`}
-                  className="m-5">
-                  Employees
-                </Link>
-                : null
-            }
-          </div>
-        ))}
-      </div>
     </div>
-
+    <div className='row'>
+        {options && options.map((option) => (
+          <div className='col-12'>
+            <div className='col-12'>
+              <div className="form-check form-switch" key={option.id}>
+                <input
+                  className="form-check-input"
+                  checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                  type="checkbox"
+                  role="switch"
+                  name="roles_id"
+                  id={option.id}
+                  value={option.id}
+                  onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                />
+             
+              {
+                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                  ?
+                  <Link
+                    href={`/admin/reviews/teams/${option.id}/employees`}
+                    className="form-check-label">
+                    {option.name}
+                  </Link>
+                  :  <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
+              }
+              </div>
+            </div>
+            {/* <div className='col-12'>
+              {
+                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                  ?
+                  <Link
+                    href={`/admin/reviews/teams/${option.id}/employees`}
+                    className="m-5">
+                    Employees
+                  </Link>
+                  : null
+              }
+            </div> */}
+       </div>
+        ))}  
+    </div>
+    </>
   );
 };
 
