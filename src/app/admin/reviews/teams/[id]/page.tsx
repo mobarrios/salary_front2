@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
 
+
 const FormEmployees: React.FC = () => {
 
   const { data: session, status } = useSession()
@@ -98,52 +99,64 @@ const FormEmployees: React.FC = () => {
     <>
     <div className="row">
       <div className='col-12'>
-        <h1 className='text-primary'>Reviews Teams</h1>
+        <h5 className='text-primary'>Reviews Teams</h5>
       </div>
     </div>
     <div className='row'>
-        {options && options.map((option) => (
-          <div className='col-12'>
-            <div className='col-12'>
-              <div className="form-check form-switch" key={option.id}>
-                <input
-                  className="form-check-input"
-                  checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-                  type="checkbox"
-                  role="switch"
-                  name="roles_id"
-                  id={option.id}
-                  value={option.id}
-                  onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-                />
-             
-              {
-                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                  ?
-                  <Link
-                    href={`/admin/reviews/teams/${option.id}/employees`}
-                    className="form-check-label">
-                    {option.name}
-                  </Link>
-                  :  <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
-              }
+       
+        <div className='col-12'>
+        <table className='table ms-4'>
+          {options && options.map((option) => (
+            <tr>
+              <td>
+                <div className="form-check form-switch" key={option.id}>
+                  <input
+                    className="form-check-input"
+                    checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                    type="checkbox"
+                    role="switch"
+                    name="roles_id"
+                    id={option.id}
+                    value={option.id}
+                    onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                  />
+              
+                {
+                  userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                    ?
+                    <Link
+                      href={`/admin/reviews/teams/${option.id}/employees`}
+                      className="form-check-label btn btn-success">
+                      {option.name}
+                    </Link>
+                    :  <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
+                }
               </div>
-            </div>
-            {/* <div className='col-12'>
-              {
-                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                  ?
-                  <Link
-                    href={`/admin/reviews/teams/${option.id}/employees`}
-                    className="m-5">
-                    Employees
-                  </Link>
-                  : null
-              }
-            </div> */}
+              </td>
+              <td>
+                 $ <b>10.000</b>
+              </td>
+              {/* <div className='col-12'>
+                {
+                  userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                    ?
+                    <Link
+                      href={`/admin/reviews/teams/${option.id}/employees`}
+                      className="m-5">
+                      Employees
+                    </Link>
+                    : null
+                }
+              </div> */}
+              </tr>
+          ))}  
+            <tr>
+              <td><h6>Total amount </h6></td>
+              <td>$ <b>30.000</b></td>
+            </tr>
+          </table>
        </div>
-        ))}  
-    </div>
+      </div>
     </>
   );
 };

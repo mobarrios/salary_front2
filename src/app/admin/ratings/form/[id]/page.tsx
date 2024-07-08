@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import {model, headers, name, Model} from '../../model';
+import {model, headers, name} from '../../model';
 
 const FormEmployees: React.FC = () => {
 
@@ -42,7 +42,8 @@ const FormEmployees: React.FC = () => {
         setItem(prevItem => ({
             ...prevItem,
             name: jsonData?.name,
-            percent: jsonData?.percent
+            percent_min: jsonData?.percent_min,
+            percent_max: jsonData?.percent_max
         }));
     };
 
@@ -78,7 +79,7 @@ const FormEmployees: React.FC = () => {
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>Edit Data</h1>
+                <h3 className='text-primary'>Edit Data</h3>
             </div>
             <div className='col-12'>
                 {!item ?

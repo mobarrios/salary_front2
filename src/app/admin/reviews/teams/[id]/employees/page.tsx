@@ -133,29 +133,32 @@ const FormEmployees: React.FC = () => {
 
                             <table>
                                 {ratings && ratings.map((option) => (
-                                        <tr className="mt-2">
-                                            <td className="text-center">
-                                                <div className="form-check form-switch" key={option.id}>
-                                                    <input
-                                                        className="form-check-input"
-                                                        //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-                                                        type="checkbox"
-                                                        role="switch"
-                                                        name="roles_id"
-                                                        id={option.id}
-                                                        value={option.id}
-                                                        onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-
-                                                    />
-                                                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name} - {option.percent}%  </label>
-                                                </div>
-                                            </td>
-                                            <td className="text-center">
-                                                <Form.Range min={0} max={option.percent} />
-                                            </td>
-                                            <td className="text-center">
-                                                <input type="text" placeholder="Comments"/>
-                                            </td>
+                                    <tr className="mt-2">
+                                        <td className="text-center">
+                                            <div className="form-check form-switch" key={option.id}>
+                                                <input
+                                                    className="form-check-input"
+                                                    //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                                                    type="checkbox"
+                                                    role="switch"
+                                                    name="roles_id"
+                                                    id={option.id}
+                                                    value={option.id}
+                                                    onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                                                />
+                                                <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}  </label>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="row ">
+                                                <div className="col-2" ><small>{option.percent_min} %</small></div>
+                                                <div className="col-8"><Form.Range  min={option.percent_min} max={option.percent_max}/></div>
+                                                <div className="col-2"><small>{option.percent_max} %</small></div>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <input type="text" placeholder="Comments"/>
+                                        </td>
                                     </tr>
                                 ))}
                              </table>
