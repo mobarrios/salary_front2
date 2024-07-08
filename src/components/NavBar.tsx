@@ -32,11 +32,11 @@ const NavbarComp = () => {
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
             /> */}
-          <h4 className="text-primary "><strong>Salary</strong></h4>
+          <h4 className="text-primary "><strong>$alary</strong></h4>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav  " />
         <Navbar.Collapse id="basic-navbar-nav ">
-          <Nav className="me-auto " variant="underline" defaultActiveKey="/admin/dashboard" >
+          <Nav className="me-auto" variant="underline" defaultActiveKey="/admin/dashboard" >
             <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
             <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>Employees</Nav.Link>
             <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link>
