@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
+import {fetchData} from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
@@ -14,19 +15,10 @@ const FormEmployees: React.FC = () => {
   const { id } = useParams();
   const router = useRouter()
 
-
   const userData = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/all/?skip=0&limit=10`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.user.token}`
-        },
-      });
-      const jsonData = await response.json();
+      const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=10`);  
       const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
-      console.log(employeesWithIdOne)
       setUserTeams(employeesWithIdOne)
 
     } catch (error) {
@@ -35,19 +27,10 @@ const FormEmployees: React.FC = () => {
     }
   };
 
-  const fetchData = async () => {
+  const load = async () => {
     try {
-      ///api/v1/roles/all/?skip=0&limit=5
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams/all/?skip=0&limit=10`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.user.token}`
-        },
-      });
-      const jsonData = await response.json();
+      const jsonData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=10`);  
       setOptions(jsonData.data)
-
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -58,7 +41,7 @@ const FormEmployees: React.FC = () => {
   useEffect(() => {
     if (session?.user.token) {
       userData();
-      fetchData();
+      load();
       console.log(userTeams)
     }
 
@@ -80,15 +63,7 @@ const FormEmployees: React.FC = () => {
       console.log('El checkbox está marcado');
     } else {
       // El checkbox está desmarcado
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams_employees/delete/${teamId}/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.user.token}`
-        },
-      });
-      const data = await response.json();
-      console.log(data);
+      const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);  
       console.log('El checkbox está desmarcado');
     }
     router.refresh();

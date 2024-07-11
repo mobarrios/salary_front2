@@ -5,6 +5,7 @@ import { Params } from '@/types/params';
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import Form from 'react-bootstrap/Form';
+import { fetchData } from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
@@ -13,27 +14,13 @@ const FormEmployees: React.FC = () => {
     const [team, setTeam] = useState();
     const [ratings, setRatings] = useState();
 
-    const fetchData = async () => {
+    const load = async () => {
         try {
-            const teamResponse = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const teamData = await teamResponse.json();
-            setTeam(teamData[0]);
+            const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${id}`);
+            setTeam(teamResponse[0]);
 
-            const ratingsResponse = await fetch(process.env.NEXT_PUBLIC_SALARY + `/ratings/all/?skip=0&limit=10`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const ratingsData = await ratingsResponse.json();
-            setRatings(ratingsData.data);
+            const ratingsResponse = await fetchData(session?.user.token, 'GET', `ratings/all/?skip=0&limit=10`);
+            setRatings(ratingsResponse.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -42,7 +29,7 @@ const FormEmployees: React.FC = () => {
     useEffect(() => {
         if (session?.user.token) {
 
-            fetchData();
+            load();
             console.log(ratings)
         }
 

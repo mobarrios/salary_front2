@@ -25,8 +25,7 @@ const FormEmployees: React.FC = () => {
     }
 
     const fields = headers.map(header => header.key);
-    
-    console.log(fields)
+
     return (
         <div className="row">
             <div className='col-12'>
