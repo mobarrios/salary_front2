@@ -6,48 +6,45 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
+import Form from 'react-bootstrap/Form';
+import { fetchData } from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
   const { data: session, status } = useSession()
+  const [totalTeams, setTotalTeams] = useState();
+  const [totalReview, setTotalReview] = useState();
   const [options, setOptions] = useState();
   const [userTeams, setUserTeams] = useState();
+  const [totalAmount, setTotalAmount] = useState(0);
   const { id } = useParams();
   const router = useRouter()
+  const [rangeValues, setRangeValues] = useState({});
 
+  const handleRangeChange = async (optionId, value) => {
+    const updatedRangeValues = { ...rangeValues, [optionId]: value };
+    setRangeValues(updatedRangeValues);
+  
+    let total = 0;
+    for (const key in updatedRangeValues) {
+      total += updatedRangeValues[key];
+    }
+    setTotalAmount(total);
+  };
+  
 
   const userData = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/all/?skip=0&limit=10`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.user.token}`
-        },
-      });
-      const jsonData = await response.json();
+
+      const reviewData = await fetchData(session?.user.token, 'GET', `reviews/${id}`);
+      setTotalReview(reviewData.price)
+
+      const jsonData = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=10`);
       const employeesWithIdOne = jsonData.data.filter(item => item.reviews_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      return null;
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      ///api/v1/roles/all/?skip=0&limit=5
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams/all/?skip=0&limit=10`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.user.token}`
-        },
-      });
-      const jsonData = await response.json();
-      setOptions(jsonData.data)
-
+      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=10`);
+      setOptions(teamsData.data)
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -58,11 +55,22 @@ const FormEmployees: React.FC = () => {
   useEffect(() => {
     if (session?.user.token) {
       userData();
-      fetchData();
-      console.log(userTeams)
     }
 
   }, [id, session?.user.token]);
+
+  useEffect(() => {
+    if (userTeams) {
+      const initialRangeValues = {};
+      userTeams.forEach(item => {
+        initialRangeValues[item.teams_id] = item.price;
+      });
+      setRangeValues(initialRangeValues);
+      const total = userTeams.reduce((accumulator, item) => accumulator + item.price, 0);
+      setTotalTeams(total)
+    }
+
+  }, [userTeams]);
 
   if (status === 'loading') {
     return <p>Loading...</p>;
@@ -75,75 +83,94 @@ const FormEmployees: React.FC = () => {
     setUserTeams(updatedRoles);
 
     if (isChecked) {
+
       // El checkbox está marcado
-      const response = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
-      console.log(response)
+      await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
       console.log('El checkbox está marcado');
     } else {
+
       // El checkbox está desmarcado
-      const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/reviews_teams/delete/${id}/${teamId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.user.token}`
-        },
-      });
-      const data = await response.json();
+      await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${id}/${teamId}`);
       console.log('El checkbox está desmarcado');
     }
     router.refresh();
   };
 
+  const handleSubmit = async (e, teamId) => {
+    const response = await apiRequest(`reviews_teams/edit/${id}/${teamId}`, 'PUT', { price: rangeValues[teamId] })
+    console.log(response)
+  }
+
   return (
     <>
-    <div className="row">
-      <div className='col-12'>
-        <h1 className='text-primary'>Reviews Teams</h1>
+      <div className="row">
+        <div className='col-12'>
+          <h5 className='text-primary'>Reviews Teams</h5>
+        </div>
       </div>
-    </div>
-    <div className='row'>
-        {options && options.map((option) => (
-          <div className='col-12'>
-            <div className='col-12'>
-              <div className="form-check form-switch" key={option.id}>
-                <input
-                  className="form-check-input"
-                  checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-                  type="checkbox"
-                  role="switch"
-                  name="roles_id"
-                  id={option.id}
-                  value={option.id}
-                  onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-                />
-             
-              {
-                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                  ?
-                  <Link
-                    href={`/admin/reviews/teams/${option.id}/employees`}
-                    className="form-check-label">
-                    {option.name}
-                  </Link>
-                  :  <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
-              }
-              </div>
-            </div>
-            {/* <div className='col-12'>
-              {
-                userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                  ?
-                  <Link
-                    href={`/admin/reviews/teams/${option.id}/employees`}
-                    className="m-5">
-                    Employees
-                  </Link>
-                  : null
-              }
-            </div> */}
-       </div>
-        ))}  
-    </div>
+      <div className='row'>
+
+        <div className='col-12'>
+          <table className='table ms-4'>
+            {options && options.map((option) => (
+              <tr>
+                <td>
+                  <div className="form-check form-switch" key={option.id}>
+                    <input
+                      className="form-check-input"
+                      checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                      type="checkbox"
+                      role="switch"
+                      name="roles_id"
+                      id={option.id}
+                      value={option.id}
+                      onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                    />
+
+                    {
+                      userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                        ?
+                        <Link
+                          href={`/admin/reviews/teams/${option.id}/employees`}
+                          className="form-check-label btn btn-success">
+                          {option.name}
+                        </Link>
+                        : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
+                    }
+                  </div>
+                </td>
+                <td>
+                  $ <b>{rangeValues[option.id] || 0}</b>
+                  <div className="col-8">
+
+                    <Form.Range
+                      disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
+                      step={1000}
+                      min={0}
+                      max={totalReview}
+                      value={rangeValues[option.id] || 0}
+                      onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
+                    />
+
+                  </div>
+                </td>
+                <td>
+                  <div className="col-2">
+                    <button className='btn btn-primary' onClick={(e) => handleSubmit(e, option.id)}>
+                      <i className="bi bi-update"></i>  update
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+            ))}
+            <tr>
+              <td><h6>Total amount </h6> $<b>{totalReview?.toFixed(2)}</b></td>
+              <td><h6>Total team </h6> $<b>{totalAmount?.toFixed(2)}</b></td>    
+            </tr>
+          </table>
+        </div>
+      </div>
     </>
   );
 };

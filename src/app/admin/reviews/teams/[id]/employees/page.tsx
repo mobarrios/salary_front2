@@ -5,6 +5,7 @@ import { Params } from '@/types/params';
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import Form from 'react-bootstrap/Form';
+import { fetchData } from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
@@ -13,27 +14,13 @@ const FormEmployees: React.FC = () => {
     const [team, setTeam] = useState();
     const [ratings, setRatings] = useState();
 
-    const fetchData = async () => {
+    const load = async () => {
         try {
-            const teamResponse = await fetch(process.env.NEXT_PUBLIC_SALARY + `/teams/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const teamData = await teamResponse.json();
-            setTeam(teamData[0]);
+            const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${id}`);
+            setTeam(teamResponse[0]);
 
-            const ratingsResponse = await fetch(process.env.NEXT_PUBLIC_SALARY + `/ratings/all/?skip=0&limit=10`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const ratingsData = await ratingsResponse.json();
-            setRatings(ratingsData.data);
+            const ratingsResponse = await fetchData(session?.user.token, 'GET', `ratings/all/?skip=0&limit=10`);
+            setRatings(ratingsResponse.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -42,7 +29,7 @@ const FormEmployees: React.FC = () => {
     useEffect(() => {
         if (session?.user.token) {
 
-            fetchData();
+            load();
             console.log(ratings)
         }
 
@@ -133,29 +120,32 @@ const FormEmployees: React.FC = () => {
 
                             <table>
                                 {ratings && ratings.map((option) => (
-                                        <tr className="mt-2">
-                                            <td className="text-center">
-                                                <div className="form-check form-switch" key={option.id}>
-                                                    <input
-                                                        className="form-check-input"
-                                                        //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-                                                        type="checkbox"
-                                                        role="switch"
-                                                        name="roles_id"
-                                                        id={option.id}
-                                                        value={option.id}
-                                                        onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-
-                                                    />
-                                                    <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name} - {option.percent}%  </label>
-                                                </div>
-                                            </td>
-                                            <td className="text-center">
-                                                <Form.Range min={0} max={option.percent} />
-                                            </td>
-                                            <td className="text-center">
-                                                <input type="text" placeholder="Comments"/>
-                                            </td>
+                                    <tr className="mt-2">
+                                        <td className="text-center">
+                                            <div className="form-check form-switch" key={option.id}>
+                                                <input
+                                                    className="form-check-input"
+                                                    //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                                                    type="checkbox"
+                                                    role="switch"
+                                                    name="roles_id"
+                                                    id={option.id}
+                                                    value={option.id}
+                                                    onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                                                />
+                                                <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}  </label>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="row ">
+                                                <div className="col-2" ><small>{option.percent_min} %</small></div>
+                                                <div className="col-8"><Form.Range  min={option.percent_min} max={option.percent_max}/></div>
+                                                <div className="col-2"><small>{option.percent_max} %</small></div>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <input type="text" placeholder="Comments"/>
+                                        </td>
                                     </tr>
                                 ))}
                              </table>

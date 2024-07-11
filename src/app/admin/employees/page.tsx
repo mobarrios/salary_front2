@@ -5,7 +5,6 @@ import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name, buttonExtra } from './model';
 import Link from 'next/link';
-import Head from 'next/head';
 
 export default async function Employees({ searchParams }: Params) {
 

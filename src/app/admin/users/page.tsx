@@ -1,11 +1,10 @@
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
-import TableComponentUser from '@/components/User/TableComponentUser';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name } from './model';
+import { headers, name, buttonExtra } from './model';
 import Link from 'next/link';
-import Head from 'next/head';
+import TableComponent from '@/components/Core/TableComponent';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -33,7 +32,7 @@ export default async function Employees({ searchParams }: Params) {
         </Link>
       </div>
       <div className='col-12 mt-3'>
-        <TableComponentUser data={data.data} model={name} headers={headers} />
+        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra} />
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
