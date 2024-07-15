@@ -8,6 +8,7 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
+import { Toast } from 'react-bootstrap';
 
 const FormEmployees: React.FC = () => {
 
@@ -17,6 +18,10 @@ const FormEmployees: React.FC = () => {
   const [options, setOptions] = useState();
   const [userTeams, setUserTeams] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalRemaining, setTotalRemaining] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
   const { id } = useParams();
   const router = useRouter()
   const [rangeValues, setRangeValues] = useState({});
@@ -24,14 +29,15 @@ const FormEmployees: React.FC = () => {
   const handleRangeChange = async (optionId, value) => {
     const updatedRangeValues = { ...rangeValues, [optionId]: value };
     setRangeValues(updatedRangeValues);
-  
+
     let total = 0;
     for (const key in updatedRangeValues) {
       total += updatedRangeValues[key];
     }
     setTotalAmount(total);
+    setTotalRemaining(totalReview - total)
   };
-  
+
 
   const userData = async () => {
     try {
@@ -68,6 +74,8 @@ const FormEmployees: React.FC = () => {
       setRangeValues(initialRangeValues);
       const total = userTeams.reduce((accumulator, item) => accumulator + item.price, 0);
       setTotalTeams(total)
+      setTotalAmount(total);
+      setTotalRemaining(totalReview - total)
     }
 
   }, [userTeams]);
@@ -97,76 +105,123 @@ const FormEmployees: React.FC = () => {
   };
 
   const handleSubmit = async (e, teamId) => {
-    const response = await apiRequest(`reviews_teams/edit/${id}/${teamId}`, 'PUT', { price: rangeValues[teamId] })
-    console.log(response)
+    try {
+      const response = await apiRequest(`reviews_teams/edit/${id}/${teamId}`, 'PUT', { price: rangeValues[teamId] });
+      setToastMessage('Update successful'); // Mensaje de éxito
+      setShowToast(true); // Mostrar el toast
+      console.log(response);
+    } catch (error) {
+      setToastMessage('Error updating'); // Mensaje de error
+      setShowToast(true); // Mostrar el toast
+      console.error('Error updating:', error);
+    }
   }
+
+
+
 
   return (
     <>
       <div className="row">
-        <div className='col-12'>
-          <h5 className='text-primary'>Reviews Teams</h5>
-        </div>
+
+        {/* <div className='col-12'>
+          <div
+            className="toast"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true" data-bs-autohide="false"
+            style={{ display: showToast ? 'block' : 'block' }}
+          >
+            <div className="toast-header">
+              <strong className="me-auto">Bootstrap</strong>
+              <small>11 mins ago</small>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowToast(false)} aria-label="Close">
+
+              </button>
+            </div>
+            <div className="toast-body">
+              {toastMessage}
+            </div>
+          </div>
+          <h3 className='text-primary'>Reviews Teams</h3>
+        </div> */}
       </div>
-      <div className='row'>
 
+
+      <div className='row mt-5'>
         <div className='col-12'>
-          <table className='table ms-4'>
+          <table className='table '>
             {options && options.map((option) => (
-              <tr>
-                <td>
-                  <div className="form-check form-switch" key={option.id}>
-                    <input
-                      className="form-check-input"
-                      checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
-                      type="checkbox"
-                      role="switch"
-                      name="roles_id"
-                      id={option.id}
-                      value={option.id}
-                      onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-                    />
+              <tbody>
+                <tr>
+                  <td>
+                    <div className="form-check form-switch" key={option.id}>
+                      <input
+                        className="form-check-input"
+                        checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                        type="checkbox"
+                        role="switch"
+                        name="roles_id"
+                        id={option.id}
+                        value={option.id}
+                        onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                      />
 
-                    {
-                      userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                        ?
-                        <Link
-                          href={`/admin/reviews/teams/${option.id}/employees`}
-                          className="form-check-label btn btn-success">
-                          {option.name}
-                        </Link>
-                        : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
-                    }
-                  </div>
-                </td>
-                <td>
-                  $ <b>{rangeValues[option.id] || 0}</b>
-                  <div className="col-8">
+                      {
+                        userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                          ?
+                          <Link
+                            href={`/admin/reviews/teams/${option.id}/employees/${id}`}
+                            className="form-check-label btn btn-success">
+                            {option.name}
+                          </Link>
+                          : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    $ <b>{rangeValues[option.id] || 0}</b>
+                    <div className="col-4">
 
-                    <Form.Range
-                      disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
-                      step={1000}
-                      min={0}
-                      max={totalReview}
-                      value={rangeValues[option.id] || 0}
-                      onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
-                    />
+                      <Form.Range
+                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
+                        step={1000}
+                        min={0}
+                        max={totalReview}
+                        value={rangeValues[option.id] || 0}
+                        onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
+                      />
 
-                  </div>
-                </td>
-                <td>
-                  <div className="col-2">
-                    <button className='btn btn-primary' onClick={(e) => handleSubmit(e, option.id)}>
-                      <i className="bi bi-update"></i>  update
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
+                    </div>
+                  </td>
+                  <td>
+                    <div className="col-2">
+                      <button
+                        disabled={totalRemaining < 0}
+                        className='btn btn-primary btn-xs'
+                        onClick={(e) => handleSubmit(e, option.id)}>
+                        <i className="bi bi-update"></i>  update
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
             ))}
+
             <tr>
-              <td><h6>Total amount </h6> $<b>{totalReview?.toFixed(2)}</b></td>
-              <td><h6>Total team </h6> $<b>{totalAmount?.toFixed(2)}</b></td>    
+              <td>
+
+                <h6>Total amount : $<b>{totalReview?.toFixed(2)}</b> </h6>
+                <h6>Total team  : $<b>{totalAmount?.toFixed(2)}</b> </h6>
+
+                {totalRemaining < 0 ?
+                  <h6 className='text-danger'>Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
+                  : <h6 >Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
+                }
+              </td>
             </tr>
           </table>
         </div>
