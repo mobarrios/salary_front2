@@ -17,6 +17,8 @@ const FormEmployees: React.FC = () => {
   const [options, setOptions] = useState();
   const [userTeams, setUserTeams] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalRemaining, setTotalRemaining] = useState(0);
+
   const { id } = useParams();
   const router = useRouter()
   const [rangeValues, setRangeValues] = useState({});
@@ -30,6 +32,7 @@ const FormEmployees: React.FC = () => {
       total += updatedRangeValues[key];
     }
     setTotalAmount(total);
+    setTotalRemaining( totalReview - total)
   };
   
 
@@ -105,14 +108,14 @@ const FormEmployees: React.FC = () => {
     <>
       <div className="row">
         <div className='col-12'>
-          <h5 className='text-primary'>Reviews Teams</h5>
+          <h3 className='text-primary'>Reviews Teams</h3>
         </div>
       </div>
-      <div className='row'>
-
+      <div className='row mt-5'>
         <div className='col-12'>
-          <table className='table ms-4'>
+          <table className='table '>
             {options && options.map((option) => (
+              <tbody>
               <tr>
                 <td>
                   <div className="form-check form-switch" key={option.id}>
@@ -141,7 +144,7 @@ const FormEmployees: React.FC = () => {
                 </td>
                 <td>
                   $ <b>{rangeValues[option.id] || 0}</b>
-                  <div className="col-8">
+                  <div className="col-4">
 
                     <Form.Range
                       disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
@@ -156,17 +159,26 @@ const FormEmployees: React.FC = () => {
                 </td>
                 <td>
                   <div className="col-2">
-                    <button className='btn btn-primary' onClick={(e) => handleSubmit(e, option.id)}>
+                    <button className='btn btn-primary btn-xs' onClick={(e) => handleSubmit(e, option.id)}>
                       <i className="bi bi-update"></i>  update
                     </button>
                   </div>
                 </td>
               </tr>
-
+            </tbody>
             ))}
+
             <tr>
-              <td><h6>Total amount </h6> $<b>{totalReview?.toFixed(2)}</b></td>
-              <td><h6>Total team </h6> $<b>{totalAmount?.toFixed(2)}</b></td>    
+              <td>
+          
+              <h6>Total amount : $<b>{totalReview?.toFixed(2)}</b> </h6>
+              <h6>Total team  : $<b>{totalAmount?.toFixed(2)}</b> </h6>
+
+                {totalRemaining < 0 ?
+               <h6 className='text-danger'>Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
+               :<h6 >Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
+                }
+              </td>
             </tr>
           </table>
         </div>
