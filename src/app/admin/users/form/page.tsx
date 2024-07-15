@@ -6,7 +6,7 @@ import { apiRequest } from "@/server/services/core/apiRequest";
 import { model, name, fields } from '../model'
 import FormComponent from "@/components/Core/FormComponent";
 
-const FormEmployees: React.FC = () => {
+const FormUsers: React.FC = () => {
 
     const router = useRouter()
 
@@ -43,4 +43,4 @@ const FormEmployees: React.FC = () => {
     );
 };
 
-export default FormEmployees;
+export default FormUsers;

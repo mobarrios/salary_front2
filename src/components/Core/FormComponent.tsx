@@ -70,7 +70,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                                             {field}
                                         </label> */}
                                         <input
-                                            // type="text"
+                                            type="text"
                                             placeholder={field}
                                             className="form-control mt-2"
                                             id={field}

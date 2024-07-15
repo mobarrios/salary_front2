@@ -26,3 +26,10 @@ export const headers = [
 export const fields = [
     'user_name', 'email', 'active', 'hashed_password'
 ]
+
+export const buttonExtra = [
+    {
+        url: 'admin/users/rol',
+        name: 'rol'
+    }
+]

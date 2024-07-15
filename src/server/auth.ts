@@ -3,6 +3,8 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -34,6 +36,10 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/signin'
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     Credentials({
       name: "Credentials",
       credentials: {

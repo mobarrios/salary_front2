@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,7 +20,7 @@ type PageProps = {
 export default function SignIn({ searchParams }: PageProps) {
   console.log(searchParams)
   const [inputs, setInputs] = useState<LoginInput>({ username: "", password: "" });
-
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
@@ -31,8 +30,8 @@ export default function SignIn({ searchParams }: PageProps) {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    
-   try {
+    setLoading(true);
+    try {
       await signIn('credentials', {
         username: inputs.username,
         password: inputs.password,
@@ -43,6 +42,8 @@ export default function SignIn({ searchParams }: PageProps) {
       console.error('front:', error);
       // Puedes guardar el error en un estado para mostrarlo en la interfaz de usuario
       //setError('Error al autenticar. Por favor, verifica tus credenciales.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -50,58 +51,81 @@ export default function SignIn({ searchParams }: PageProps) {
     <div className="container">
       <div className="row justify-content-center align-items-center p-5 ">
         <div className="col-12 col-md-8 col-lg-6">
-          <div className="p-4 bg-white rounded shadow-sm">
-            <h1 className="text-center mb-4">Salary</h1>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
+          <div className="p-5 bg-white rounded shadow-sm">
+          <div className="mb-5 text-center">
+           <img
+              src="/equipay.png"
+              width="240"
+              height="60"
+              // className="d-inline-block align-top"
+              alt="Logo"
+            />
+          </div>  
+            <form className="" onSubmit={handleSubmit}>
+              <div >
                 <label htmlFor="email" className="form-label">Email address</label>
                 {/* <input type="email" className="form-control" id="email" placeholder="name@example.com" /> */}
                 <input
-                      placeholder="name@example.com"
-                      id="username"
-                      name="username"
-                      type="text"
-                      autoComplete="off"
-                      required
-                      value={inputs.username || ""}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
+                  placeholder="name@example.com"
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="off"
+                  required
+                  value={inputs.username || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
               </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
+              <div className="mt-4" >
+                <label htmlFor="password" className="form-label ">Password</label>
                 {/* <input type="password" className="form-control" id="password" placeholder="Password" /> */}
-                 <input
-                    placeholder="Password"
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="off"
-                      required
-                      value={inputs.password || ""}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
+                <input
+                  placeholder="Password"
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="off"
+                  required
+                  value={inputs.password || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
               </div>
-              <div className="d-grid gap-2">
+              <div className="mt-5 d-grid gap-2">
                 {/* <button type="submit" className="btn btn-primary">Login</button> */}
                 <input
-                    type="submit"
-                    value="Sign In"
-                    className="btn btn-primary"
-                  />
-                  {searchParams.error && (
-                <div className="mb-5">
-                  <p className="text-red text-center capitalize">
-                    Credenciales inválidas
-                  </p>
-                </div>
-              )}       
+                  type="submit"
+                  value={loading ? 'Loading...' : 'Sign In'}
+                  className="btn btn-primary"
+                  disabled={loading}
+                />
+                {searchParams.error && (
+                  <div className="mb-1">
+                    <p className="text-center capitalize">
+                      {searchParams.error}
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="text-center mt-3">
                 <a href="#">Forgot password?</a>
               </div>
             </form>
+            <div className="container mt-5 text-center">
+              <div>or continue with</div>
+              <div>
+              <button className="m-2 btn btn-outline-danger btn-lg"><i className="bi bi-google"></i></button>
+              <button className="m-2 btn btn-outline-success btn-lg"><i className="bi bi-microsoft"></i></button>
+              </div>
+            </div>
+              {searchParams.error && (
+                <div >
+                  <p className="text-red text-center capitalize">
+                    Credenciales inválidas
+                  </p>
+                </div>
+              )}       
           </div>
         </div>
       </div>

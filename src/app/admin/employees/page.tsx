@@ -5,7 +5,6 @@ import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name, buttonExtra } from './model';
 import Link from 'next/link';
-import Head from 'next/head';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -25,11 +24,9 @@ export default async function Employees({ searchParams }: Params) {
     <h2 className='text-primary '>Employees</h2>
     <div className="row">
       <div className='col-12'>
-        <Link
-          href={`/admin/${name}/form`}
-          className="btn btn-primary mt-3" >
-          New
-        </Link>
+        <Link href={`/admin/${name}/form`} className="btn btn-primary mt-3" > New </Link>
+        <Link href="" className="btn btn-secondary mt-3 ms-3" > Import data</Link>
+
       </div>
       <div className='col-12 mt-3'>
         <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra}/>
