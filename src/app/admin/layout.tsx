@@ -1,7 +1,7 @@
 import Navbar from "@/components/NavBar";
+import { ToastComponent } from '@/components/ToastComponent';
 
 export default async function Dashboard({children}) {
-
  
   return (
   <>

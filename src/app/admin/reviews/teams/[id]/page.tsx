@@ -8,7 +8,7 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
-import { Toast } from 'react-bootstrap';
+import { ToastComponent } from '@/components/ToastComponent';
 
 const FormEmployees: React.FC = () => {
 
@@ -122,36 +122,10 @@ const FormEmployees: React.FC = () => {
 
   return (
     <>
-      <div className="row">
-
-        {/* <div className='col-12'>
-          <div
-            className="toast"
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true" data-bs-autohide="false"
-            style={{ display: showToast ? 'block' : 'block' }}
-          >
-            <div className="toast-header">
-              <strong className="me-auto">Bootstrap</strong>
-              <small>11 mins ago</small>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setShowToast(false)} aria-label="Close">
-
-              </button>
-            </div>
-            <div className="toast-body">
-              {toastMessage}
-            </div>
-          </div>
-          <h3 className='text-primary'>Reviews Teams</h3>
-        </div> */}
-      </div>
-
-
       <div className='row mt-5'>
+        {showToast ?
+          <ToastComponent showToast={showToast} message="Update" />
+          : null}
         <div className='col-12'>
           <table className='table '>
             {options && options.map((option) => (
