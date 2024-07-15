@@ -112,6 +112,20 @@ export default function SignIn({ searchParams }: PageProps) {
                 <a href="#">Forgot password?</a>
               </div>
             </form>
+            <div className="container mt-5 text-center">
+              <div>or continue with</div>
+              <div>
+              <button className="m-2 btn btn-outline-danger btn-lg"><i className="bi bi-google"></i></button>
+              <button className="m-2 btn btn-outline-success btn-lg"><i className="bi bi-microsoft"></i></button>
+              </div>
+            </div>
+              {searchParams.error && (
+                <div >
+                  <p className="text-red text-center capitalize">
+                    Credenciales inválidas
+                  </p>
+                </div>
+              )}       
           </div>
         </div>
       </div>
