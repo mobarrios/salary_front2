@@ -108,17 +108,14 @@ const FormEmployees: React.FC = () => {
     try {
       const response = await apiRequest(`reviews_teams/edit/${id}/${teamId}`, 'PUT', { price: rangeValues[teamId] });
       setToastMessage('Update successful'); // Mensaje de éxito
-      setShowToast(true); // Mostrar el toast
+      setShowToast(true);
       console.log(response);
     } catch (error) {
       setToastMessage('Error updating'); // Mensaje de error
-      setShowToast(true); // Mostrar el toast
+      setShowToast(true); 
       console.error('Error updating:', error);
     }
   }
-
-
-
 
   return (
     <>
