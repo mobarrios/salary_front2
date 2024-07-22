@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { Params } from '@/types/params';
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import Form from 'react-bootstrap/Form';
@@ -19,40 +18,57 @@ const FormEmployees: React.FC = () => {
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
     const [commnetsValues, setCommnetsValues] = useState({});
 
-    //employees
+    //const employees
     const [currentBase, setCurrentBase] = useState(150000);
-    const [proposedTotal, setProposedTotal] = useState();
-    const [porcentajeTotal, setPorcentajeTotal] = useState({});
     const [totalValueByEmployee, setTotalValueByEmployee] = useState({});
+    const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
+
+    //const team
+    const [totalTeam, setTotalTeam] = useState();
 
     const handleRangeChange = (e, ratingsId, employeeId) => {
         const value = parseInt(e.target.value, 10); // Asegúrate de que el valor sea un número
-    
         setRangeValues(prevState => {
             const updatedRangeValues = {
                 ...prevState,
                 [`${ratingsId}-${employeeId}`]: value
             };
-    
-            // Calcular el total aquí
-            let total = 0;
-            for (const key in updatedRangeValues) {
-                total += parseInt(updatedRangeValues[key], 10); // Convertir a número
+            // Calcular los totales por employeeId
+            const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
+
+            // Actualizar el total propuesto y el estado con los valores actualizados
+            setTotalTeam(total);
+            setTotalValueByEmployee(employeeTotals);
+
+            // Calcular y guardar los valores por ID utilizando el porcentaje
+            const valuesByEmployeeWithPercentage = {};
+            for (const key in employeeTotals) {
+                valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
             }
-    
-            console.log(total);
-            // setTotalAmount(total); // Si quieres actualizar otro estado con el total
-    
+            setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
+
             return updatedRangeValues;
         });
     };
 
     const calculatePorcentaje = (value) => {
-
-        const total = currentBase * value / 100;
-        setPorcentajeTotal(total)
-
+        return currentBase * value / 100;
     }
+
+    const calculateTotalsByEmployee = (updatedRangeValues) => {
+        const employeeTotals = {};
+        let total = 0;
+        for (const key in updatedRangeValues) {
+            const [currentRatingsId, currentEmployeeId] = key.split('-');
+            const currentValue = parseInt(updatedRangeValues[key], 10);
+            if (!employeeTotals[currentEmployeeId]) {
+                employeeTotals[currentEmployeeId] = 0;
+            }
+            employeeTotals[currentEmployeeId] += currentValue;
+            total += currentValue;
+        }
+        return { employeeTotals, total };
+    };
 
     const updateRatingsEmployees = (data) => {
 
@@ -63,6 +79,20 @@ const FormEmployees: React.FC = () => {
             updatedRangeValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
             updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.commnets;
         });
+
+
+        const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
+
+        // Actualizar el total propuesto inicial
+        setTotalTeam(total);
+        setTotalValueByEmployee(employeeTotals);
+
+        // Actualizar porcentaje inicial
+        const valuesByEmployeeWithPercentage = {};
+        for (const key in employeeTotals) {
+            valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
+        }
+        setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
 
         setRangeValues(prevState => ({
             ...prevState,
@@ -113,15 +143,7 @@ const FormEmployees: React.FC = () => {
 
     }, [id, session?.user.token]);
 
-    const sumValuesForSecondKey = () => {
-        const sum = Object.entries(rangeValues)
-            .filter(([key, value]) => key.split('-')[1] === '4')
-            .reduce((acc, [key, value]) => acc + parseInt(value, 10), 0);
 
-        return sum
-    };
-
-    //console.log(totalValueByEmployee)
 
     const handleSubmit = async (e, employeeId, ratingsId) => {
 
@@ -169,7 +191,7 @@ const FormEmployees: React.FC = () => {
                     <tbody>
                         <tr>
                             <td> <strong>$ {reviewTeam?.price.toFixed(2)}</strong></td>
-                            <td> $ {proposedTotal}</td>
+                            <td> $ {totalTeam}</td>
                             <td> $ 40.200</td>
 
                         </tr>
@@ -200,8 +222,8 @@ const FormEmployees: React.FC = () => {
                                     <tbody>
                                         <tr>
                                             <td>$ {currentBase}</td>
-                                            <td>$ {sumValuesForSecondKey[item.id]}</td>
-                                            <td>$ 12.00</td>
+                                            <td>$ {totalValueByEmployee[item.id]}</td>
+                                            <td>$ {totalPercentByEmployee[item.id]}</td>
                                             <td>$ 50.200</td>
                                         </tr>
                                     </tbody>
@@ -213,7 +235,6 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
-                                                        {option.id} -
                                                         <input
                                                             className="form-check-input"
                                                             //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
@@ -235,13 +256,15 @@ const FormEmployees: React.FC = () => {
                                                         <div className="col-8">
                                                             <Form.Range
                                                                 step={1}
-                                                                min={option.percent_min}
+                                                                minLength={option.percent_min}
+                                                                maxLength={option.percent_max}
+                                                                min={0}
                                                                 max={option.percent_max}
                                                                 value={rangeValues[`${option.id}-${item.id}`] || 0}
                                                                 onChange={(e) => handleRangeChange(e, option.id, item.id)}
                                                             />
                                                         </div>
-                                                        <div className="col-2"><small>{option.percent_max} %</small></div>
+                                                        <div className="col-2"><small>{option.percent_max} %</small> {rangeValues[`${option.id}-${item.id}`] || 0}</div>
                                                     </div>
                                                 </td>
                                                 <td className="text-center">

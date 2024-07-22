@@ -93,13 +93,13 @@ const FormEmployees: React.FC = () => {
     if (isChecked) {
 
       // El checkbox está marcado
-      await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
-      console.log('El checkbox está marcado');
+      const response = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
+      console.log('El checkbox está marcado', response);
     } else {
 
       // El checkbox está desmarcado
-      await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${id}/${teamId}`);
-      console.log('El checkbox está desmarcado');
+      const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${id}/${teamId}`);
+      console.log('El checkbox está desmarcado',response);
     }
     router.refresh();
   };
