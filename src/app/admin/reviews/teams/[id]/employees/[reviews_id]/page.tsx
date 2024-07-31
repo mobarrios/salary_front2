@@ -18,6 +18,8 @@ const FormEmployees: React.FC = () => {
     const [rangeValues, setRangeValues] = useState({});
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
     const [commnetsValues, setCommnetsValues] = useState({});
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     //const employees
     const [currentBase, setCurrentBase] = useState(150000);
@@ -155,7 +157,7 @@ const FormEmployees: React.FC = () => {
     }, [id, session?.user.token]);
 
     const handleCheckboxChange = async (optionId, employeesId, isChecked) => {
-
+        setShowToast(false);
         const values = {
             reviews_id: reviews_id,
             teams_id: id,
@@ -173,7 +175,9 @@ const FormEmployees: React.FC = () => {
             const response = await apiRequest(`reviews_teams_employees/`, 'POST', values);
             console.log('El checkbox está marcado', optionId, employeesId, isChecked);
             console.log(response)
-            
+            setShowToast(true);
+            setToastMessage('Update successful');
+
         } else {
 
             const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
@@ -189,7 +193,8 @@ const FormEmployees: React.FC = () => {
                 const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
                 console.log('El checkbox está desmarcado', optionId, employeesId, isChecked);
                 console.log(response);
-
+                setShowToast(true);
+                setToastMessage('Update successful');
                 // Actualizar el estado del checkbox después de eliminar el elemento
                 setRatingsTeamEmployees(prevRatingsTeamEmployees => prevRatingsTeamEmployees.filter(item => item.id !== reviewTeamEmployeesId.id));
 
@@ -201,7 +206,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const handleSubmit = async (e, employeesId, ratingsId) => {
-
+        setShowToast(false);
         const percent = rangeValues[`${ratingsId}-${employeesId}`];
         const comment = commnetsValues[`${ratingsId}-${employeesId}`];
         const price = currentBase * percent / 100;
@@ -227,6 +232,8 @@ const FormEmployees: React.FC = () => {
 
             const response = await apiRequest(`reviews_teams_employees/edit/${reviewTeamEmployeesId.id}`, 'PUT', values);
             console.log(response);
+            setShowToast(true);
+            setToastMessage('Update successful');
         } catch (error) {
             console.error('Error updating:', error);
         }
@@ -244,6 +251,9 @@ const FormEmployees: React.FC = () => {
 
     return (
         <div className="row">
+            {showToast ?
+                <ToastComponent showToast={showToast} message={toastMessage} />
+                : null}
             <div className='col-12'>
                 <h3 className='text-primary mb-5'>Reviews - {team?.name}</h3>
                 <table className="table">
