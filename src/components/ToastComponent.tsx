@@ -1,22 +1,35 @@
+'use client'
+
 import { useState } from 'react';
-import { Toast } from 'react-bootstrap';
+import Toast from 'react-bootstrap/Toast';
+import ToastContainer from 'react-bootstrap/ToastContainer';
 
+function ToastComponent({ show, message }) {
+    const [position, setPosition] = useState('bottom-end');
+    const [showA, setShowA] = useState(true);
+    const [showB, setShowB] = useState(true);
 
-export const ToastComponent = ({ show, message }) => {
-
-    const [showToast, setShowToast] = useState(show);
+    const toggleShowA = () => setShowA(!showA);
+    const toggleShowB = () => setShowB(!showB);
 
     return (
-        <Toast 
-            show={showToast} 
-            onClose={() => setShowToast(false)} 
-            delay={3000}
-            autohide>
-            <Toast.Header>
-                <strong className="me-auto">Notification</strong>
-            </Toast.Header>
-            <Toast.Body>{message}</Toast.Body>
-        </Toast>
-    )
+        <>
+            <ToastContainer
+                className="p-3"
+                position={position}
+                style={{ zIndex: 1 }}
 
+            >
+                <Toast show={showB} onClose={toggleShowB}>
+                    <Toast.Header closeButton={true}>
+                        <strong className="me-auto">Message</strong>
+                        <small>11 mins ago</small>
+                    </Toast.Header>
+                    <Toast.Body>{message}.</Toast.Body>
+                </Toast>
+            </ToastContainer>
+        </>
+    );
 }
+
+export default ToastComponent;

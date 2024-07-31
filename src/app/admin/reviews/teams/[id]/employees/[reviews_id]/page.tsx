@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
+import ToastComponent from '@/components/ToastComponent';
 
 const FormEmployees: React.FC = () => {
 
@@ -25,6 +26,7 @@ const FormEmployees: React.FC = () => {
 
     //const team
     const [totalTeam, setTotalTeam] = useState();
+    const [totalRemaining, setTotalRemaining] = useState(0);
 
     const handleRangeChange = (e, ratingsId, employeeId) => {
         const value = parseInt(e.target.value, 10); // Asegúrate de que el valor sea un número
@@ -49,7 +51,14 @@ const FormEmployees: React.FC = () => {
 
             return updatedRangeValues;
         });
+
+        calcularTotalRemaining()
     };
+
+    const calcularTotalRemaining = () => {
+        const total = (reviewTeam?.price || 0) - (totalTeam || 0);
+        setTotalRemaining(total);
+    }
 
     const calculatePorcentaje = (value) => {
         return currentBase * value / 100;
@@ -76,8 +85,8 @@ const FormEmployees: React.FC = () => {
         const updateCommentsValues = {};
 
         data.forEach(item => {
-            updatedRangeValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
-            updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.commnets;
+            updatedRangeValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
+            updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
         });
 
 
@@ -104,6 +113,8 @@ const FormEmployees: React.FC = () => {
             ...updateCommentsValues
         }));
 
+        calcularTotalRemaining()
+
     }
 
     const load = async () => {
@@ -126,10 +137,10 @@ const FormEmployees: React.FC = () => {
 
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
+
             setRatingsTeamEmployees(filterRatingEmployees);
 
             updateRatingsEmployees(filterRatingEmployees);
-
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -143,37 +154,92 @@ const FormEmployees: React.FC = () => {
 
     }, [id, session?.user.token]);
 
+    const handleCheckboxChange = async (optionId, employeesId, isChecked) => {
 
+        const values = {
+            reviews_id: reviews_id,
+            teams_id: id,
+            employees_id: employeesId,
+            ratings_id: optionId,
+            price: null,
+            percent: null,
+            comments: null,
+            status: 1
+        };
 
-    const handleSubmit = async (e, employeeId, ratingsId) => {
+        if (isChecked) {
 
-        const percent = rangeValues[`${ratingsId}-${employeeId}`];
-        const comment = commnetsValues[`${ratingsId}-${employeeId}`];
+            // El checkbox está marcado
+            const response = await apiRequest(`reviews_teams_employees/`, 'POST', values);
+            console.log('El checkbox está marcado', optionId, employeesId, isChecked);
+            console.log(response)
+            
+        } else {
+
+            const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
+                item.reviews_id == parseInt(reviews_id) &&
+                item.employees_id == parseInt(employeesId) &&
+                item.ratings_id == parseInt(optionId) &&
+                item.teams_id == parseInt(id)
+            );
+
+            if (reviewTeamEmployeesId) {
+                console.log(reviewTeamEmployeesId.id);
+                // El checkbox está desmarcado
+                const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
+                console.log('El checkbox está desmarcado', optionId, employeesId, isChecked);
+                console.log(response);
+
+                // Actualizar el estado del checkbox después de eliminar el elemento
+                setRatingsTeamEmployees(prevRatingsTeamEmployees => prevRatingsTeamEmployees.filter(item => item.id !== reviewTeamEmployeesId.id));
+
+            } else {
+                console.log('No se encontró el elemento para desmarcar');
+            }
+        }
+
+    };
+
+    const handleSubmit = async (e, employeesId, ratingsId) => {
+
+        const percent = rangeValues[`${ratingsId}-${employeesId}`];
+        const comment = commnetsValues[`${ratingsId}-${employeesId}`];
         const price = currentBase * percent / 100;
 
-        console.log(price, percent, employeeId, ratingsId)
+        const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
+            item.reviews_id == parseInt(reviews_id) &&
+            item.employees_id == employeesId &&
+            item.ratings_id == ratingsId &&
+            item.teams_id == parseInt(id)
+        );
+
         try {
             const values = {
                 reviews_id: reviews_id,
                 teams_id: id,
-                employees_id: employeeId,
+                employees_id: employeesId,
                 ratings_id: ratingsId,
                 price: price,
                 percent: percent,
                 status: 1,
                 comments: comment
             };
-            console.log(values)
-            //const response = await apiRequest(`reviews_teams_employees/`, 'POST', values);
-            //setToastMessage('Update successful'); // Mensaje de éxito
-            //setShowToast(true); // Mostrar el toast
-            //console.log(response);
+
+            const response = await apiRequest(`reviews_teams_employees/edit/${reviewTeamEmployeesId.id}`, 'PUT', values);
+            console.log(response);
         } catch (error) {
-            //setToastMessage('Error updating'); // Mensaje de error
-            //setShowToast(true); // Mostrar el toast
             console.error('Error updating:', error);
         }
     }
+
+    const isCheckboxChecked = (optionId, itemId) => {
+
+        if (Array.isArray(ratingsTeamEmployees)) {
+            return ratingsTeamEmployees.find(item => item.ratings_id == optionId && item.employees_id == itemId);
+        } else {
+            return false; // O manejar el caso en el que ratingsTeamEmployees no sea un array
+        }
+    };
 
 
     return (
@@ -191,9 +257,8 @@ const FormEmployees: React.FC = () => {
                     <tbody>
                         <tr>
                             <td> <strong>$ {reviewTeam?.price.toFixed(2)}</strong></td>
-                            <td> $ {totalTeam}</td>
-                            <td> $ 40.200</td>
-
+                            <td> $ {totalTeam ? totalTeam : 0}</td>
+                            <td> $ {totalRemaining}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -221,9 +286,9 @@ const FormEmployees: React.FC = () => {
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>$ {currentBase}</td>
-                                            <td>$ {totalValueByEmployee[item.id]}</td>
-                                            <td>$ {totalPercentByEmployee[item.id]}</td>
+                                            <td>$ {currentBase ? currentBase : 0}</td>
+                                            <td>$ {totalValueByEmployee[item.id] ? totalValueByEmployee[item.id] : 0}</td>
+                                            <td>$ {totalPercentByEmployee[item.id] ? totalPercentByEmployee[item.id] : 0}</td>
                                             <td>$ 50.200</td>
                                         </tr>
                                     </tbody>
@@ -235,15 +300,17 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
+                                                        {option.id} - {item.id}
+
                                                         <input
                                                             className="form-check-input"
-                                                            //ratingschecked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
+                                                            checked={isCheckboxChecked(option.id, item.id)}
                                                             type="checkbox"
                                                             role="switch"
                                                             name="roles_id"
                                                             id={option.id}
                                                             value={option.id}
-                                                        //onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
+                                                            onChange={(e) => handleCheckboxChange(option.id, item.id, e.target.checked)}
                                                         />
                                                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}  </label>
                                                     </div>
@@ -256,9 +323,7 @@ const FormEmployees: React.FC = () => {
                                                         <div className="col-8">
                                                             <Form.Range
                                                                 step={1}
-                                                                minLength={option.percent_min}
-                                                                maxLength={option.percent_max}
-                                                                min={0}
+                                                                min={option.percent_min}
                                                                 max={option.percent_max}
                                                                 value={rangeValues[`${option.id}-${item.id}`] || 0}
                                                                 onChange={(e) => handleRangeChange(e, option.id, item.id)}
@@ -271,7 +336,7 @@ const FormEmployees: React.FC = () => {
                                                     <input
                                                         type="text"
                                                         placeholder="Comments"
-                                                        value={commnetsValues[`${option.id}-${item.id}`]} // Asegúrate de manejar el valor nulo o indefinido
+                                                        value={commnetsValues[`${option.id}-${item.id}`]}
                                                         onChange={(e) => {
                                                             const newCommnetsValues = { ...commnetsValues };
                                                             newCommnetsValues[`${option.id}-${item.id}`] = e.target.value;

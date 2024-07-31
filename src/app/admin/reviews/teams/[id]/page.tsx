@@ -8,7 +8,7 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
 import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
-import { ToastComponent } from '@/components/ToastComponent';
+import ToastComponent from '@/components/ToastComponent';
 
 const FormEmployees: React.FC = () => {
 
@@ -38,7 +38,6 @@ const FormEmployees: React.FC = () => {
     setTotalRemaining(totalReview - total)
   };
 
-
   const userData = async () => {
     try {
 
@@ -46,6 +45,7 @@ const FormEmployees: React.FC = () => {
       setTotalReview(reviewData.price)
 
       const jsonData = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=10`);
+
       const employeesWithIdOne = jsonData.data.filter(item => item.reviews_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 
@@ -62,7 +62,6 @@ const FormEmployees: React.FC = () => {
     if (session?.user.token) {
       userData();
     }
-
   }, [id, session?.user.token]);
 
   useEffect(() => {
@@ -85,9 +84,12 @@ const FormEmployees: React.FC = () => {
   }
 
   const handleCheckboxChange = async (teamId, isChecked) => {
+    setShowToast(false);
+
     const updatedRoles = isChecked
       ? [...userTeams, { teams_id: teamId }]
       : userTeams.filter(team => team.teams_id !== teamId);
+
     setUserTeams(updatedRoles);
 
     if (isChecked) {
@@ -95,33 +97,57 @@ const FormEmployees: React.FC = () => {
       // El checkbox está marcado
       const response = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
       console.log('El checkbox está marcado', response);
+      setShowToast(true);
+      setToastMessage('Update successful');
+
     } else {
 
+      const reviewTeam = userTeams.find(item =>
+        item.reviews_id == parseInt(id) &&
+        item.teams_id == parseInt(teamId)
+      );
+
+      console.log(reviewTeam.id, teamId, id, userTeams)
+
       // El checkbox está desmarcado
-      const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${id}/${teamId}`);
-      console.log('El checkbox está desmarcado',response);
+      if (reviewTeam) {
+        const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeam.id}`);
+        console.log('El checkbox está desmarcado', response);
+        setShowToast(true);
+        setToastMessage('Update successful');
+      } 
+
     }
     router.refresh();
   };
 
   const handleSubmit = async (e, teamId) => {
+    setShowToast(false);
+    const reviewItemsId = userTeams.find(item => item.reviews_id == id && item.teams_id == teamId);
+   
     try {
-      const response = await apiRequest(`reviews_teams/edit/${id}/${teamId}`, 'PUT', { price: rangeValues[teamId] });
-      setToastMessage('Update successful'); // Mensaje de éxito
-      setShowToast(true);
-      console.log(response);
+
+      if (reviewItemsId) {
+        const response = await apiRequest(`reviews_teams/edit/${reviewItemsId.id}`, 'PUT', { price: rangeValues[teamId] });
+        setShowToast(true);
+        setToastMessage('Update successful'); // Mensaje de éxito
+      } else {
+        console.error('Error updating:', error);
+      }
+
     } catch (error) {
+      setShowToast(true);
       setToastMessage('Error updating'); // Mensaje de error
-      setShowToast(true); 
       console.error('Error updating:', error);
     }
+
   }
 
   return (
     <>
       <div className='row mt-5'>
         {showToast ?
-          <ToastComponent showToast={showToast} message="Update" />
+          <ToastComponent showToast={showToast} message={toastMessage} />
           : null}
         <div className='col-12'>
           <table className='table '>
@@ -185,8 +211,8 @@ const FormEmployees: React.FC = () => {
             <tr>
               <td>
 
-                <h6>Total amount : $<b>{totalReview?.toFixed(2)}</b> </h6>
-                <h6>Total team  : $<b>{totalAmount?.toFixed(2)}</b> </h6>
+                <h6>Total amount : $<b>{totalReview ? totalReview.toFixed(2) : 0}</b> </h6>
+                <h6>Total team  : $<b>{totalAmount ? totalAmount.toFixed(2) : 0}</b> </h6>
 
                 {totalRemaining < 0 ?
                   <h6 className='text-danger'>Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
