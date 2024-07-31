@@ -46,7 +46,7 @@ const FormEmployees: React.FC = () => {
     const handleSubmit = async (values) => {
         try {
             // Lógica para enviar los datos del formulario
-       
+            //console.log(`${name}/edit/${id}`, 'PUT', values)
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
 
             // Redirigir al usuario después de que se haya completado la solicitud
