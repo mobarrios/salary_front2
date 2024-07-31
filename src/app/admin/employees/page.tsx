@@ -25,7 +25,7 @@ export default async function Employees({ searchParams }: Params) {
     <div className="row">
       <div className='col-12'>
         <Link href={`/admin/${name}/form`} className="btn btn-primary mt-3" > New </Link>
-        <Link href="" className="btn btn-secondary mt-3 ms-3" > Import data</Link>
+        <Link href="{'/admin/employees/upload'}" className="btn btn-secondary mt-3 ms-3" > Import data</Link>
 
       </div>
       <div className='col-12 mt-3'>
