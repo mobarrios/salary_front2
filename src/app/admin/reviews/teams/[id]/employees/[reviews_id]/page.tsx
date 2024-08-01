@@ -52,7 +52,7 @@ const FormEmployees: React.FC = () => {
                 valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
             }
             setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
-            calcularTotalRemaining()
+            //calcularTotalRemaining()
             return updatedRangeValues;
         });
 
@@ -60,8 +60,7 @@ const FormEmployees: React.FC = () => {
 
     const calcularTotalRemaining = () => {
         const total = (reviewTeam?.price || 0) - (totalTeam || 0);
-        console.log(total)
-        setTotalRemaining(total);
+        return total
     }
 
     const calculatePorcentaje = (value) => {
@@ -139,7 +138,7 @@ const FormEmployees: React.FC = () => {
             //all review teams employees
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
             console.log(reviewTeamEmployeesResponse)
-            
+
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
 
@@ -147,7 +146,7 @@ const FormEmployees: React.FC = () => {
             updateRatingsEmployees(filterRatingEmployees);
 
             // calcular total remaining
-            calcularTotalRemaining()
+
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -157,10 +156,18 @@ const FormEmployees: React.FC = () => {
     useEffect(() => {
         if (session?.user.token) {
             load();
-            //calcularTotalRemaining()
         }
 
     }, [id, session?.user.token]);
+
+    useEffect(() => {
+        if (reviewTeam && totalTeam) {
+            const total = (reviewTeam.price || 0) - (totalTeam || 0);
+            setTotalRemaining(total)
+            console.log(reviewTeam, totalTeam, total);
+            //calcularTotalRemaining()
+        }
+    }, [reviewTeam, totalTeam]);
 
     const handleCheckboxChange = async (optionId, employeesId, isChecked) => {
         setShowToast(false);
@@ -322,7 +329,7 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
-                                                      
+
                                                         <input
                                                             className="form-check-input"
                                                             checked={isCheckboxChecked(option.id, item.id)}
