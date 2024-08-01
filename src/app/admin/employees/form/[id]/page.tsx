@@ -36,7 +36,7 @@ const FormEmployees: React.FC = () => {
                     updateItemState(jsonData);
                     setLoading(false);
                 }
-            };
+            };2
 
             fetchDataAndUpdateItem();
         }

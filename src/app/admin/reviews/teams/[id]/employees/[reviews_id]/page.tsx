@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
@@ -25,6 +26,7 @@ const FormEmployees: React.FC = () => {
     const [currentBase, setCurrentBase] = useState(150000);
     const [totalValueByEmployee, setTotalValueByEmployee] = useState({});
     const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
+    const router = useRouter();
 
     //const team
     const [totalTeam, setTotalTeam] = useState();
@@ -50,16 +52,15 @@ const FormEmployees: React.FC = () => {
                 valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
             }
             setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
-
+            //calcularTotalRemaining()
             return updatedRangeValues;
         });
 
-        calcularTotalRemaining()
     };
 
     const calcularTotalRemaining = () => {
         const total = (reviewTeam?.price || 0) - (totalTeam || 0);
-        setTotalRemaining(total);
+        return total
     }
 
     const calculatePorcentaje = (value) => {
@@ -115,8 +116,6 @@ const FormEmployees: React.FC = () => {
             ...updateCommentsValues
         }));
 
-        calcularTotalRemaining()
-
     }
 
     const load = async () => {
@@ -126,23 +125,28 @@ const FormEmployees: React.FC = () => {
             setTeam(teamResponse[0]);
 
             // all team review
-            const teamReview = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=10`);
+            const teamReview = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
+
+            // filter team review
             const filteredData = teamReview.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
             setReviewTeam(filteredData[0])
 
             // ratings
-            const ratingsResponse = await fetchData(session?.user.token, 'GET', `ratings/all/?skip=0&limit=10`);
+            const ratingsResponse = await fetchData(session?.user.token, 'GET', `ratings/all/?skip=0&limit=1000`);
             setRatings(ratingsResponse.data);
 
             //all review teams employees
-            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=10`);
+            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
+            console.log(reviewTeamEmployeesResponse)
 
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
 
             setRatingsTeamEmployees(filterRatingEmployees);
-
             updateRatingsEmployees(filterRatingEmployees);
+
+            // calcular total remaining
+
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -156,8 +160,18 @@ const FormEmployees: React.FC = () => {
 
     }, [id, session?.user.token]);
 
+    useEffect(() => {
+        if (reviewTeam && totalTeam) {
+            const total = (reviewTeam.price || 0) - (totalTeam || 0);
+            setTotalRemaining(total)
+            console.log(reviewTeam, totalTeam, total);
+            //calcularTotalRemaining()
+        }
+    }, [reviewTeam, totalTeam]);
+
     const handleCheckboxChange = async (optionId, employeesId, isChecked) => {
         setShowToast(false);
+
         const values = {
             reviews_id: reviews_id,
             teams_id: id,
@@ -180,7 +194,7 @@ const FormEmployees: React.FC = () => {
 
         } else {
 
-            const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
+            let reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
                 item.reviews_id == parseInt(reviews_id) &&
                 item.employees_id == parseInt(employeesId) &&
                 item.ratings_id == parseInt(optionId) &&
@@ -195,13 +209,23 @@ const FormEmployees: React.FC = () => {
                 console.log(response);
                 setShowToast(true);
                 setToastMessage('Update successful');
-                // Actualizar el estado del checkbox después de eliminar el elemento
-                setRatingsTeamEmployees(prevRatingsTeamEmployees => prevRatingsTeamEmployees.filter(item => item.id !== reviewTeamEmployeesId.id));
+
+                // Eliminar el elemento del estado ratingsTeamEmployees
+                const filteredRatingsTeamEmployees = ratingsTeamEmployees.filter(item =>
+                    item.id !== reviewTeamEmployeesId.id
+                );
+
+                //updateRatingsEmployees()
+                setRatingsTeamEmployees(filteredRatingsTeamEmployees);
+                updateRatingsEmployees(filteredRatingsTeamEmployees);
 
             } else {
                 console.log('No se encontró el elemento para desmarcar');
             }
         }
+
+        load();
+        router.refresh();
 
     };
 
@@ -240,12 +264,7 @@ const FormEmployees: React.FC = () => {
     }
 
     const isCheckboxChecked = (optionId, itemId) => {
-
-        if (Array.isArray(ratingsTeamEmployees)) {
-            return ratingsTeamEmployees.find(item => item.ratings_id == optionId && item.employees_id == itemId);
-        } else {
-            return false; // O manejar el caso en el que ratingsTeamEmployees no sea un array
-        }
+        return ratingsTeamEmployees && ratingsTeamEmployees.length > 0 && ratingsTeamEmployees.some(item => item.ratings_id == optionId && item.employees_id == itemId);
     };
 
 
@@ -266,9 +285,9 @@ const FormEmployees: React.FC = () => {
                     </thead>
                     <tbody>
                         <tr>
-                            <td> <strong>$ {reviewTeam?.price.toFixed(2)}</strong></td>
+                            <td> <strong>$ {reviewTeam ? reviewTeam?.price.toFixed(2) : 0}</strong></td>
                             <td> $ {totalTeam ? totalTeam : 0}</td>
-                            <td> $ {totalRemaining}</td>
+                            <td> $ {totalRemaining ? totalRemaining : 0}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -299,7 +318,7 @@ const FormEmployees: React.FC = () => {
                                             <td>$ {currentBase ? currentBase : 0}</td>
                                             <td>$ {totalValueByEmployee[item.id] ? totalValueByEmployee[item.id] : 0}</td>
                                             <td>$ {totalPercentByEmployee[item.id] ? totalPercentByEmployee[item.id] : 0}</td>
-                                            <td>$ 50.200</td>
+                                            <td>$ 0</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -310,7 +329,6 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
-                                                        {option.id} - {item.id}
 
                                                         <input
                                                             className="form-check-input"
@@ -332,6 +350,7 @@ const FormEmployees: React.FC = () => {
                                                         </div>
                                                         <div className="col-8">
                                                             <Form.Range
+                                                                disabled={!isCheckboxChecked(option.id, item.id)}
                                                                 step={1}
                                                                 min={option.percent_min}
                                                                 max={option.percent_max}
@@ -344,6 +363,7 @@ const FormEmployees: React.FC = () => {
                                                 </td>
                                                 <td className="text-center">
                                                     <input
+                                                        disabled={!isCheckboxChecked(option.id, item.id)}
                                                         type="text"
                                                         placeholder="Comments"
                                                         value={commnetsValues[`${option.id}-${item.id}`]}
@@ -356,7 +376,7 @@ const FormEmployees: React.FC = () => {
                                                 </td>
                                                 <td>
                                                     <button
-                                                        //disabled={totalRemaining < 0}
+                                                        disabled={!isCheckboxChecked(option.id, item.id)}
                                                         className='btn btn-primary btn-xs'
                                                         onClick={(e) => handleSubmit(e, item.id, option.id)}
                                                     >
