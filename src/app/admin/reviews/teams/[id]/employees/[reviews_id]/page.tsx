@@ -322,8 +322,7 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
-                                                        {option.id} - {item.id}
-
+                                                      
                                                         <input
                                                             className="form-check-input"
                                                             checked={isCheckboxChecked(option.id, item.id)}
