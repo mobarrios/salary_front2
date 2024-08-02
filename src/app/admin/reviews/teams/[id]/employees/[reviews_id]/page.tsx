@@ -30,6 +30,7 @@ const FormEmployees: React.FC = () => {
 
     //const team
     const [totalTeam, setTotalTeam] = useState();
+    const [totalPercent, setTotalPercent] = useState();
     const [totalRemaining, setTotalRemaining] = useState(0);
 
     const handleRangeChange = (e, ratingsId, employeeId) => {
@@ -39,6 +40,7 @@ const FormEmployees: React.FC = () => {
                 ...prevState,
                 [`${ratingsId}-${employeeId}`]: value
             };
+            console.log(updatedRangeValues)
             // Calcular los totales por employeeId
             const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
 
@@ -50,6 +52,7 @@ const FormEmployees: React.FC = () => {
             const valuesByEmployeeWithPercentage = {};
             for (const key in employeeTotals) {
                 valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
+                
             }
             setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
             //calcularTotalRemaining()
@@ -65,6 +68,18 @@ const FormEmployees: React.FC = () => {
 
     const calculatePorcentaje = (value) => {
         return currentBase * value / 100;
+    }
+
+    const calculateTotalPrice = (updatedRangeValues) => {
+        let totalPrice = 0;
+        for (const key in updatedRangeValues) {
+            //const [currentRatingsId, currentEmployeeId] = key.split('-');
+            const currentValue = parseInt(updatedRangeValues[key], 10);
+
+            //employeeTotals[currentEmployeeId] += currentValue;
+            totalPrice += currentValue;
+        }
+        return { totalPrice };
     }
 
     const calculateTotalsByEmployee = (updatedRangeValues) => {
@@ -86,18 +101,22 @@ const FormEmployees: React.FC = () => {
 
         const updatedRangeValues = {};
         const updateCommentsValues = {};
+        const updatePriceValues = {};
 
         data.forEach(item => {
             updatedRangeValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
             updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
+            updatePriceValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
         });
 
 
         const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
+        const { totalPrice } = calculateTotalPrice(updatePriceValues);
 
         // Actualizar el total propuesto inicial
         setTotalTeam(total);
         setTotalValueByEmployee(employeeTotals);
+        setTotalPercent(totalPrice);
 
         // Actualizar porcentaje inicial
         const valuesByEmployeeWithPercentage = {};
@@ -137,8 +156,7 @@ const FormEmployees: React.FC = () => {
 
             //all review teams employees
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
-            console.log(reviewTeamEmployeesResponse)
-
+            
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
 
@@ -161,9 +179,8 @@ const FormEmployees: React.FC = () => {
 
     useEffect(() => {
         if (reviewTeam && totalTeam) {
-            const total = (reviewTeam.price || 0) - (totalTeam || 0);
+            const total = (reviewTeam.price || 0) - (totalPercent || 0);
             setTotalRemaining(total)
-            console.log(reviewTeam, totalTeam, total);
             //calcularTotalRemaining()
         }
     }, [reviewTeam, totalTeam]);
@@ -278,6 +295,7 @@ const FormEmployees: React.FC = () => {
                     <thead>
                         <tr>
                             <th>Total amount to assign</th>
+                            <th>Total percent</th>
                             <th>Total Spend</th>
                             <th>Total Remaining</th>
                         </tr>
@@ -285,7 +303,8 @@ const FormEmployees: React.FC = () => {
                     <tbody>
                         <tr>
                             <td> <strong>$ {reviewTeam ? reviewTeam?.price.toFixed(2) : 0}</strong></td>
-                            <td> $ {totalTeam ? totalTeam : 0}</td>
+                            <td>% {totalTeam ? totalTeam : 0}</td>
+                            <td> $ {totalPercent ? totalPercent : 0}</td>
                             <td> $ {totalRemaining ? totalRemaining : 0}</td>
                         </tr>
                     </tbody>
