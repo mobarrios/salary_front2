@@ -147,7 +147,6 @@ const FormEmployees: React.FC = () => {
 
             // calcular total remaining
 
-
         } catch (error) {
             console.error('Error fetching data:', error);
         }
