@@ -9,7 +9,7 @@ import GoogleProvider from "next-auth/providers/google";
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt", //(1) the default is jwt when no adapter defined, we redefined here to make it obvious what strategy that we use 
-    maxAge: 60 * 30,
+    maxAge: 60 * 60,
   },
 
   callbacks: {
@@ -47,13 +47,10 @@ export const authOptions: NextAuthOptions = {
         password: {}
       },
       async authorize(credentials) {
-
         const { username, password } = credentials as {
           username: string
           password: string
         };
-
-
         //172.31.98.115
         //192.168.0.201
         //process.env.API_URL
@@ -71,7 +68,6 @@ export const authOptions: NextAuthOptions = {
           const data = await res.json();
           console.log('User login', data)
           if (res.ok && data) {
-
             const user = {
               token: data.access_token,
               name: data.user_data.user_name,
