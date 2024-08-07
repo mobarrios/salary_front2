@@ -15,14 +15,14 @@
 'use client'
 import React, { useState } from "react";
 import Chart from "react-apexcharts";
-import { Button, Card } from "react-bootstrap";
+import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
 
 const Dashboard = () => {
   const [optionsMixedChart, setOptionsMixedChart] = useState({
     chart: {
       id: "basic-bar",
       toolbar: {
-        show: false
+        show: true
       }
     },
     plotOptions: {
@@ -243,51 +243,31 @@ const Dashboard = () => {
   return (
     <div className="container">
     <h1 className="text-primary">Dashboard</h1>
-    
-      <div className="row">
-        <Card className=" shadow-sm col mixed-chart m-3">
-          <Chart
-            options={optionsMixedChart}
-            series={seriesMixedChart}
-            type="line"
-            width="500"
-          />
-        </Card>
+      <div className="row pt-4">
+        <div className="col shadow pt-4 m-2">
+          <div className="text-center">
+            <CardTitle>Mixed Chart</CardTitle>
+          </div>
+                <Chart
+                    options={optionsMixedChart}
+                    series={seriesMixedChart}
+                    type="line"
+                    width="550"
+                  /> 
+        </div>
+         <div className="col shadow pt-4 m-2">
+          <div className="text-center">
+            <CardTitle>Mixed Chart</CardTitle>
+          </div>
+                <Chart
+                    options={optionsMixedChart}
+                    series={seriesMixedChart}
+                    type="line"
+                    width="550"
+                  /> 
+        </div>
 
-        <Card className="shadow-sm  col radial-chart m-3 justify-content-center ">
-          <Chart
-            options={optionsRadial}
-            series={seriesRadial}
-            type="radialBar"
-            width="280"
-          />
-        </Card>
       </div>
-
-      <div className="row">
-        <Card className=" shadow-sm  col percentage-chart m-3 justify-content-center ">
-          <Chart
-            options={optionsBar}
-            height={140}
-            series={seriesBar}
-            type="bar"
-            width={500}
-          />
-        </Card>
-
-        <Card className="shadow-sm col mixed-chart m-3">
-          <Chart
-            options={optionsRadial}
-            series={seriesRadial}
-            type="donut"
-            width="500"
-          />
-        </Card>
-      </div>
-
-        <p className="col">
-          <Button className="btn btn-primary" onClick={updateCharts}>Update!</Button>
-        </p>
     </div>
   );
 };

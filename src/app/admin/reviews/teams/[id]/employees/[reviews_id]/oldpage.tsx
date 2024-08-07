@@ -22,17 +22,124 @@ const FormEmployees: React.FC = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
 
+    //const employees
+    const [currentBase, setCurrentBase] = useState(150000);
+    const [totalValueByEmployee, setTotalValueByEmployee] = useState({});
+    const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
+    const router = useRouter();
+
     //const team
     const [totalTeam, setTotalTeam] = useState();
     const [totalPercent, setTotalPercent] = useState();
-    const [totalSpend, setTotalSpend] = useState();
-    const [totalRemaining, setTotalRemaining] = useState();
+    const [totalRemaining, setTotalRemaining] = useState(0);
 
-    //const employees-ratings
-    const [currentBase, setCurrentBase] = useState(150000);
-    const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
-    const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
-    const router = useRouter();
+    const handleRangeChange = (e, ratingsId, employeeId) => {
+        const value = parseInt(e.target.value, 10); // Asegúrate de que el valor sea un número
+        setRangeValues(prevState => {
+            const updatedRangeValues = {
+                ...prevState,
+                [`${ratingsId}-${employeeId}`]: value
+            };
+    
+            // Calcular los totales por employeeId
+            const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
+    
+            // Actualizar el total propuesto y el estado con los valores actualizados
+            setTotalTeam(total);
+            setTotalValueByEmployee(employeeTotals);
+    
+            // Calcular y guardar los valores por ID utilizando el porcentaje
+            const valuesByEmployeeWithPercentage = {};
+            for (const key in employeeTotals) {
+                // Asegúrate de que si el total es 0, se refleje correctamente
+                valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
+            }
+            setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
+    
+            // Actualiza totalPercent basado en los nuevos valores
+            const totalSpend = Object.values(valuesByEmployeeWithPercentage).reduce((acc, value) => acc + value, 0);
+            setTotalPercent(totalSpend);
+    
+            return updatedRangeValues;
+        });
+    };
+
+    const calcularTotalRemaining = () => {
+        const total = (reviewTeam?.price || 0) - (totalTeam || 0);
+        return total
+    }
+
+    const calculatePorcentaje = (value) => {
+        return currentBase * value / 100;
+    }
+
+    const calculateTotalPrice = (updatedRangeValues) => {
+        let totalPrice = 0;
+        for (const key in updatedRangeValues) {
+            //const [currentRatingsId, currentEmployeeId] = key.split('-');
+            const currentValue = parseInt(updatedRangeValues[key], 10);
+
+            //employeeTotals[currentEmployeeId] += currentValue;
+            totalPrice += currentValue;
+        }
+        return { totalPrice };
+    }
+
+    const calculateTotalsByEmployee = (updatedRangeValues) => {
+        const employeeTotals = {};
+        let total = 0;
+        for (const key in updatedRangeValues) {
+            const [currentRatingsId, currentEmployeeId] = key.split('-');
+            const currentValue = parseInt(updatedRangeValues[key], 10);
+            if (!employeeTotals[currentEmployeeId]) {
+                employeeTotals[currentEmployeeId] = 0;
+            }
+            employeeTotals[currentEmployeeId] += currentValue;
+            total += currentValue;
+        }
+        return { employeeTotals, total };
+    };
+
+    const updateRatingsEmployees = (data) => {
+
+        const updatedRangeValues = {};
+        const updateCommentsValues = {};
+        const updatePriceValues = {};
+
+        data.forEach(item => {
+            updatedRangeValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
+            updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
+            updatePriceValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
+        });
+
+
+        const { employeeTotals, total } = calculateTotalsByEmployee(updatedRangeValues);
+        const { totalPrice } = calculateTotalPrice(updatePriceValues);
+    
+        // Actualizar el total propuesto inicial
+        setTotalTeam(total);
+        setTotalValueByEmployee(employeeTotals);
+        setTotalPercent(totalPrice);
+
+        // Actualizar porcentaje inicial
+        const valuesByEmployeeWithPercentage = {};
+        for (const key in employeeTotals) {
+            valuesByEmployeeWithPercentage[key] = calculatePorcentaje(employeeTotals[key]);
+        }
+        setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
+
+        setRangeValues(prevState => ({
+            ...prevState,
+            ...updatedRangeValues
+        }));
+
+        setCommnetsValues(prevState => ({
+            ...prevState,
+            ...updateCommentsValues
+        }));
+
+
+    }
 
     const load = async () => {
         try {
@@ -56,58 +163,15 @@ const FormEmployees: React.FC = () => {
 
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
-            updateRatingsEmployees(filterRatingEmployees)
+
             setRatingsTeamEmployees(filterRatingEmployees);
-          
+            updateRatingsEmployees(filterRatingEmployees);
+
             // calcular total remaining
 
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    };
-
-    const calculatePorcent = (value) => {
-        return currentBase * value / 100;
-    }
-
-    const calculateTotalRemaining = () => {
-        console.log('Price:', reviewTeam?.price);
-        console.log('Total Spend:', totalSpend);
-        return (reviewTeam?.price || 0) - (totalSpend || 0);
-    }
-
-    const calculateTotalPrice = (updatedRangeValues) => {
-        let totalPrice = 0;
-        for (const key in updatedRangeValues) {
-            const percentValue = updatedRangeValues[key];
-            totalPrice += percentValue;
-        }
-        return { totalPrice };
-    }
-
-    const calculateTotalsByEmployee = (updatedRangeValues) => {
-        const totalByEmployees = {};
-
-        for (const key in updatedRangeValues) {
-            const [currentRatingsId, currentEmployeeId] = key.split('-');
-            const currentValue = parseInt(updatedRangeValues[key], 10);
-            if (!totalByEmployees[currentEmployeeId]) {
-                totalByEmployees[currentEmployeeId] = 0;
-            }
-            totalByEmployees[currentEmployeeId] += currentValue;
-        }
-        return { totalByEmployees };
-    };
-
-    const calculateTotalsPercentEmployee = (updatedPercentValues) => {
-        let totalPercentSum = 0;
-
-        for (const key in updatedPercentValues) {
-            const percentValue = updatedPercentValues[key];
-            totalPercentSum += percentValue; // Suma el valor al total
-        }
-        return { totalPercentSum };
-
     };
 
     useEffect(() => {
@@ -117,42 +181,78 @@ const FormEmployees: React.FC = () => {
 
     }, [id, session?.user.token]);
 
+    
     useEffect(() => {
-        const totalRemaining = calculateTotalRemaining();
-        setTotalRemaining(totalRemaining);
-    }, [reviewTeam?.price, totalSpend]);
+        if (reviewTeam && totalTeam) {
+            const total = (reviewTeam.price || 0) - (totalPercent || 0);
+            setTotalRemaining(total)
 
-    const updateRatingsEmployees = (data) => {
+            const totalSum = Object.values(totalPercentByEmployee).reduce((acc, value) => acc + value, 0);
+            setTotalPercent(totalSum);
+            console.log(totalPercent)
+          
+        }
+    }, [reviewTeam, totalTeam]);
 
-        const updatedPercentValues = {};
-        const updateCommentsValues = {};
-        const updatePriceValues = {};
+    const handleCheckboxChange = async (optionId, employeesId, isChecked) => {
+        setShowToast(false);
 
-        data.forEach(item => {
-            updatedPercentValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
-            updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
-            updatePriceValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
-        });
-        //console.log(calculateTotalsPercentEmployee(updatedPercentValues))
-        const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
-        const { totalPrice } = calculateTotalPrice(updatePriceValues);
-        const { totalPercentSum } = calculateTotalsPercentEmployee(updatedPercentValues)
+        const values = {
+            reviews_id: reviews_id,
+            teams_id: id,
+            employees_id: employeesId,
+            ratings_id: optionId,
+            price: null,
+            percent: null,
+            comments: null,
+            status: 1
+        };
 
-        //total team
-        setTotalPercent(totalPercentSum);
-        setTotalSpend(totalPrice)
-        setTotalRemaining(totalRemaining)
+        if (isChecked) {
 
-        const totalRemaining = calculateTotalRemaining();
-        setTotalRemaining(totalRemaining);
+            // El checkbox está marcado
+            const response = await apiRequest(`reviews_teams_employees/`, 'POST', values);
+            console.log('El checkbox está marcado', optionId, employeesId, isChecked);
+            console.log(response)
+            setShowToast(true);
+            setToastMessage('Update successful');
 
-        // total employees rating
-        //setTotalPriceByEmployee(totalByEmployees);
-        //setTotalPercentByEmployee(400)
-        //console.log(1, totalSum)
-    }
+        } else {
 
+            let reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
+                item.reviews_id == parseInt(reviews_id) &&
+                item.employees_id == parseInt(employeesId) &&
+                item.ratings_id == parseInt(optionId) &&
+                item.teams_id == parseInt(id)
+            );
 
+            if (reviewTeamEmployeesId) {
+                console.log(reviewTeamEmployeesId.id);
+                // El checkbox está desmarcado
+                const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
+                console.log('El checkbox está desmarcado', optionId, employeesId, isChecked);
+                console.log(response);
+                setShowToast(true);
+                setToastMessage('Update successful');
+
+                // Eliminar el elemento del estado ratingsTeamEmployees
+                const filteredRatingsTeamEmployees = ratingsTeamEmployees.filter(item =>
+                    item.id !== reviewTeamEmployeesId.id
+                );
+
+                //updateRatingsEmployees()
+                setRatingsTeamEmployees(filteredRatingsTeamEmployees);
+                updateRatingsEmployees(filteredRatingsTeamEmployees);
+
+            } else {
+                console.log('No se encontró el elemento para desmarcar');
+            }
+        }
+
+        load();
+        router.refresh();
+
+    };
 
     const handleSubmit = async (e, employeesId, ratingsId) => {
         setShowToast(false);
@@ -192,6 +292,7 @@ const FormEmployees: React.FC = () => {
         return ratingsTeamEmployees && ratingsTeamEmployees.length > 0 && ratingsTeamEmployees.some(item => item.ratings_id == optionId && item.employees_id == itemId);
     };
 
+
     return (
         <div className="row">
             {showToast ?
@@ -211,8 +312,8 @@ const FormEmployees: React.FC = () => {
                     <tbody>
                         <tr>
                             <td> <strong>$ {reviewTeam ? reviewTeam?.price.toFixed(2) : 0}</strong></td>
-                            <td>% {totalPercent ? totalPercent : 0}</td>
-                            <td> $ {totalSpend ? totalSpend : 0}</td>
+                            <td>% {totalTeam ? totalTeam : 0}</td>
+                            <td> $ {totalPercent ? totalPercent : 0}</td>
                             <td> $ {totalRemaining ? totalRemaining : 0}</td>
                         </tr>
                     </tbody>
@@ -242,7 +343,7 @@ const FormEmployees: React.FC = () => {
                                     <tbody>
                                         <tr>
                                             <td>$ {currentBase ? currentBase : 0}</td>
-                                            <td>$ {totalPriceByEmployee[item.id] ? totalPriceByEmployee[item.id] : 0}</td>
+                                            <td>$ {totalValueByEmployee[item.id] ? totalValueByEmployee[item.id] : 0}</td>
                                             <td>$ {totalPercentByEmployee[item.id] ? totalPercentByEmployee[item.id] : 0}</td>
                                             <td>$ 0</td>
                                         </tr>

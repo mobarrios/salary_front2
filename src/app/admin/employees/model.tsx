@@ -28,5 +28,9 @@ export const buttonExtra = [
     {
         url: 'admin/employees/teams',
         name: 'teams'
+    },
+    {
+        url :'admin/employees/external_data',
+        name : 'Extra Data'
     }
 ]
