@@ -20,7 +20,8 @@ const FormEmployees: React.FC = () => {
   const load = async () => {
     try {
       const jsonData = await fetchData(session?.user.token, 'GET', `employees/${id}`);  
-      setOptions(jsonData[0].external_data)
+
+      setOptions(jsonData.external_data)
 
     } catch (error) {
       console.error('Error fetching data:', error);
