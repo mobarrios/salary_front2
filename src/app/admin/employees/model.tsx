@@ -21,7 +21,7 @@ export const model: Model = {
 export const headers = [
     { name: 'Name', span: 3, key: 'name' },
     { name: 'Last Name', span: 2, key: 'last_name' },
-    { name: 'Associate ID', span: 1, key: 'associate_id' }
+    { name: 'Associate ID', span: 1, key: 'associate_id' },
 ];
 
 
