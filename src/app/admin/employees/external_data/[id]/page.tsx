@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import {fetchData} from '@/server/services/core/fetchData'
-import { Table } from 'react-bootstrap';
+import { Button, Form, Table } from 'react-bootstrap';
 
 const FormEmployees: React.FC = () => {
 
   const { data: session, status } = useSession()
   const [options, setOptions] = useState();
+  const [actual, setActual] = useState();
+
   const [userTeams, setUserTeams] = useState();
   const { id } = useParams();
   const router = useRouter()
@@ -20,9 +22,8 @@ const FormEmployees: React.FC = () => {
   const load = async () => {
     try {
       const jsonData = await fetchData(session?.user.token, 'GET', `employees/${id}`);  
-
       setOptions(jsonData.external_data)
-
+      setActual(jsonData.actual_external_data)
     } catch (error) {
       console.error('Error fetching data:', error);
       return null;
@@ -38,7 +39,7 @@ const FormEmployees: React.FC = () => {
 
   }, [id, session?.user.token]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || !options  || !actual  ) {
     return <p>Loading...</p>;
   }
 
@@ -48,6 +49,47 @@ const FormEmployees: React.FC = () => {
       <div className='col-12'>
         <h1 className='text-primary'>Employees Teams</h1>
       </div>
+      <div className='col-12'>
+      <Form>
+        <h5>Last updated data : </h5> <small>{actual.created_at}</small>
+        <div className='row mt-3'>
+           <div className="col-3">
+              <label className="form-label">Anual Salary</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.annual_salary}/>
+            </div>
+          </div>
+
+          <div className='row mt-3'>
+           <div className="col-3">
+              <label className="form-label">Associate Id</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.associate_id}/>
+            </div>
+             <div className="col-3">
+              <label className="form-label">Hire date</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.hire_data}/>
+            </div>
+          </div>
+          <div className='row mt-3'>
+            <div className="col-3">
+              <label className="form-label">Job title description</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.job_title_description}/>
+            </div>
+
+            <div className="col-3">
+              <label className="form-label">Job class description</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.job_title_description}/>
+            </div>
+
+            <div className="col-3">
+              <label className="form-label">Job Function description</label>
+              <input type="text" className="form-control"name="associate_id" value={actual.job_function_description}/>
+            </div>
+          </div>
+          <div >
+          <Button className="mt-3" type='submit'>Update</Button>
+          </div>
+      </Form>
+      </div>
       <div className='col-12 table-responsive'>
         <div>
         <Table className='table table-striped'>
@@ -56,8 +98,8 @@ const FormEmployees: React.FC = () => {
           <th className='text-uppercase'>Date</th>
           <th className='text-uppercase' >Asscociate ID</th>
           <th className='text-uppercase' >Name</th>
-          <th className='text-uppercase'>hire_data</th>
-          <th className='text-uppercase'>rehire_data</th>
+          <th className='text-uppercase'>hire_date</th>
+          <th className='text-uppercase'>rehire_date</th>
           <th className='text-uppercase'>status</th>
           <th className='text-uppercase'>type</th>
           <th className='text-uppercase'>job_title_description</th>

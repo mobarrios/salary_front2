@@ -22,7 +22,7 @@ const Dashboard = () => {
     chart: {
       id: "basic-bar",
       toolbar: {
-        show: true
+        show: false
       }
     },
     plotOptions: {
@@ -243,31 +243,51 @@ const Dashboard = () => {
   return (
     <div className="container">
     <h1 className="text-primary">Dashboard</h1>
-      <div className="row pt-4">
-        <div className="col shadow pt-4 m-2">
-          <div className="text-center">
-            <CardTitle>Mixed Chart</CardTitle>
-          </div>
-                <Chart
-                    options={optionsMixedChart}
-                    series={seriesMixedChart}
-                    type="line"
-                    width="550"
-                  /> 
+    
+        <div className="row pt-4">
+         <Card className="col shadow pt-4 m-2">
+              <CardTitle className="text-center">Employess</CardTitle>
+              <CardBody className="text-center">
+                  <h1><strong>20</strong></h1>
+              </CardBody>
+          </Card>
+          <Card className="col shadow pt-4 m-2">
+              <CardTitle className="text-center">Teams</CardTitle>
+              <CardBody className="text-center">
+                  <h1><strong>5</strong></h1>
+              </CardBody>
+          </Card>
+          <Card className="col shadow pt-4 m-2">
+              <CardTitle className="text-center">Reviews</CardTitle>
+              <CardBody className="text-center">
+                  <h1><strong>15</strong></h1>
+              </CardBody>
+          </Card>
         </div>
-         <div className="col shadow pt-4 m-2">
-          <div className="text-center">
-            <CardTitle>Mixed Chart</CardTitle>
+        <div className="row pt-4">
+          <div className="col shadow pt-4 m-2">
+            <div className="text-center">
+              {/* <CardTitle>Mixed Chart</CardTitle> */}
+            </div>
+                  <Chart
+                      options={optionsMixedChart}
+                      series={seriesMixedChart}
+                      type="bar"
+                      width="550"
+                    /> 
           </div>
-                <Chart
-                    options={optionsMixedChart}
-                    series={seriesMixedChart}
-                    type="line"
-                    width="550"
-                  /> 
+          <div className="col shadow pt-4 m-2">
+            <div className="text-center">
+              {/* <CardTitle>Mixed Chart</CardTitle> */}
+            </div>
+                  <Chart
+                      options={optionsMixedChart}
+                      series={seriesMixedChart}
+                      type="line"
+                      width="550"
+                    /> 
+          </div>
         </div>
-
-      </div>
     </div>
   );
 };
