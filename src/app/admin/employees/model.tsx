@@ -14,6 +14,7 @@ export const model: Model = {
     last_name: "",
     associate_id: 0,
 
+
 };
 
 // los datos que se van a visualizar en la tabla
