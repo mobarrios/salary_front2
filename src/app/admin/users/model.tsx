@@ -20,7 +20,7 @@ export const model: Model = {
 export const headers = [
     { name: 'Username', key: 'user_name' },
     { name: 'Email', key: 'email' },
-    { name: 'Active', key: 'active', type:'select',  options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] }, // Opciones con valores
+    { name: 'Status', key: 'active', type:'select',  options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] }, // Opciones con valores
     { name: 'Password',key: 'hashed_password' }
 ];
 

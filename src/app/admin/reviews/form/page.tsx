@@ -26,7 +26,7 @@ const FormEmployees: React.FC = () => {
     }
 
     const fields = useFields(headers);
-
+    console.log(fields)
     return (
         <div className="row">
             <div className='col-12'>

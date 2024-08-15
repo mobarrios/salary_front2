@@ -20,7 +20,7 @@ export const model: Model = {
 // los datos que se van a visualizar en la tabla
 export const headers = [
     { name: 'Name', span: 3, key: 'name' },
-    { name: 'Last Name', span: 2, key: 'last_name' },
+    { name: 'Last name', span: 2, key: 'last_name' },
     { name: 'Associate ID', span: 1, key: 'associate_id' },
 ];
 

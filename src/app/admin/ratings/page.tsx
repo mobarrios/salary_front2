@@ -22,7 +22,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div className='container'>
-    <h2 className='text-primary '>Ratings</h2>
+    <h2 className='text-primary'>Ratings</h2>
     <div className="row">
       <div className='col-12'>
         <Link

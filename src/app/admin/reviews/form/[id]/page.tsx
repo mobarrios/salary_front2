@@ -19,32 +19,33 @@ const FormEmployees: React.FC = () => {
     const router = useRouter()
     const { id } = useParams();
 
-    const updateItemState = (jsonData: Model) => {
-        setItem(prevItem => ({
-            ...prevItem,
-            name: jsonData?.name,
-            price: jsonData?.price,
-            form: jsonData?.form,
-            to: jsonData?.to,
-            status: jsonData?.status,
-        }));
-    };
+    const fields = useFields(headers);
+    const keys = fields.map(header => header.key);
 
+    const updateItemState = (jsonData: Partial<Model>, properties: Array<keyof Model>) => {
+        setItem(prevItem => {
+            const updatedItem = { ...prevItem };
+            properties.forEach(property => {
+                if (jsonData[property] !== undefined) {
+                    updatedItem[property] = jsonData[property];
+                }
+            });
+            return updatedItem;
+        });
+    };
     useEffect(() => {
         if (session?.user.token) {
             const fetchDataAndUpdateItem = async () => {
                 const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
 
                 if (jsonData) {
-                    updateItemState(jsonData);
+                    updateItemState(jsonData, keys);
                     setLoading(false);
                 }
             };
             fetchDataAndUpdateItem();
         }
     }, [id, session?.user.token]);
-
-    const fields = useFields(headers);
 
     const handleSubmit = async (values) => {
         try {
