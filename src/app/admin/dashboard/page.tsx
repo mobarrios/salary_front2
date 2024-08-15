@@ -272,7 +272,7 @@ const Dashboard = () => {
                   <Chart
                       options={optionsMixedChart}
                       series={seriesMixedChart}
-                      type="bar"
+                      type="line"
                       width="550"
                     /> 
           </div>

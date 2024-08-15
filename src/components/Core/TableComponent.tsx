@@ -16,7 +16,10 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
                 </tr>
             </thead>
             <tbody>
-                {data.map((item, rowIndex) => (
+                 
+                { 
+                data ? (
+                data.map((item, rowIndex) => (
                     <tr className="align-middle" key={rowIndex}>
                         <td>{item.id}</td>
                         {headers.map((header, colIndex) => (
@@ -42,7 +45,13 @@ const TableComponent = ({ data, model, headers, buttonExtra = [] }) => {
                         </td>
 
                     </tr>
-                ))}
+                ))
+                ):(
+                    <tr>
+                        <td colSpan={headers.length + 2}>No data available</td>
+                     </tr>
+                )
+                }
             </tbody>
         </table>
         
