@@ -38,6 +38,7 @@ const FormEmployees: React.FC = () => {
                     onSubmit={handleSubmit}
                     isEditing={false} // Cambiar a true si se está editando
                     fields={fields}
+                    validationExtra
                 />
             </div>
         </div>

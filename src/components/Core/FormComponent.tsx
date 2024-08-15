@@ -19,7 +19,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
 
     const handleFormSubmit = async (values, onSubmit) => {
         try {
-            const confirmed = await confirmSave();
+            //const confirmed = await confirmSave();
 
             // if (confirmed) {
             onSubmit(values);
@@ -38,10 +38,14 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
     const validationRules = fields.reduce((rules, field) => {
         if (field.key === 'email') {
             rules[field.key] = Yup.string()
-                .email('Formato de correo electrónico inválido')
-                .required('Requerido');
+                .email('invalid email format')
+                .required('required');
+        } else if (field.key === 'percent_min' || field.key === 'percent_max') {
+            rules[field.key] = Yup.number()
+            .required('required')
+            .min(Yup.ref('percent_min'), 'percent_max debe ser mayor o igual que percent_min');
         } else {
-            rules[field.key] = Yup.string().required('Requerido');
+            rules[field.key] = Yup.string().required('required');
         }
         return rules;
     }, {});
@@ -100,7 +104,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                                         />
                                     )}
                                     {formik.touched[field.key] && formik.errors[field.key] ? (
-                                        <div>{formik.errors[field.key]}</div>
+                                        <div className='text-danger'>* {formik.errors[field.key]}</div>
                                     ) : null}
                                 </div>
                             ))
