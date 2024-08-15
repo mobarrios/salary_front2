@@ -1,6 +1,6 @@
 export const name = 'ratings';
 
-type Model = {
+export type Model = {
     name: string;
     percent_min: number;
     percent_max: number;

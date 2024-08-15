@@ -18,10 +18,10 @@ export const model: Model = {
 };
 
 export const headers = [
-    { name: 'Username', span: 3, key: 'user_name' },
-    { name: 'Email', span: 2, key: 'email' },
-    { name: 'Active', span: 1, key: 'active' },
-    { name: 'Password', span: 1, key: 'hashed_password' }
+    { name: 'Username', key: 'user_name' },
+    { name: 'Email', key: 'email' },
+    { name: 'Status', key: 'active', type:'select',  options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] }, // Opciones con valores
+    { name: 'Password',key: 'hashed_password' }
 ];
 
 export const fields = [

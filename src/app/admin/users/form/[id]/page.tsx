@@ -20,14 +20,19 @@ const FormUsers: React.FC = () => {
     const router = useRouter()
     const { id } = useParams();
 
-    const updateItemState = (jsonData: Model) => {
-        setItem(prevItem => ({
-            ...prevItem,
-            user_name: jsonData?.user_name,
-            email: jsonData?.email,
-            active: 1,
-            //active: jsonData?.active
-        }));
+    const fields = useFields(headers);
+    const keys = fields.map(header => header.key);
+
+    const updateItemState = (jsonData: Partial<Model>, properties: Array<keyof Model>) => {
+        setItem(prevItem => {
+            const updatedItem = { ...prevItem };
+            properties.forEach(property => {
+                if (jsonData[property] !== undefined) {
+                    updatedItem[property] = jsonData[property];
+                }
+            });
+            return updatedItem;
+        });
     };
 
     useEffect(() => {
@@ -35,14 +40,13 @@ const FormUsers: React.FC = () => {
             const fetchDataAndUpdateItem = async () => {
                 const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
                 if (jsonData) {
-                    updateItemState(jsonData.data[0]);
+                    updateItemState(jsonData.data[0], keys);
                     setLoading(false);
                 }
             };
             fetchDataAndUpdateItem();
         }
     }, [id, session?.user.token]);
-
 
     const handleSubmit = async (values) => {
         try {
@@ -57,9 +61,6 @@ const FormUsers: React.FC = () => {
             console.error('Error:', error);
         }
     };
-
-
-    const fields = useFields(headers);
 
     return (
         <div className="row">
