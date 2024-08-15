@@ -29,7 +29,7 @@ const FormEmployees: React.FC = () => {
     const [totalTeam, setTotalTeam] = useState();
     const [totalPercent, setTotalPercent] = useState();
     const [totalSpend, setTotalSpend] = useState();
-    const [totalRemaining, setTotalRemaining] = useState(0);
+    const [totalRemaining, setTotalRemaining] = useState();
 
     //const employees-ratings
     const [currentBase, setCurrentBase] = useState(150000);
@@ -46,12 +46,22 @@ const FormEmployees: React.FC = () => {
     }, [id, session?.user.token]);
 
     useEffect(() => {
-        if (reviewTeam?.price && totalSpend !== undefined) {
+        if (reviewTeam?.price !== undefined && totalSpend !== undefined) {
             const totalRemaining = calculateTotalRemaining();
+            console.log('pasa', totalRemaining);
             setTotalRemaining(totalRemaining);
         }
+    }, [reviewTeam, totalSpend]);
 
-    }, [reviewTeam?.price, totalSpend]);
+    useEffect(() => {
+        if (teamEmployees && totalPriceByEmployee) {
+            const valuesByEmployeeWithPercentage = {};
+            for (const key in totalPriceByEmployee) {
+                valuesByEmployeeWithPercentage[key] = calculatePorcent(teamEmployees, totalPriceByEmployee[key], key);
+            }
+            setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
+        }
+    }, [teamEmployees, totalPriceByEmployee]);
 
     const updateEmployeesTeams = async (team) => {
         //setTeamEmployees
@@ -93,8 +103,9 @@ const FormEmployees: React.FC = () => {
 
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
-            updateRatingsEmployees(filterRatingEmployees)
+
             setRatingsTeamEmployees(filterRatingEmployees);
+            updateRatingsEmployees(filterRatingEmployees)
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -105,36 +116,32 @@ const FormEmployees: React.FC = () => {
         if (!Array.isArray(teamEmployees)) {
             return;
         }
-
         let employeesSalary = teamEmployees.find(item => item.id == parseInt(key));
         if (!employeesSalary) {
             return;
         }
-
         if (!employeesSalary.actual_external_data || !employeesSalary.actual_external_data.annual_salary) {
             return;
         }
-
         let salary = employeesSalary.actual_external_data.annual_salary;
         const montoSinFormato = salary.replace(/\$|,/g, '');
         const montoNumero = parseFloat(montoSinFormato);
-
         if (isNaN(montoNumero)) {
             return;
         }
-        console.log(montoSinFormato, montoNumero, Math.round(montoNumero))
-
-        return (montoNumero * value) / 100;
+        const result = (montoNumero * value) / 100;
+        console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
+        return result;
     }
-
 
     const calculateTotalRemaining = () => {
         const price = reviewTeam?.price;
         const spend = totalSpend;
-
-        if (price !== undefined || spend !== undefined) {
+        console.log('Price:', price, 'Spend:', spend); // Verificar valores
+        if (price !== undefined && spend !== undefined) {
             return price - spend;
         }
+        return 0; // Devuelve 0 si no hay datos
     };
 
     const calculateTotalPrice = (updatedRangeValues) => {
@@ -238,12 +245,6 @@ const FormEmployees: React.FC = () => {
         // total employees rating
         setTotalPriceByEmployee(totalByEmployees);
 
-        const valuesByEmployeeWithPercentage = {};
-        for (const key in totalByEmployees) {
-            valuesByEmployeeWithPercentage[key] = calculatePorcent(teamEmployees, totalByEmployees[key], key);
-        }
-
-        setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
         setRangeValues(prevState => ({
             ...prevState,
             ...updatedPercentValues
@@ -254,10 +255,6 @@ const FormEmployees: React.FC = () => {
             ...prevState,
             ...updateCommentsValues
         }));
-
-        const totalRemaining = calculateTotalRemaining();
-        setTotalRemaining(totalRemaining);
-
     }
 
     const handleCheckboxChange = async (ratingsId, employeesId, isChecked) => {

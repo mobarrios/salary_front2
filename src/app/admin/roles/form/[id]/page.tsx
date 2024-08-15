@@ -7,6 +7,7 @@ import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import {model, headers, name, Model} from '../../model';
+import { useFields } from '@/hooks/useFields';
 import {fetchData} from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
@@ -38,7 +39,7 @@ const FormEmployees: React.FC = () => {
         fetchDataAndUpdateItem();
     }, [id]);
 
-    const fields = headers.map(header => header.key);
+    const fields = useFields(headers);
 
     const handleSubmit = async (values) => {
         try {

@@ -6,8 +6,10 @@ import React, { useState, useEffect } from "react";
 import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { model, fields, name, Model } from '../../model';
+import { model, headers, name, Model } from '../../model';
+import { useFields } from '@/hooks/useFields';
 import { fetchData } from '@/server/services/core/fetchData'
+import { json } from 'stream/consumers';
 
 const FormUsers: React.FC = () => {
 
@@ -23,7 +25,8 @@ const FormUsers: React.FC = () => {
             ...prevItem,
             user_name: jsonData?.user_name,
             email: jsonData?.email,
-            active: jsonData?.active
+            active: 1,
+            //active: jsonData?.active
         }));
     };
 
@@ -31,7 +34,6 @@ const FormUsers: React.FC = () => {
         if (session?.user.token) {
             const fetchDataAndUpdateItem = async () => {
                 const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
-
                 if (jsonData) {
                     updateItemState(jsonData.data[0]);
                     setLoading(false);
@@ -55,6 +57,9 @@ const FormUsers: React.FC = () => {
             console.error('Error:', error);
         }
     };
+
+
+    const fields = useFields(headers);
 
     return (
         <div className="row">

@@ -20,11 +20,11 @@ export const model: Model = {
 };
 
 export const headers = [
-    { name: 'From', span: 3, key: 'form' },
-    { name: 'To', span: 3, key: 'to' },
-    { name: 'Status', span: 3, key: 'status' },
-    { name: 'Price', span: 3, key: 'price' },
-    { name: 'Name', span: 3, key: 'name' },
+    { name: 'From', key: 'form', type: 'date' },
+    { name: 'To', key: 'to', type: 'date' },
+    { name: 'Status', key: 'status', type:'select',  options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] }, // Opciones con valores
+    { name: 'Price', key: 'price' },
+    { name: 'Name', key: 'name' },
 ];
 
 export const buttonExtra = [

@@ -3,7 +3,8 @@
 import React, { useState } from "react"
 import { useRouter, } from 'next/navigation'
 import { apiRequest } from "@/server/services/core/apiRequest";
-import { model, name, fields } from '../model'
+import { model, name, headers } from '../model'
+import { useFields } from '@/hooks/useFields';
 import FormComponent from "@/components/Core/FormComponent";
 
 const FormUsers: React.FC = () => {
@@ -24,6 +25,7 @@ const FormUsers: React.FC = () => {
 
     }
 
+    const fields = useFields(headers);
 
     return (
         <div className="row">

@@ -18,12 +18,11 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
     };
 
     const handleFormSubmit = async (values, onSubmit) => {
-        console.log(values)
         try {
             const confirmed = await confirmSave();
 
             // if (confirmed) {
-                onSubmit(values);
+            onSubmit(values);
             //     Swal.fire({
             //         title: "Save!",
             //         icon: "success"
@@ -37,7 +36,13 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
 
     // Crear un objeto con las reglas de validación para cada campo
     const validationRules = fields.reduce((rules, field) => {
-        rules[field] = Yup.string().required('Required');
+        if (field.key === 'email') {
+            rules[field.key] = Yup.string()
+                .email('Formato de correo electrónico inválido')
+                .required('Requerido');
+        } else {
+            rules[field.key] = Yup.string().required('Requerido');
+        }
         return rules;
     }, {});
 
@@ -55,48 +60,60 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
 
 
     return (
-            <div className="row ">
-                <div className="col-12">
-                    <div className="bg-white ">
-                        <form  onSubmit={formik.handleSubmit}>
-                        
-                            {
-                                fields.map((field, key: number) => (
-
-                                    <div key={key}>
-                                        <label htmlFor="name" className="form-label mt-2">{field}</label>
-
-                                        {/* <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                                            {field}
-                                        </label> */}
-                                        <input
-                                            type="text"
-                                            placeholder={field}
+        <div className="row ">
+            <div className="col-12">
+                <div className="bg-white ">
+                    <form onSubmit={formik.handleSubmit}>
+                        {
+                            fields.map((field, key) => (
+                                <div key={key}>
+                                    <label htmlFor={field.key} className="form-label mt-2">{field.key}</label>
+                                    {field.type === 'select' ? (
+                                        <select
                                             className="form-control mt-2"
-                                            id={field}
-                                            name={field}
+                                            id={field.key}
+                                            name={field.key}
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
-                                            value={formik.values[field]}
+                                            value={formik.values[field.key]}
+                                        >
+                                            <option value="" label="Seleccione una opción" />
 
+                                            {field.options && field.options.length > 0 ? (
+                                                field.options.map((option, index) => (
+                                                    <option key={index} value={option.value}>{option.label}</option> // Usa option.value y option.label
+                                                ))
+                                            ) : (
+                                                <option value="" disabled>No hay opciones disponibles</option>
+                                            )}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type={field.type === 'date' ? 'date' : 'text'}
+                                            placeholder={field.key}
+                                            className="form-control mt-2"
+                                            id={field.key}
+                                            name={field.key}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            value={formik.values[field.key]}
                                         />
-                                        {formik.touched[field] && formik.errors[field] ? ( // Cambio de formik.errors.name a formik.errors[field]
-                                            <div>{formik.errors[field]}</div> // Concatenación del mensaje de error con el nombre del campo
-                                        ) : null}
-                                    </div>
-                                ))
-                            }
-
-                            <button
-                                type="submit"
-                                className="btn btn-primary mt-3">
-                                {isEditing ? 'Edit' : 'Save'}
-                            </button>
-                        </form>
-                    </div>
+                                    )}
+                                    {formik.touched[field.key] && formik.errors[field.key] ? (
+                                        <div>{formik.errors[field.key]}</div>
+                                    ) : null}
+                                </div>
+                            ))
+                        }
+                        <button
+                            type="submit"
+                            className="btn btn-primary mt-3">
+                            {isEditing ? 'Edit' : 'Save'}
+                        </button>
+                    </form>
                 </div>
             </div>
-
+        </div>
     );
 };
 
