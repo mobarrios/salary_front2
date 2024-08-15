@@ -7,40 +7,18 @@ import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { model, headers, name, Model } from '../../model';
+import {fetchData} from '@/server/services/core/fetchData'
+import { useFields } from '@/hooks/useFields';
 
 const FormEmployees: React.FC = () => {
 
-    const { data: session, status } = useSession()
+    const { data: session } = useSession()
 
     const [loading, setLoading] = useState(true)
-    const [formSuccess, setFormSuccess] = useState(false)
-    const [formSuccessMessage, setFormSuccessMessage] = useState("")
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-
-    const fetchData = async () => {
-        try {
-
-
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-
-
-            const jsonData = await response.json();
-            console.log(jsonData)
-            return jsonData;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return null;
-        }
-    };
-
+    
     const updateItemState = (jsonData: Model) => {
         setItem(prevItem => ({
             ...prevItem,
@@ -51,22 +29,24 @@ const FormEmployees: React.FC = () => {
     };
 
     useEffect(() => {
-        const fetchDataAndUpdateItem = async () => {
-            const jsonData = await fetchData();
-            if (jsonData) {
-                updateItemState(jsonData);
-                setLoading(false);
-            }
-        };
-        fetchDataAndUpdateItem();
-    }, [id]);
+        if (session?.user.token) {
+            const fetchDataAndUpdateItem = async () => {
+                const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
+
+                if (jsonData) {
+                    updateItemState(jsonData);
+                    setLoading(false);
+                }
+            };2
+
+            fetchDataAndUpdateItem();
+        }
+    }, [id, session?.user.token]);
 
 
     const handleSubmit = async (values) => {
         try {
             // Lógica para enviar los datos del formulario
-            setFormSuccess(true)
-
             await apiRequest(`${name}/edit/${id}`, 'PUT', values)
 
             // Redirigir al usuario después de que se haya completado la solicitud
@@ -78,7 +58,7 @@ const FormEmployees: React.FC = () => {
         }
     };
 
-    const fields = headers.map(header => header.key);
+    const fields = useFields(headers);
 
     return (
         <div className="row">
@@ -86,10 +66,7 @@ const FormEmployees: React.FC = () => {
                 <h1 className='text-primary'>Edit Data</h1>
             </div>
             <div className='col-12'>
-                {!item ?
-                    <div>{formSuccessMessage}</div>
-                    :
-
+                {!item ? null :
                     (!loading ?
                         <FormComponent
                             initialValues={item}

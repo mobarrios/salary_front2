@@ -5,7 +5,6 @@ import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name, buttonExtra } from './model';
 import Link from 'next/link';
-import Head from 'next/head';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -20,29 +19,23 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const totalPages = Math.ceil(data.count / limit);
 
-  const extra_button=[{
-    'name': 'Teams',
-    'url':'/admin/employees/teams'
-  }]
-
+  console.log(data)
   return (
+  <div className='container'>
+    <h2 className='text-primary '>Employees</h2>
     <div className="row">
       <div className='col-12'>
-           <h1 className='text-primary'>Employees</h1>
-      </div>
-      <div className='col-12'>
-        <Link
-          href={`/admin/${name}/form`}
-          className="btn btn-primary mt-3" >
-          New
-        </Link>
+        <Link href={`/admin/${name}/form`} className="btn btn-primary mt-3" > New </Link>
+        <Link href={'/admin/employees/upload'} className="btn btn-secondary mt-3 ms-3" > Import data</Link>
+
       </div>
       <div className='col-12 mt-3'>
-        <TableComponent data={data.data} model={name} headers={headers} buttons={extra_button}/>
+        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra} />
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
       </div>
     </div>
+  </div>
   )
 };

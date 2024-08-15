@@ -7,6 +7,8 @@ import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import {model, headers, name, Model} from '../../model';
+import { useFields } from '@/hooks/useFields';
+import {fetchData} from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
@@ -18,38 +20,17 @@ const FormEmployees: React.FC = () => {
     const [item, setItem] = useState(model)
     const router = useRouter()
     const { id } = useParams();
-    
-    const fetchData = async () => {
-        try {
- 
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${name}/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-
-            const jsonData = await response.json();
-            return jsonData;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return null;
-        }
-    };
-
+   
     const updateItemState = (jsonData: Model) => {
         setItem(prevItem => ({
             ...prevItem,
-            name: jsonData?.name,
-            last_name: jsonData?.last_name,
-            associate_id: jsonData?.associate_id
+            name: jsonData?.name
         }));
     };
 
     useEffect(() => {
         const fetchDataAndUpdateItem = async () => {
-            const jsonData = await fetchData();
+            const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
             if (jsonData) {
                 updateItemState(jsonData);
                 setLoading(false);
@@ -58,7 +39,7 @@ const FormEmployees: React.FC = () => {
         fetchDataAndUpdateItem();
     }, [id]);
 
-    const fields = headers.map(header => header.key);
+    const fields = useFields(headers);
 
     const handleSubmit = async (values) => {
         try {

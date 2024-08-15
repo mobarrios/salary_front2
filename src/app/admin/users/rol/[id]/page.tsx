@@ -5,48 +5,23 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import Swal from 'sweetalert2'
+import { fetchData } from '@/server/services/core/fetchData'
 
 const FormEmployees: React.FC = () => {
 
-    const { data: session, status } = useSession()
+    const { data: session, status } = useSession();
     const [options, setOptions] = useState();
     const [user, setUser] = useState();
     const { id } = useParams();
-    const router = useRouter()
+    const router = useRouter();
 
-
-    const userData = async () => {
+    const load = async () => {
         try {
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/users/${id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const jsonData = await response.json();
-            setUser(jsonData.data[0])
+            const rolesData = await fetchData(session?.user.token, 'GET', `roles/all/?skip=0&limit=10`);
+            setOptions(rolesData.data)
 
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return null;
-        }
-    };
-
-    const fetchData = async () => {
-        try {
-            ///api/v1/roles/all/?skip=0&limit=5
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/roles/all/?skip=0&limit=10`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.user.token}`
-                },
-            });
-            const jsonData = await response.json();
-            setOptions(jsonData.data)
-
+            const usersData = await fetchData(session?.user.token, 'GET', `users/${id}`);
+            setUser(usersData.data[0])
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -56,11 +31,8 @@ const FormEmployees: React.FC = () => {
 
     useEffect(() => {
         if (session?.user.token) {
-            userData();
-            fetchData();
+            load();
         }
-
-
 
     }, [id, session?.user.token]);
 
@@ -71,30 +43,20 @@ const FormEmployees: React.FC = () => {
     const handleCheckboxChange = async (roleId, isChecked) => {
 
         const updatedRoles = isChecked
-        ? [...user.roles, { id: roleId }]
-        : user.roles.filter(role => role.id !== roleId);
+            ? [...user.roles, { id: roleId }]
+            : user.roles.filter(role => role.id !== roleId);
 
         setUser(prevUser => ({ ...prevUser, roles: updatedRoles }));
 
-
         if (isChecked) {
             // El checkbox está marcado
-            const response = await apiRequest(`users_roles/`, 'POST', {users_id: id, roles_id: roleId})
-            
-            //const data = await response.json();
+            const response = await apiRequest(`users_roles/`, 'POST', { users_id: id, roles_id: roleId })
             console.log(response)
             console.log('El checkbox está marcado');
         } else {
             // El checkbox está desmarcado
-            const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/users_roles/delete/${id}/${roleId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.user.token}`
-                },
-            });
-            const data = await response.json();
-            console.log(data)
+            const response = await fetchData(session?.user.token, 'DELETE', `/users_roles/delete/${id}/${roleId}`);
+            console.log(response)
             console.log('El checkbox está desmarcado');
         }
         router.refresh();
@@ -116,20 +78,16 @@ const FormEmployees: React.FC = () => {
                         <input
                             className="form-check-input"
                             checked={user && user.roles && user.roles.some(role => role.id === option.id)}
-
-                            //checked={user && user.roles ? user.roles.some(role => role.id === option.id) : ''}
                             type="checkbox"
                             role="switch"
                             name="roles_id"
                             id={option.id}
                             value={option.id}
                             onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-
                         />
                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}</label>
                     </div>
                 ))}
-
             </div>
         </div>
 

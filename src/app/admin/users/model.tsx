@@ -20,9 +20,17 @@ export const model: Model = {
 export const headers = [
     { name: 'Username', span: 3, key: 'user_name' },
     { name: 'Email', span: 2, key: 'email' },
-    { name: 'Active', span: 1, key: 'active' }
+    { name: 'Active', span: 1, key: 'active' },
+    { name: 'Password', span: 1, key: 'hashed_password' }
 ];
 
 export const fields = [
     'user_name', 'email', 'active', 'hashed_password'
+]
+
+export const buttonExtra = [
+    {
+        url: 'admin/users/rol',
+        name: 'rol'
+    }
 ]

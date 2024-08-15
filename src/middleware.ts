@@ -4,26 +4,33 @@ import { getToken } from 'next-auth/jwt';
 
 export async function middleware(req: NextRequest) {
     const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    console.log('middleware', session)
     //const token = await getServerSession(authOptions)
     //const jwt = token.user.token;
 
-    if (!session) {
+    if (!session) 
+    {
         const url = req.nextUrl.clone();
         url.pathname = '/auth/signin';
         return NextResponse.redirect(url);
-    }
     
-    const response = await NextResponse.next();
-    console.log(response)
-    if (response.status === 403) {
-        // Realizar la redirección a una página de error personalizada para el código de estado 403
-        const url = req.nextUrl.clone();
-        url.pathname = '/error/403'; // Ruta de la página de error 403
-        return NextResponse.redirect(url);
+    } else {
+        
+        const requestOptions = {
+                method: 'GET',
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${session.user.token}`
+                }
+            };
+           const response = await fetch(process.env.API_SALARY + `/token/validate`, requestOptions);
+       
+            if (response.status === 401) {
+                 const url = req.nextUrl.clone();
+                 url.pathname = '/auth/signin';
+                 return NextResponse.redirect(url);
+            }
+        return NextResponse.next();       
     }
-
-    return response;
 }
 
 export const config = {
