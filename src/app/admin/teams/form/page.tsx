@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { useRouter, } from 'next/navigation'
 import { apiRequest } from "@/server/services/core/apiRequest";
 import { model, name, headers } from '../model'
+import { useFields } from '@/hooks/useFields';
 import FormComponent from "@/components/Core/FormComponent";
 
 const FormTeams: React.FC = () => {
@@ -24,7 +25,7 @@ const FormTeams: React.FC = () => {
 
     }
 
-    const fields = headers.map(header => header.key);
+    const fields = useFields(headers);
 
     return (
         <div className="row">

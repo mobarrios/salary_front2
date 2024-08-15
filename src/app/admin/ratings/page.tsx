@@ -20,8 +20,6 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const totalPages = Math.ceil(data.count / limit);
 
-  console.log(data)
-
   return (
     <div className='container'>
     <h2 className='text-primary '>Ratings</h2>

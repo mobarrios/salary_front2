@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { model, headers, name, Model } from '../../model';
 import { fetchData } from '@/server/services/core/fetchData'
+import { useFields } from '@/hooks/useFields';
 
 const FormTeams: React.FC = () => {
 
@@ -39,8 +40,7 @@ const FormTeams: React.FC = () => {
         }
     }, [id, session?.user.token]);
 
-
-    const fields = headers.map(header => header.key);
+    const fields = useFields(headers);
 
     const handleSubmit = async (values) => {
         try {
