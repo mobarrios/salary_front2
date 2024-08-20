@@ -27,7 +27,7 @@ export const headers = [
 
 export const buttonExtra = [
     {
-        url: 'admin/employees/teams',
+        type: 'modal',
         name: 'teams'
     },
     {
