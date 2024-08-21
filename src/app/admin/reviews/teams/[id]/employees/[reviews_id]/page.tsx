@@ -37,6 +37,8 @@ const FormEmployees: React.FC = () => {
     const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
 
     const router = useRouter();
+    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'validator');
+    const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
 
     useEffect(() => {
         if (session?.user.token) {
@@ -353,7 +355,6 @@ const FormEmployees: React.FC = () => {
         return ratingsTeamEmployees && ratingsTeamEmployees.length > 0 && ratingsTeamEmployees.some(item => item.ratings_id == optionId && item.employees_id == itemId);
     };
 
-
     const changeStatusByRatings = async (e, employeesId, optionId, status) => {
         console.log(optionId, employeesId, status)
         try {
@@ -439,17 +440,18 @@ const FormEmployees: React.FC = () => {
                                             <tr className="mt-2" key={key}>
                                                 <td className="text-center">
                                                     <div className="form-check form-switch" key={option.id}>
-
-                                                        <input
-                                                            className="form-check-input"
-                                                            checked={isCheckboxChecked(option.id, item.id)}
-                                                            type="checkbox"
-                                                            role="switch"
-                                                            name="roles_id"
-                                                            id={option.id}
-                                                            value={option.id !== null ? option.id : undefined}
-                                                            onChange={(e) => handleCheckboxChange(option.id, item.id, e.target.checked)}
-                                                        />
+                                                        {isManager && (
+                                                            <input
+                                                                className="form-check-input"
+                                                                checked={isCheckboxChecked(option.id, item.id)}
+                                                                type="checkbox"
+                                                                role="switch"
+                                                                name="roles_id"
+                                                                id={option.id}
+                                                                value={option.id !== null ? option.id : undefined}
+                                                                onChange={(e) => handleCheckboxChange(option.id, item.id, e.target.checked)}
+                                                            />
+                                                        )}
                                                         <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}  </label>
                                                     </div>
                                                 </td>
@@ -493,15 +495,19 @@ const FormEmployees: React.FC = () => {
                                                         <i className="bi bi-update"></i>  update
                                                     </button>
                                                 </td>
-                                                <td>
-                                                    <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 1)}>pending</a>
-                                                </td>
-                                                <td>
-                                                    <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 2)}>aproved</a>
-                                                </td>
-                                                <td>
-                                                    <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 3)}>rejected</a>
-                                                </td>
+                                                {isValidator && (
+                                                    <>
+                                                        <td>
+                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 1)}>pending</a>
+                                                        </td>
+                                                        <td>
+                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 2)}>aproved</a>
+                                                        </td>
+                                                        <td>
+                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 3)}>rejected</a>
+                                                        </td>
+                                                    </>
+                                                )}
                                             </tr>
                                         ))}
                                     </tbody>

@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
       //console.log("------------ SESSION ------------");
       if (token) {
         session.user.token = token.user.token
+        session.user.roles = token.user.roles; // Asegúrate de incluir roles        
       }
       //console.log({ session });
       return session;
