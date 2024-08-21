@@ -12,6 +12,7 @@ const FormEmployees: React.FC = () => {
     const { data: session, status } = useSession();
     const [options, setOptions] = useState();
     const [user, setUser] = useState();
+    const [userRoles, setUserRoles] = useState();
     const { id } = useParams();
     const router = useRouter();
 
@@ -22,6 +23,9 @@ const FormEmployees: React.FC = () => {
 
             const usersData = await fetchData(session?.user.token, 'GET', `users/${id}`);
             setUser(usersData.data[0])
+
+            const userRolesData = await fetchData(session?.user.token, 'GET', `users_roles/all/?skip=0&limit=100`);
+            setUserRoles(userRolesData.data)
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -48,6 +52,11 @@ const FormEmployees: React.FC = () => {
 
         setUser(prevUser => ({ ...prevUser, roles: updatedRoles }));
 
+        let usersRolesId = userRoles.find(item =>
+            item.users_id == parseInt(id) &&
+            item.roles_id == parseInt(roleId)
+        );
+
         if (isChecked) {
             // El checkbox está marcado
             const response = await apiRequest(`users_roles/`, 'POST', { users_id: id, roles_id: roleId })
@@ -55,7 +64,7 @@ const FormEmployees: React.FC = () => {
             console.log('El checkbox está marcado');
         } else {
             // El checkbox está desmarcado
-            const response = await fetchData(session?.user.token, 'DELETE', `/users_roles/delete/${id}/${roleId}`);
+            const response = await fetchData(session?.user.token, 'DELETE', `users_roles/delete/${usersRolesId.id}`);
             console.log(response)
             console.log('El checkbox está desmarcado');
         }

@@ -43,9 +43,10 @@ const FormEmployees: React.FC = () => {
                     updateItemState(jsonData, keys);
                     setLoading(false);
                 }
-            };2
+            };
 
             fetchDataAndUpdateItem();
+            console.log(session)
         }
     }, [id, session?.user.token]);
 
