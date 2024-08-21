@@ -461,14 +461,25 @@ const FormEmployees: React.FC = () => {
                                                             <small>{option.percent_min} %</small>
                                                         </div>
                                                         <div className="col-8">
-                                                            <Form.Range
-                                                                disabled={!isCheckboxChecked(option.id, item.id)}
-                                                                step={1}
-                                                                min={option.percent_min}
-                                                                max={option.percent_max}
-                                                                value={rangeValues[`${option.id}-${item.id}`] || 0}
-                                                                onChange={(e) => handleRangeChange(e, option.id, item.id)}
-                                                            />
+                                                            {isManager ? (
+                                                                <Form.Range
+                                                                    disabled={!isCheckboxChecked(option.id, item.id)}
+                                                                    step={1}
+                                                                    min={option.percent_min}
+                                                                    max={option.percent_max}
+                                                                    value={rangeValues[`${option.id}-${item.id}`] || 0}
+                                                                    onChange={(e) => handleRangeChange(e, option.id, item.id)}
+                                                                />
+                                                            ) : (
+                                                                <Form.Range
+                                                                    disabled
+                                                                    step={1}
+                                                                    min={option.percent_min}
+                                                                    max={option.percent_max}
+                                                                    value={rangeValues[`${option.id}-${item.id}`] || 0}
+                                                                    onChange={(e) => handleRangeChange(e, option.id, item.id)}
+                                                                />
+                                                            )}
                                                         </div>
                                                         <div className="col-2"><small>{option.percent_max} %</small> {rangeValues[`${option.id}-${item.id}`] || 0}</div>
                                                     </div>

@@ -26,6 +26,9 @@ const FormEmployees: React.FC = () => {
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
   const [reviewTeam, setReviewTeam] = useState({});
+  
+  const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
+
 
   const handleRangeChange = async (optionId, value) => {
     const updatedRangeValues = { ...rangeValues, [optionId]: value };
