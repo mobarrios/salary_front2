@@ -28,10 +28,12 @@ export const headers = [
 export const buttonExtra = [
     {
         type: 'modal',
-        name: 'teams'
+        name: 'teams',
+        roles: []
     },
     {
         url :'admin/employees/external_data',
-        name : 'Extra Data'
+        name : 'Extra Data',
+        roles: []
     }
 ]

@@ -31,6 +31,7 @@ export const fields = [
 export const buttonExtra = [
     {
         url: 'admin/users/rol',
-        name: 'rol'
+        name: 'rol',
+        roles: []
     }
 ]

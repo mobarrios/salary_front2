@@ -26,7 +26,7 @@ const FormEmployees: React.FC = () => {
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
   const [reviewTeam, setReviewTeam] = useState({});
-  
+
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
 
 
@@ -158,6 +158,15 @@ const FormEmployees: React.FC = () => {
           : null}
         <div className='col-12'>
           <table className='table '>
+            <thead>
+              <tr>
+                <th>Active</th>
+                <th>Team</th>
+                <th>Amount</th>
+                <th>Acciones</th>
+
+              </tr>
+            </thead>
             <tbody>
               {options && options.map((option, index) => (
 
@@ -175,36 +184,50 @@ const FormEmployees: React.FC = () => {
                         onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
                       />
 
-                      {
-                        userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                          ?
-                          <Link
-                            href={`/admin/reviews/teams/${option.id}/employees/${id}`}
-                            className="form-check-label btn btn-success">
-                            {option.name}
-                          </Link>
-                          : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
-                      }
                     </div>
                   </td>
                   <td>
-                    $ <b>{rangeValues[option.id] || 0}</b>
+
+                    {
+                      userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                        ?
+                        <Link
+                          href={`/admin/reviews/teams/${option.id}/employees/${id}`}
+                          className="form-check-label btn btn-success">
+                          {option.name}
+                        </Link>
+                        : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
+                    }
+
+                  </td>
+                  <td>
+
                     <div className="col-4">
 
-                      <Form.Range
+                      <input
+                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
+                        type='number'
+                        className='form-control'
+                        value={rangeValues[option.id] || 0}
+                        onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
+
+                      />
+
+                      {/* <Form.Range
                         disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
                         step={1000}
                         min={0}
                         max={totalReview}
                         value={rangeValues[option.id] || 0}
                         onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
-                      />
+                      /> */}
                     </div>
                   </td>
                   <td>
                     <div className="col-2">
                       <button
-                        disabled={totalRemaining < 0}
+                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
+                        //disabled={totalRemaining < 0}
                         className='btn btn-primary btn-xs'
                         onClick={(e) => handleSubmit(e, option.id)}>
                         <i className="bi bi-update"></i>  update
@@ -216,7 +239,7 @@ const FormEmployees: React.FC = () => {
               ))}
 
               <tr>
-                <td colSpan={3}>
+                <td colSpan={5}>
 
                   <h6>Total amount : $<b>{totalReview ? totalReview.toFixed(2) : 0}</b> </h6>
                   <h6>Total team  : $<b>{totalAmount ? totalAmount.toFixed(2) : 0}</b> </h6>
