@@ -38,14 +38,14 @@ const NavbarComp = () => {
         <Navbar.Collapse id="basic-navbar-nav ">
           <Nav className="me-auto" variant="underline" defaultActiveKey="/admin/dashboard" >
             <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
-            <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>Employees</Nav.Link>
-            <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link>
-            <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Reviews</Nav.Link>
+            <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
+            {/* <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link> */}
+            <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Merit Cycle</Nav.Link>
             <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
 
-            <NavDropdown title="Administration" id="basic-nav-dropdown" active={activePath === '/admin/users' || activePath === '/admin/roles'}>
-              <NavDropdown.Item href="/admin/users" active={activePath === '/admin/users'}>Users</NavDropdown.Item>
-              <NavDropdown.Item href="/admin/roles" active={activePath === '/admin/roles'} >Roles</NavDropdown.Item>
+            <NavDropdown title="Setting" id="basic-nav-dropdown" active={activePath === '/admin/users' || activePath === '/admin/roles'}>
+              <NavDropdown.Item href="/admin/users" active={activePath === '/admin/users'}>User management</NavDropdown.Item>
+              {/* <NavDropdown.Item href="/admin/roles" active={activePath === '/admin/roles'} >Roles</NavDropdown.Item> */}
             </NavDropdown>
           </Nav>
           <Nav className="ms-auto">

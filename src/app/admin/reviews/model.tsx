@@ -21,15 +21,16 @@ export const model: Model = {
 
 export const headers = [
     { name: 'Name', key: 'name' },
-    { name: 'Price', key: 'price' },
+    { name: 'Budget', key: 'price' },
     { name: 'From', key: 'form', type: 'date' },
     { name: 'To', key: 'to', type: 'date' },
-    { name: 'Status', key: 'status', type:'select',  options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] }, // Opciones con valores
+    { name: 'Status', key: 'status', type: 'select', options: [{ label: 'Active', value: '1' }, { label: 'Close', value: '0' }] }, // Opciones con valores
 ];
 
 export const buttonExtra = [
     {
         url: 'admin/reviews/teams',
-        name: 'teams'
+        name: 'budget',
+        roles: ['administrator', 'superuser']
     }
 ]

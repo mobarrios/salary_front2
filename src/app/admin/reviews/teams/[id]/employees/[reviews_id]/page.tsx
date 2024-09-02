@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
 import ToastComponent from '@/components/ToastComponent';
-import { item } from "@/types/item";
+import RatingRow from "@/components/Rating/RatingRow";
+import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee } from '@/functions/formEmployeeHandlers';
 
 const FormEmployees: React.FC = () => {
 
     const { id, reviews_id } = useParams();
-    const { data: session, status } = useSession()
+    const { data: session } = useSession()
     const [team, setTeam] = useState();
     const [teamEmployees, setTeamEmployees] = useState();
     const [reviewTeam, setReviewTeam] = useState();
@@ -26,13 +26,11 @@ const FormEmployees: React.FC = () => {
     const [color, setColor] = useState('trasparent');
 
     //const team
-    const [totalTeam, setTotalTeam] = useState();
     const [totalPercent, setTotalPercent] = useState();
     const [totalSpend, setTotalSpend] = useState();
     const [totalRemaining, setTotalRemaining] = useState();
 
     //const employees-ratings
-    const [currentBase, setCurrentBase] = useState(150000);
     const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
     const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
 
@@ -49,7 +47,7 @@ const FormEmployees: React.FC = () => {
 
     useEffect(() => {
         if (reviewTeam?.price !== undefined && totalSpend !== undefined) {
-            const totalRemaining = calculateTotalRemaining();
+            const totalRemaining = calculateTotalRemaining(reviewTeam?.price, totalSpend);
             console.log('pasa', totalRemaining);
             setTotalRemaining(totalRemaining);
         }
@@ -66,17 +64,12 @@ const FormEmployees: React.FC = () => {
     }, [teamEmployees, totalPriceByEmployee]);
 
     const updateEmployeesTeams = async (team) => {
-        //setTeamEmployees
-        //const updateCommentsValues = {};
 
         const promises = team.employees.map(item =>
             fetchData(session?.user.token, 'GET', `employees/${item.id}`)
         );
 
         const teamResponses = await Promise.all(promises);
-        console.log(teamResponses)
-        //updateCommentsValues[`${item.id}-${item.actual_external_data.annual_salary }`] ;
-
         setTeamEmployees(teamResponses)
     }
 
@@ -114,72 +107,6 @@ const FormEmployees: React.FC = () => {
         }
     };
 
-    const calculatePorcent = (teamEmployees, value, key) => {
-        if (!Array.isArray(teamEmployees)) {
-            return;
-        }
-        let employeesSalary = teamEmployees.find(item => item.id == parseInt(key));
-        if (!employeesSalary) {
-            return;
-        }
-        if (!employeesSalary.actual_external_data || !employeesSalary.actual_external_data.annual_salary) {
-            return;
-        }
-        let salary = employeesSalary.actual_external_data.annual_salary;
-        const montoSinFormato = salary.replace(/\$|,/g, '');
-        const montoNumero = parseFloat(montoSinFormato);
-        if (isNaN(montoNumero)) {
-            return;
-        }
-        const result = (montoNumero * value) / 100;
-        console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
-        return result;
-    }
-
-    const calculateTotalRemaining = () => {
-        const price = reviewTeam?.price;
-        const spend = totalSpend;
-        console.log('Price:', price, 'Spend:', spend); // Verificar valores
-        if (price !== undefined && spend !== undefined) {
-            return price - spend;
-        }
-        return 0; // Devuelve 0 si no hay datos
-    };
-
-    const calculateTotalPrice = (updatedRangeValues) => {
-        let totalPrice = 0;
-        for (const key in updatedRangeValues) {
-            const percentValue = updatedRangeValues[key];
-            totalPrice += percentValue;
-        }
-        return { totalPrice };
-    }
-
-    const calculateTotalsByEmployee = (updatedRangeValues) => {
-        const totalByEmployees = {};
-
-        for (const key in updatedRangeValues) {
-            const [currentRatingsId, currentEmployeeId] = key.split('-');
-            const currentValue = parseInt(updatedRangeValues[key], 10);
-            if (!totalByEmployees[currentEmployeeId]) {
-                totalByEmployees[currentEmployeeId] = 0;
-            }
-            totalByEmployees[currentEmployeeId] += currentValue;
-        }
-        return { totalByEmployees };
-    };
-
-    const calculateTotalsPercentEmployee = (updatedPercentValues) => {
-        let totalPercentSum = 0;
-
-        for (const key in updatedPercentValues) {
-            const percentValue = updatedPercentValues[key];
-            totalPercentSum += percentValue; // Suma el valor al total
-        }
-        return { totalPercentSum };
-
-    };
-
     const handleRangeChange = (e, ratingsId, employeeId) => {
         const value = parseInt(e.target.value, 10);
         setRangeValues(prevState => {
@@ -206,7 +133,7 @@ const FormEmployees: React.FC = () => {
             setTotalPercent(totalSpend);
 
             const { totalPercentSum } = calculateTotalsPercentEmployee(updatedRangeValues)
-            const totalRemaining = calculateTotalRemaining();
+            const totalRemaining = calculateTotalRemaining(reviewTeam?.price, totalSpend);
 
             //total team
             setTotalPercent(totalPercentSum);
@@ -437,89 +364,21 @@ const FormEmployees: React.FC = () => {
                                 <table>
                                     <tbody>
                                         {ratings && ratings.map((option, key) => (
-                                            <tr className="mt-2" key={key}>
-                                                <td className="text-center">
-                                                    <div className="form-check form-switch" key={option.id}>
-                                                        {isManager && (
-                                                            <input
-                                                                className="form-check-input"
-                                                                checked={isCheckboxChecked(option.id, item.id)}
-                                                                type="checkbox"
-                                                                role="switch"
-                                                                name="roles_id"
-                                                                id={option.id}
-                                                                value={option.id !== null ? option.id : undefined}
-                                                                onChange={(e) => handleCheckboxChange(option.id, item.id, e.target.checked)}
-                                                            />
-                                                        )}
-                                                        <label className="form-check-label" htmlFor="flexSwitchCheckDefault">{option.name}  </label>
-                                                    </div>
-                                                </td>
-                                                <td className="text-center">
-                                                    <div className="row ">
-                                                        <div className="col-2">
-                                                            <small>{option.percent_min} %</small>
-                                                        </div>
-                                                        <div className="col-8">
-                                                            {isManager ? (
-                                                                <Form.Range
-                                                                    disabled={!isCheckboxChecked(option.id, item.id)}
-                                                                    step={1}
-                                                                    min={option.percent_min}
-                                                                    max={option.percent_max}
-                                                                    value={rangeValues[`${option.id}-${item.id}`] || 0}
-                                                                    onChange={(e) => handleRangeChange(e, option.id, item.id)}
-                                                                />
-                                                            ) : (
-                                                                <Form.Range
-                                                                    disabled
-                                                                    step={1}
-                                                                    min={option.percent_min}
-                                                                    max={option.percent_max}
-                                                                    value={rangeValues[`${option.id}-${item.id}`] || 0}
-                                                                    onChange={(e) => handleRangeChange(e, option.id, item.id)}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                        <div className="col-2"><small>{option.percent_max} %</small> {rangeValues[`${option.id}-${item.id}`] || 0}</div>
-                                                    </div>
-                                                </td>
-                                                <td className="text-center">
-                                                    <input
-                                                        disabled={!isCheckboxChecked(option.id, item.id)}
-                                                        type="text"
-                                                        placeholder="Comments"
-                                                        value={commnetsValues[`${option.id}-${item.id}`]}
-                                                        onChange={(e) => {
-                                                            const newCommnetsValues = { ...commnetsValues };
-                                                            newCommnetsValues[`${option.id}-${item.id}`] = e.target.value;
-                                                            setCommnetsValues(newCommnetsValues);
-                                                        }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        disabled={!isCheckboxChecked(option.id, item.id)}
-                                                        className='btn btn-primary btn-xs'
-                                                        onClick={(e) => handleSubmit(e, item.id, option.id)}
-                                                    >
-                                                        <i className="bi bi-update"></i>  update
-                                                    </button>
-                                                </td>
-                                                {isValidator && (
-                                                    <>
-                                                        <td>
-                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 1)}>pending</a>
-                                                        </td>
-                                                        <td>
-                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 2)}>aproved</a>
-                                                        </td>
-                                                        <td>
-                                                            <a className='btn btn-primary btn-xs' onClick={(e) => changeStatusByRatings(e, item.id, option.id, 3)}>rejected</a>
-                                                        </td>
-                                                    </>
-                                                )}
-                                            </tr>
+                                            <RatingRow
+                                                key={key}
+                                                option={option}
+                                                item={item}
+                                                isManager={isManager}
+                                                isValidator={isValidator}
+                                                isCheckboxChecked={isCheckboxChecked}
+                                                handleCheckboxChange={handleCheckboxChange}
+                                                rangeValues={rangeValues}
+                                                setCommnetsValues={setCommnetsValues}
+                                                commnetsValues={commnetsValues}
+                                                handleRangeChange={handleRangeChange}
+                                                handleSubmit={handleSubmit}
+                                                changeStatusByRatings={changeStatusByRatings}
+                                            />
                                         ))}
                                     </tbody>
                                 </table>
