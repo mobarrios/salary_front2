@@ -49,9 +49,9 @@ export default function SignIn({ searchParams }: PageProps) {
 
   return (
     <div className="container">
-      <div className="row justify-content-center align-items-center p-5 ">
-        <div className="col-12 col-md-8 col-lg-6">
-          <div className="p-5 bg-white rounded shadow-sm">
+      <div className="row justify-content-center">
+        <div className="col-5 pt-5">
+          <div className="p-5 bg-white rounded shadow">
           <div className="mb-5 text-center">
            <img
               src="/equipay.png"
@@ -92,7 +92,7 @@ export default function SignIn({ searchParams }: PageProps) {
                   className="form-control"
                 />
               </div>
-              <div className="mt-5 d-grid gap-2">
+              <div className="mt-4 d-grid gap-2">
                 {/* <button type="submit" className="btn btn-primary">Login</button> */}
                 <input
                   type="submit"
