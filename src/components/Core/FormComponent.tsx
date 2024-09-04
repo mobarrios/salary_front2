@@ -1,22 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import Swal from 'sweetalert2'
 import CustomField from './CustomField';
 
 const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
-
-    const confirmSave = async () => {
-        const message = await Swal.fire({
-            title: "Do you want to save?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes!"
-        });
-        return message.isConfirmed;
-    };
 
     const handleFormSubmit = async (values, onSubmit) => {
         try {
@@ -53,7 +40,6 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
     // Definir el esquema de validación con los campos y reglas
     const validationSchema = Yup.object().shape(validationRules);
 
-    // Configurar useFormik con el esquema de validación
     const formik = useFormik({
         initialValues: initialValues,
         validationSchema: validationSchema,
@@ -66,6 +52,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
         <div className="row ">
             <div className="col-12">
                 <div className="bg-white ">
+
                     <form onSubmit={formik.handleSubmit}>
                         {fields.map((field, key) => (
                             <CustomField key={key} field={field} formik={formik} />
@@ -76,6 +63,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                             {isEditing ? 'Edit' : 'Save'}
                         </button>
                     </form>
+
                 </div>
             </div>
         </div>

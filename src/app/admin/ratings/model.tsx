@@ -9,8 +9,8 @@ export type Model = {
 export const model: Model = {
     //id: 0,
     name: "",
-    percent_min:0,
-    percent_max:0   
+    percent_min: 0,
+    percent_max: 0
 };
 
 export const headers = [
@@ -18,3 +18,11 @@ export const headers = [
     { name: 'Min Percent', span: 3, key: 'percent_min' },
     { name: 'Max Percent', span: 3, key: 'percent_max' }
 ];
+
+export const buttonExtra = [
+    {
+        type: 'modal',
+        name: 'edit',
+        roles: []
+    }
+]

@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
+import { showSuccessAlert } from '@/hooks/alerts';
 
-const FormEmployees: React.FC = () => {
+const FormRol: React.FC = ({id}) => {
 
     const { data: session, status } = useSession();
     const [options, setOptions] = useState();
     const [user, setUser] = useState();
     const [userRoles, setUserRoles] = useState();
-    const { id } = useParams();
     const router = useRouter();
 
     const load = async () => {
@@ -60,13 +60,13 @@ const FormEmployees: React.FC = () => {
         if (isChecked) {
             // El checkbox está marcado
             const response = await apiRequest(`users_roles/`, 'POST', { users_id: id, roles_id: roleId })
-            console.log(response)
-            console.log('El checkbox está marcado');
+            showSuccessAlert("Your work has been saved");
+
         } else {
             // El checkbox está desmarcado
             const response = await fetchData(session?.user.token, 'DELETE', `users_roles/delete/${usersRolesId.id}`);
-            console.log(response)
-            console.log('El checkbox está desmarcado');
+            showSuccessAlert("Your work has been saved");
+
         }
         router.refresh();
     };
@@ -103,4 +103,4 @@ const FormEmployees: React.FC = () => {
     );
 };
 
-export default FormEmployees;
+export default FormRol;

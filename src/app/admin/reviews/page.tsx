@@ -4,9 +4,13 @@ import { Params } from '@/types/params';
 import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name, buttonExtra } from './model';
-import Link from 'next/link';
+import FormReview from './form/page';
+import ReviewTeam from './teams/page';
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/server/auth'
+import ModalButton from '@/components/Modal/NewFormModal';
+import RemoveItem from '@/components/Core/RemoveItem';
+import Link from 'next/link';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -20,6 +24,7 @@ export default async function Employees({ searchParams }: Params) {
   }
 
   const data = await res.json();
+  const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
   const roles = session?.user.roles;
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
@@ -30,46 +35,67 @@ export default async function Employees({ searchParams }: Params) {
         <h1 className='text-primary'>Merit Cycle</h1>
       </div>
       <div className='col-12'>
-        {isAdmin && (
-          <Link
-            href={`/admin/${name}/form`}
-            className="btn btn-primary mt-3 pull-right"
-          >
-            New Merit Cycle
-          </Link>
-        )}
+        <p className='float-end'>
+          {isAdmin && (
+            <ModalButton
+              type={false}
+              itemId={1}
+              name="New Merit Cycle"
+              FormComponent={FormReview}
+            />
+          )}
+        </p>
       </div>
       <div className='col-12 mt-3'>
 
-        {/* {data && data.data.map((item, i) => (
-
-          <div className="card mt-4">
-
-            <h5 className="card-header">
-
-              {item.name}
-            </h5>
-            <div className="card-body">
-              <p><span className="badge bg-primary float-end">Primary</span> </p>
-              <p className="card-text">
-                From
-                {item.form}
-
-                To
-                {item.form}
-              </p>
-            </div>
-          </div>
-        ))
-        } */}
-
-        <TableComponent
-          data={data.data}
-          model={name}
-          headers={headers}
-          buttonExtra={buttonExtra}
-          rol={roles}
-        />
+        <table className="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              {headers.map((header, key) => (
+                <th scope="col" key={key}>{header.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              results ? (
+                results.map((item, rowIndex) => (
+                  <tr className="align-middle" key={rowIndex}>
+                    <td>{item.id}</td>
+                    {headers.map((header, colIndex) => (
+                      <td key={header.key}>{item[header.key]}</td>
+                    ))}
+                    <td>
+                      {isAdmin && (
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Budgets"
+                          FormComponent={ReviewTeam}
+                        />
+                      )}
+                      <ModalButton
+                        type={true}
+                        itemId={item.id}
+                        name="Edit"
+                        FormComponent={FormReview}
+                      />
+                      <RemoveItem
+                        url={name}
+                        id={item.id}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={headers.length + 2}>No data available</td>
+                </tr>
+              )
+            }
+          </tbody>
+        </table>
       </div>
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />

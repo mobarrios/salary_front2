@@ -1,16 +1,13 @@
 'use client';
-
-import { useParams } from 'next/navigation';
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
-import Form from 'react-bootstrap/Form';
 import { fetchData } from '@/server/services/core/fetchData'
-import ToastComponent from '@/components/ToastComponent';
+import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
-const FormEmployees: React.FC = () => {
+const ReviewTeam: React.FC = ({id}) => {
 
   const { data: session, status } = useSession()
   const [totalTeams, setTotalTeams] = useState();
@@ -22,13 +19,11 @@ const FormEmployees: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const { id } = useParams();
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
   const [reviewTeam, setReviewTeam] = useState({});
 
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
-
 
   const handleRangeChange = async (optionId, value) => {
     const updatedRangeValues = { ...rangeValues, [optionId]: value };
@@ -43,9 +38,10 @@ const FormEmployees: React.FC = () => {
   };
 
   const updateReviewTeams = async () => {
-    const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=10`);
-
+    const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
+    console.log(reviewTeamsResponse)
     const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
+    console.log(employeesWithIdOne)
     setUserTeams(employeesWithIdOne)
     setReviewTeam(employeesWithIdOne)
   }
@@ -93,13 +89,11 @@ const FormEmployees: React.FC = () => {
   }
 
   const handleCheckboxChange = async (teamId, isChecked) => {
-    setShowToast(false);
-
+   
     if (isChecked) {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
-      setShowToast(true);
-      setToastMessage('Update successful');
+      showSuccessAlert("Your work has been saved");
       console.log(resp)
     } else {
 
@@ -108,19 +102,11 @@ const FormEmployees: React.FC = () => {
       // El checkbox está desmarcado
       if (reviewTeamId) {
         const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);
-        setShowToast(true);
-        setToastMessage('Update successful');
         console.log(resp)
-
+        showSuccessAlert("Your work has been saved");
       }
     }
-    /*
-    const updatedRoles = isChecked
-      ? [...userTeams, { teams_id: teamId }]
-      : userTeams.filter(team => team.teams_id !== teamId);
 
-    setUserTeams(updatedRoles);
-    */
     updateReviewTeams();
     router.refresh();
   };
@@ -133,19 +119,15 @@ const FormEmployees: React.FC = () => {
 
       if (reviewTeamId) {
         let response = await apiRequest(`reviews_teams/edit/${reviewTeamId.id}`, 'PUT', { price: rangeValues[teamId] });
-        console.log(response)
-        setShowToast(true);
-        setToastMessage('Update successful'); // Mensaje de éxito
-      } else {
-        setShowToast(true);
-        setToastMessage('Error updating'); // Mensaje de error
+        showSuccessAlert("Your work has been saved");
 
+        console.log(response)
+      } else {
+        showErrorAlert("Error")
       }
 
     } catch (error) {
-      setShowToast(true);
-      setToastMessage('Error updating'); // Mensaje de error
-
+      showErrorAlert("Error")
     }
 
   }
@@ -153,9 +135,6 @@ const FormEmployees: React.FC = () => {
   return (
     <>
       <div className='row mt-5'>
-        {showToast ?
-          <ToastComponent showToast={showToast} message={toastMessage} />
-          : null}
         <div className='col-12'>
           <table className='table '>
             <thead>
@@ -192,7 +171,8 @@ const FormEmployees: React.FC = () => {
                       userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
                         ?
                         <Link
-                          href={`/admin/reviews/teams/${option.id}/employees/${id}`}
+                          //href={`/admin/reviews/teams/${option.id}/employees/${id}`}
+                          href={`/admin/reviews/teams/${option.id}/${id}`}
                           className="form-check-label btn btn-success">
                           {option.name}
                         </Link>
@@ -258,4 +238,4 @@ const FormEmployees: React.FC = () => {
   );
 };
 
-export default FormEmployees;
+export default ReviewTeam;

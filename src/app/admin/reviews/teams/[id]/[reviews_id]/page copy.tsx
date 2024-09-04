@@ -9,6 +9,10 @@ import { apiRequest } from "@/server/services/core/apiRequest";
 import ToastComponent from '@/components/ToastComponent';
 import RatingRow from "@/components/Rating/RatingRow";
 import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee } from '@/functions/formEmployeeHandlers';
+import ModalButton from "@/components/Modal/NewFormModal";
+import FormRatings from "@/app/admin/ratings/form/page";
+import styled from "styled-components";
+import CloseButton from "@/components/Modal/CloseButton";
 
 const FormEmployees: React.FC = () => {
 
@@ -205,8 +209,8 @@ const FormEmployees: React.FC = () => {
             // El checkbox está marcado
             const response = await apiRequest(`reviews_teams_employees/`, 'POST', values);
             console.log(response)
-            setShowToast(true);
-            setToastMessage('Update successful');
+            
+            
 
         } else {
 
@@ -222,8 +226,7 @@ const FormEmployees: React.FC = () => {
                 // El checkbox está desmarcado
                 const response = await fetchData(session?.user.token, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
                 console.log(response);
-                setShowToast(true);
-                setToastMessage('Update successful');
+        
 
                 // Eliminar el elemento del estado ratingsTeamEmployees
                 const filteredRatingsTeamEmployees = ratingsTeamEmployees.filter(item =>
@@ -238,8 +241,8 @@ const FormEmployees: React.FC = () => {
             }
         }
 
-        load();
-        router.refresh();
+        //load();
+        //router.refresh();
 
     };
 
@@ -303,11 +306,98 @@ const FormEmployees: React.FC = () => {
         }
     };
 
+    const Modal = ({ isOpen, onClose, children }) => {
+        if (!isOpen) return null;
+        return (
+            <ModalOverlay>
+                <ModalContent>
+                    <CloseButton onClose={onClose} />
+                    {children}
+                </ModalContent>
+            </ModalOverlay>
+        );
+    };
+
+    // Estilos para el modal
+    const ModalOverlay = styled.div`
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    `;
+
+    const ModalContent = styled.div`
+        background: white;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 90vw; /* 90% del ancho de la ventana */
+        max-width: 900px; /* Ancho máximo */
+        height: auto; /* Permite que la altura sea automática */
+        max-height: 90vh; /* Altura máxima */
+        overflow-y: auto; /* Permite el desplazamiento vertical si el contenido excede la altura máxima */
+    `;
+
+    const NewFormModal = ({ item }) => {
+        const [modalId, setModalId] = useState(null);
+        const openModal = (id) => {
+            setModalId(id);
+        };
+
+        const closeModal = () => {
+            console.log("Cerrando modal");
+            setModalId(null);
+        };
+
+        return (
+            <>
+                <button className="btn btn-primary" onClick={() => openModal(item.id)}>Review</button>
+                <Modal isOpen={modalId === item.id} onClose={closeModal}>
+
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Total amount to assign</th>
+                                <th>Total percent</th>
+                                <th>Total Spend</th>
+                                <th>Total Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {ratings && ratings.map((option, key) => (
+                                <RatingRow
+                                    key={key}
+                                    option={option}
+                                    item={item.id}
+                                    isManager={isManager}
+                                    isValidator={isValidator}
+                                    isCheckboxChecked={isCheckboxChecked}
+                                    handleCheckboxChange={handleCheckboxChange}
+                                    rangeValues={rangeValues}
+                                    setCommnetsValues={setCommnetsValues}
+                                    commnetsValues={commnetsValues}
+                                    handleRangeChange={handleRangeChange}
+                                    handleSubmit={handleSubmit}
+                                    changeStatusByRatings={changeStatusByRatings}
+                                />
+                            ))}
+                        </tbody>
+                    </table>
+
+                </Modal>
+            </>
+        );
+    };
+
+
     return (
         <div className="row">
-            {showToast ?
-                <ToastComponent showToast={showToast} message={toastMessage} />
-                : null}
+
             <div className='col-12'>
                 <h3 className='text-primary mb-5'>Reviews - {team?.name}</h3>
                 <table className="table">
@@ -331,7 +421,45 @@ const FormEmployees: React.FC = () => {
                 </table>
 
             </div>
-            {
+
+            <div className='col-12'>
+
+                <table className="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Employees</th>
+                            <th>Current Base Annual Salary</th>
+                            <th>Proposed Total Increase %</th>
+                            <th>Proposed Total Increase $</th>
+                            <th>Proposed New Base Hourly Rate</th>
+                            <th>Proposed New Base Annual Salary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {
+                            teamEmployees && teamEmployees.map((item, rowIndex) => (
+                                <tr>
+                                    <td>{item.name} {item.last_name}</td>
+                                    <td>{item.actual_external_data.annual_salary ? item.actual_external_data.annual_salary : 0}</td>
+                                    <td>$ {totalPriceByEmployee[item.id] ? totalPriceByEmployee[item.id] : 0}</td>
+                                    <td>$ {totalPercentByEmployee[item.id] ? totalPercentByEmployee[item.id] : 0}</td>
+                                    <td>$ 0</td>
+                                    <td>
+                                        <NewFormModal
+                                            item={item}
+                                        />
+
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+
+            {/* {
                 teamEmployees && teamEmployees.map((item, rowIndex) => (
                     <div key={rowIndex} className="mt-1 ">
                         <p>
@@ -386,7 +514,7 @@ const FormEmployees: React.FC = () => {
                         </div>
                     </div>
                 ))
-            }
+            } */}
 
         </div>
     )
