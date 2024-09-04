@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
+import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
-const FormEmployees: React.FC = ({id}) => {
+const FormEmployeesTeams: React.FC = ({id}) => {
 
   const { data: session, status } = useSession()
   const [options, setOptions] = useState();
@@ -61,10 +62,14 @@ const FormEmployees: React.FC = ({id}) => {
     if (isChecked) {
       // El checkbox está marcado
       const response = await apiRequest(`teams_employees/`, 'POST', { employees_id: id, teams_id: teamId });
+      showSuccessAlert("Your work has been saved");
+
       console.log('El checkbox está marcado', response);
+   
     } else {
       // El checkbox está desmarcado
       const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);
+      showSuccessAlert("Your work has been deleted");
       console.log('El checkbox está desmarcado', jsonData);
     }
     router.refresh();
@@ -100,4 +105,4 @@ const FormEmployees: React.FC = ({id}) => {
   );
 };
 
-export default FormEmployees;
+export default FormEmployeesTeams;
