@@ -21,7 +21,7 @@ const Pagination = ({ totalPages, page }) => {
 
     return (
 
-        <nav aria-label="...">
+        <nav>
             <ul className="pagination">
                 <li className="page-item disabled">
                     <span className="page-link">Anterior</span>
