@@ -31,7 +31,14 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
             rules[field.key] = Yup.number()
                 .required('required')
                 .min(Yup.ref('percent_min'), 'percent_max debe ser mayor o igual que percent_min');
-        } else {
+        } else if (field.key === 'form' || field.key === 'to' ) {
+            rules[field.key] = Yup.date()
+                .required('required')
+                .nullable()
+                .typeError('Debe ser una fecha válida')
+                //.min(new Date(), 'La fecha debe ser hoy o en el futuro'); // Fecha mínima: hoy
+        }
+        else {
             rules[field.key] = Yup.string().required('required');
         }
         return rules;
