@@ -6,6 +6,7 @@ import { headers, name } from './model';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormTeams from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
+import UserTeams from './user/page';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -55,6 +56,12 @@ export default async function Employees({ searchParams }: Params) {
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
                       <td>
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Users"
+                          FormComponent={UserTeams}
+                        />
                         <ModalButton
                           type={true}
                           itemId={item.id}
