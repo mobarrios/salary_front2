@@ -115,8 +115,8 @@ export default function SignIn({ searchParams }: PageProps) {
             <div className="container mt-5 text-center">
               <div>or continue with</div>
               <div>
-              <button className="m-2 btn btn-outline-danger btn-lg"><i className="bi bi-google"></i></button>
-              <button className="m-2 btn btn-outline-success btn-lg"><i className="bi bi-microsoft"></i></button>
+              <button className="m-2 btn btn-danger btn-md"><i className="bi bi-google"></i></button>
+              <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button>
               </div>
             </div>
               {searchParams.error && (

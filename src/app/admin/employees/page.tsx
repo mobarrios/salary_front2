@@ -26,7 +26,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div className='container'>
-      <h2 className='text-primary '>Employees</h2>
+      <h1 className='text-primary '>Employees</h1>
       <div className="row">
         <div className='col-12'>
           <p className='float-end'>
@@ -60,7 +60,7 @@ export default async function Employees({ searchParams }: Params) {
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
-                      <td>
+                      <td className='text-left'>
                         <ModalButton
                           type={true}
                           itemId={item.id}
@@ -89,7 +89,7 @@ export default async function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        <div className='col mt-5'>
           <Pagination page={page} totalPages={totalPages} />
         </div>
       </div>
