@@ -223,7 +223,7 @@ const FormEmployees: React.FC = () => {
         return (
             <Modal size="lg" fade show={true} onHide={onClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title><strong>dasds </strong></Modal.Title>
+                    <Modal.Title><strong>Review </strong></Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{children}</Modal.Body>
                 <Modal.Footer>
@@ -302,9 +302,10 @@ const FormEmployees: React.FC = () => {
                                     <tfoot>
                                         <tr>
                                             <th scope="row" colSpan={3}>
+                                                
                                                 <button
                                                     type="submit"
-                                                    className='btn btn-success btn-xs float-end'
+                                                    className="btn btn-primary mt-3"
                                                 >
                                                     <i className="bi bi-update"></i> update
                                                 </button>

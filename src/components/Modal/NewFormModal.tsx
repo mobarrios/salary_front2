@@ -10,7 +10,7 @@ const ModalComp = ({ isOpen, onClose, children, title }) => {
   return (
     <Modal size="lg" fade show={true} onHide={onClose}>
       <Modal.Header closeButton>
-        <Modal.Title><strong>dasds {title} </strong></Modal.Title>
+        <Modal.Title><strong> {title} </strong></Modal.Title>
       </Modal.Header>
       <Modal.Body>{children}</Modal.Body>
       <Modal.Footer>
