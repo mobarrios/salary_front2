@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import { Title } from "@/components/Title";
 
 const FormEmployeesTeams: React.FC = ({id}) => {
 
@@ -76,16 +77,14 @@ const FormEmployeesTeams: React.FC = ({id}) => {
   };
 
   return (
-    <div className="row">
-      <div className='col-12'>
-        <h1 className='text-primary'>Employees Teams</h1>
-      </div>
+    <div className="row m-2">
       <div className='col-12'>
         {loading ? (
           <p>Cargando...</p>
         ) : (
           options && options.map((option) => (
-            <div className="form-check form-switch" key={option.id}>
+            <div className="row form-check form-switch mt-2"  key={option.id}>
+              <div className="col-2">
               <input
                 className="form-check-input"
                 checked={Array.isArray(userTeams) && userTeams.some(item => item.teams_id === option.id)}
@@ -96,7 +95,10 @@ const FormEmployeesTeams: React.FC = ({id}) => {
                 value={option.id}
                 onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
               />
+              </div>
+              <div className="col-10 ms-3 ">
               <label className="form-check-label" htmlFor={option.id}>{option.name}</label>
+              </div>
             </div>
           ))
         )}

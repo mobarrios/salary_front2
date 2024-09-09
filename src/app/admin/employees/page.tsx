@@ -9,6 +9,8 @@ import ModalButton from '@/components/Modal/NewFormModal';
 import FormEmployees from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
+import { Title } from '@/components/Title';
+import  Breadcrumb  from '@/components/BreadCrumb';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -25,53 +27,58 @@ export default async function Employees({ searchParams }: Params) {
   const totalPages = Math.ceil(data.count / limit);
 
   return (
-    <div className='container'>
-      <h2 className='text-primary '>Employees</h2>
-      <div className="row">
+    <div>
+      <Title>Employees</Title>
+      <div className="row mt-5">
         <div className='col-12'>
-          <p className='float-end'>
+          <p className='float-start'>
+            
             <ModalButton
               type={false}
               itemId={1}
               name="New Employee"
               FormComponent={FormEmployees}
+              title="New Employee"
             />
-
-            <Link href={'/admin/employees/upload'} className="btn btn-secondary  ms-3" > Import data</Link>
             <Link href={`/admin/teams`} className="btn btn-primary  ms-3" >Teams </Link>
+            <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
+           
           </p>
         </div>
         <div className='col-12 mt-3'>
-          <table className="table table-striped">
+          <table className="table table-hover ">
             <thead>
-              <tr>
-                <th>#</th>
-                {headers.map((header, key) => (
-                  <th scope="col" key={key}>{header.name}</th>
-                ))}
-              </tr>
+                <tr>
+                  <th>#</th>
+                  {headers.map((header, key) => (
+                    <th key={key}>{header.name}</th>
+                  ))}
+                  <th></th>
+                </tr>
             </thead>
             <tbody>
               {
                 results ? (
                   results.map((item, rowIndex) => (
-                    <tr className="align-middle" key={rowIndex}>
+                    <tr key={rowIndex}>
                       <td>{item.id}</td>
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
-                      <td>
+                      <td className="text-end" >
                         <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Teams"
                           FormComponent={FormEmployeesTeams}
+                          title= {item.associate_id + " Teams"}
                         />
                         <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Edit"
                           FormComponent={FormEmployees}
+                          title={item.associate_id}
                         />
                         <RemoveItem
                           url={name}
@@ -89,7 +96,7 @@ export default async function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        <div className='col mt-5'>
           <Pagination page={page} totalPages={totalPages} />
         </div>
       </div>

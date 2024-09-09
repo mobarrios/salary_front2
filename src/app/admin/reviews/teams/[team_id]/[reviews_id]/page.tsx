@@ -8,16 +8,17 @@ import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
 import RatingRow from "@/components/Rating/RatingRow";
 import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee } from '@/functions/formEmployeeHandlers';
-import ModalButton from "@/components/Modal/NewFormModal";
-import FormRatings from "@/app/admin/ratings/form/page";
-import styled from "styled-components";
 import CloseButton from "@/components/Modal/CloseButton";
 import { ModalContent, ModalOverlay } from "@/components/Modal/StyleModal";
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form } from 'formik';
+import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import Modal from 'react-bootstrap/Modal';
+import { Button } from "react-bootstrap";
 
 const FormEmployees: React.FC = () => {
+    // params
+    const { team_id, reviews_id } = useParams();
 
-    const { id, reviews_id } = useParams();
     const { data: session } = useSession()
     const [team, setTeam] = useState();
     const [teamEmployees, setTeamEmployees] = useState();
@@ -26,10 +27,9 @@ const FormEmployees: React.FC = () => {
     const [rangeValues, setRangeValues] = useState({});
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
     const [commnetsValues, setCommnetsValues] = useState({});
-    const [checkedValues, setCheckedValues] = useState({});
 
     const [color, setColor] = useState('trasparent');
-    const [ratingsData, setRatingsData] = useState([]);
+    const [loading, setLoading] = useState(false)
 
     //const team
     const [totalPercent, setTotalPercent] = useState();
@@ -49,12 +49,11 @@ const FormEmployees: React.FC = () => {
             load();
         }
 
-    }, [id, session?.user.token]);
+    }, [team_id, session?.user.token]);
 
     useEffect(() => {
         if (reviewTeam?.price !== undefined && totalSpend !== undefined) {
             const totalRemaining = calculateTotalRemaining(reviewTeam?.price, totalSpend);
-            console.log('pasa', totalRemaining);
             setTotalRemaining(totalRemaining);
         }
     }, [reviewTeam, totalSpend]);
@@ -80,9 +79,10 @@ const FormEmployees: React.FC = () => {
     }
 
     const load = async () => {
+        setLoading(true);
         try {
             // team
-            const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${id}`);
+            const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${team_id}`);
             setTeam(teamResponse[0]);
 
             // update all employees with salary
@@ -92,7 +92,7 @@ const FormEmployees: React.FC = () => {
             const teamReview = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
             // filter team review
-            const filteredData = teamReview.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
+            const filteredData = teamReview.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
             setReviewTeam(filteredData[0])
 
             // ratings
@@ -103,13 +103,15 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
 
             // filter rating y employees
-            const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == id && item.reviews_id == reviews_id);
+            const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
 
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
 
         } catch (error) {
             console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -118,7 +120,7 @@ const FormEmployees: React.FC = () => {
         const updatedPercentValues = {};
         const updateCommentsValues = {};
         const updatePriceValues = {};
-        console.log(data)
+
         data.forEach(item => {
             updatedPercentValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
             updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
@@ -148,56 +150,96 @@ const FormEmployees: React.FC = () => {
         }));
     }
 
+    const isCheckboxChecked = (optionId, itemId) => {
+        return ratingsTeamEmployees && ratingsTeamEmployees.length > 0 && ratingsTeamEmployees.some(item => item.ratings_id == optionId && item.employees_id == itemId);
+    };
 
     const handleSubmit = async (values, item) => {
+        console.log(values, item, ratingsTeamEmployees);
+        const items = Object.keys(values).reduce((acc, key) => {
+            const [ratingsId, employeesId, field] = key.split('-');
+            const ratingsIdInt = parseInt(ratingsId, 10);
+            const employeesIdInt = parseInt(employeesId, 10);
 
-        console.log(values, item)
-        //setShowToast(false);
-        //const percent = rangeValues[`${ratingsId}-${employeesId}`];
-        //const comment = commnetsValues[`${ratingsId}-${employeesId}`];
+            let item = acc.find(i => i.ratingsId === ratingsIdInt && i.employeesId === employeesIdInt);
+            if (!item) {
+                item = { ratingsId: ratingsIdInt, employeesId: employeesIdInt, percent: "", comments: "", checked: false };
+                acc.push(item);
+            }
 
-        //let currentSalary = calculatePorcent(teamEmployees, percent, employeesId);
+            if (field === 'checked') {
+                item.checked = values[key];
+            } else {
+                item[field] = values[key];
+            }
+            return acc;
+        }, []);
 
-        /*
-        const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
-            item.reviews_id == parseInt(reviews_id) &&
-            item.employees_id == employeesId &&
-            item.ratings_id == ratingsId &&
-            item.teams_id == parseInt(id)
-        );
-        */
-        try {
-            /*
-            const values = {
+        const checkedItems = items.filter(item => item.checked);
+        console.log(checkedItems);
+
+        for (const item of checkedItems) {
+            let currentSalary = calculatePorcent(teamEmployees, item.percent, item.employeesId);
+            const payload = {
                 reviews_id: reviews_id,
-                teams_id: id,
-                employees_id: employeesId,
-                ratings_id: ratingsId,
+                teams_id: team_id,
+                ratings_id: item.ratingsId,
+                employees_id: item.employeesId,
                 price: currentSalary,
-                percent: percent,
+                percent: item.percent,
+                comments: item.comments,
                 status: 1,
-                comments: comment
             };
-            */
-            //const response = await apiRequest(`reviews_teams_employees/edit/${reviewTeamEmployeesId.id}`, 'PUT', values);
-            //console.log(response);
-            //setShowToast(true);
-            //setToastMessage('Update successful');
-        } catch (error) {
-            console.error('Error updating:', error);
-        }
-    }
 
-    const Modal = ({ isOpen, onClose, children }) => {
+            // Verificar si el registro ya existe
+            const existingRecord = ratingsTeamEmployees.find(r =>
+                r.ratings_id === item.ratingsId && r.employees_id === item.employeesId
+            );
+
+            try {
+                if (existingRecord) {
+                    // Si existe, realiza un PUT
+                    const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                    console.log(response)
+                    console.log('Actualizando...', payload);
+                } else {
+                    // Si no existe, realiza un POST
+                    const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+                    console.log(response)
+                    console.log('Guardando...', payload);
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+            }
+        }
+        showSuccessAlert("Your work has been saved");
+        load();
+        router.refresh();
+    };
+
+    const ModalComp = ({ isOpen, onClose, children }) => {
         if (!isOpen) return null;
 
         return (
-            <ModalOverlay>
-                <ModalContent onClick={e => e.stopPropagation()}> {/* Detener la propagación aquí */}
-                    <CloseButton onClose={onClose} />
-                    {children}
-                </ModalContent>
-            </ModalOverlay>
+            <Modal size="lg" fade show={true} onHide={onClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title><strong>Review </strong></Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{children}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onClose}>
+                        Close
+                    </Button>
+                
+                </Modal.Footer>
+            </Modal>
+
+            // <ModalOverlay>
+            //     <ModalContent onClick={e => e.stopPropagation()}> {/* Detener la propagación aquí */}
+            //         <CloseButton onClose={onClose} />
+            //         {children}
+            //     </ModalContent>
+            // </ModalOverlay>
         );
     };
 
@@ -205,19 +247,24 @@ const FormEmployees: React.FC = () => {
     const NewFormModal = ({ item }) => {
         const [modalId, setModalId] = useState(null);
         const openModal = (id) => setModalId(id);
-        const closeModal = () => setModalId(null);
+        const closeModal = () => {
+            load();
+            setModalId(null);
+        }
 
         const initialValues = (ratings || []).reduce((acc, option) => {
             acc[`${option.id}-${item.id}-percent`] = rangeValues[`${option.id}-${item.id}`] || '';
             acc[`${option.id}-${item.id}-comments`] = commnetsValues[`${option.id}-${item.id}`] || '';
-            acc[`${option.id}-${item.id}-checked`] = rangeValues[`${option.id}-${item.id}`] ? true : false;  // Inicializa como false por defecto
+            //acc[`${option.id}-${item.id}-checked`] = rangeValues[`${option.id}-${item.id}`] ? true : false;  // Inicializa como false por defecto
+            acc[`${option.id}-${item.id}-checked`] = isCheckboxChecked(option.id, item.id)
+
             return acc;
         }, {});
 
         return (
             <>
                 <button className="btn btn-primary" onClick={() => openModal(item.id)}>Review</button>
-                <Modal isOpen={modalId === item.id} onClose={closeModal}>
+                <ModalComp isOpen={modalId === item.id} onClose={closeModal}>
                     <Formik
                         initialValues={initialValues}
                         onSubmit={(values) => {
@@ -245,15 +292,20 @@ const FormEmployees: React.FC = () => {
                                                 isValidator={isValidator}
                                                 values={values}
                                                 setFieldValue={setFieldValue} // Pasa setFieldValue a RatingRow
+                                                reviews_id={reviews_id}
+                                                team_id={team_id}
+                                                ratingsTeamEmployees={ratingsTeamEmployees}
+                                                session={session?.user.token}
                                             />
                                         ))}
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <th scope="row" colSpan={3}>
+                                                
                                                 <button
                                                     type="submit"
-                                                    className='btn btn-success btn-xs float-end'
+                                                    className="btn btn-primary mt-3"
                                                 >
                                                     <i className="bi bi-update"></i> update
                                                 </button>
@@ -264,7 +316,7 @@ const FormEmployees: React.FC = () => {
                             </Form>
                         )}
                     </Formik>
-                </Modal>
+                </ModalComp>
             </>
         );
     };
@@ -272,66 +324,64 @@ const FormEmployees: React.FC = () => {
 
     return (
         <div className="row">
-
-            <div className='col-12'>
-                <h3 className='text-primary mb-5'>Reviews - {team?.name}</h3>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Total amount to assign</th>
-                            <th>Total percent</th>
-                            <th>Total Spend</th>
-                            <th>Total Remaining</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        <tr>
-                            <td> <strong>$ {reviewTeam ? reviewTeam?.price.toFixed(2) : 0}</strong></td>
-                            <td>% {totalPercent ? totalPercent : 0}</td>
-                            <td> $ {totalSpend ? totalSpend : 0}</td>
-                            <td style={{ color: color }}> $ {totalRemaining ? totalRemaining : 0}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-            </div>
-
-            <div className='col-12'>
-
-                <table className="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Employees</th>
-                            <th>Current Base Annual Salary</th>
-                            <th>Proposed Total Increase %</th>
-                            <th>Proposed Total Increase $</th>
-                            <th>Proposed New Base Hourly Rate</th>
-                            <th>Proposed New Base Annual Salary</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            teamEmployees && teamEmployees.map((item, rowIndex) => (
+            {loading ? (
+                <div>Cargando...</div>
+            ) : (
+                <>
+                    <div className='col-12'>
+                        <h3 className='text-primary mb-5'>Reviews - {team?.name}</h3>
+                        <table className="table">
+                            <thead>
                                 <tr>
-                                    <td>{item.name} {item.last_name}</td>
-                                    <td>{item.actual_external_data.annual_salary ? item.actual_external_data.annual_salary : 0}</td>
-                                    <td>$ {totalPriceByEmployee[item.id] ? totalPriceByEmployee[item.id] : 0}</td>
-                                    <td>$ {totalPercentByEmployee[item.id] ? totalPercentByEmployee[item.id] : 0}</td>
-                                    <td>$ 0</td>
-                                    <td>
-                                        <NewFormModal
-                                            item={item}
-                                        />
-                                    </td>
+                                    <th>Total amount to assign</th>
+                                    <th>Total percent</th>
+                                    <th>Total Spend</th>
+                                    <th>Total Remaining</th>
                                 </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
-            </div>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>$ {reviewTeam ? reviewTeam.price.toFixed(2) : 0}</strong></td>
+                                    <td>% {totalPercent ? totalPercent : 0}</td>
+                                    <td>$ {totalSpend ? totalSpend : 0}</td>
+                                    <td style={{ color: color }}>$ {totalRemaining ? totalRemaining : 0}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className='col-12'>
+                        <table className="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Employees</th>
+                                    <th>Current Base Annual Salary</th>
+                                    <th>Proposed Total Increase %</th>
+                                    <th>Proposed Total Increase $</th>
+                                    <th>Proposed New Base Hourly Rate</th>
+                                    <th>Proposed New Base Annual Salary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    teamEmployees && teamEmployees.map((item, rowIndex) => (
+                                        <tr key={item.id}>
+                                            <td>{item.name} {item.last_name}</td>
+                                            <td>{item.actual_external_data.annual_salary || 0}</td>
+                                            <td>$ {totalPriceByEmployee[item.id] || 0}</td>
+                                            <td>$ {totalPercentByEmployee[item.id] || 0}</td>
+                                            <td>$ 0</td>
+                                            <td>
+                                                <NewFormModal item={item} />
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
-    )
+    );
 };
 
 export default FormEmployees;

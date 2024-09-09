@@ -6,6 +6,7 @@ import Pagination from '@/components/Pagination/Pagination';
 import { headers, name } from './model';
 import Link from 'next/link';
 import Head from 'next/head';
+import { Title } from '@/components/Title';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -23,8 +24,8 @@ export default async function Employees({ searchParams }: Params) {
   console.log(data)
 
   return (
-    <div className='container'>
-    <h2 className='text-primary '>Roles</h2>
+    <div>
+    <Title>Roles</Title>
     <div className="row">
       <div className='col-12'>
         <Link

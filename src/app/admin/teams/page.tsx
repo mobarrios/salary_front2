@@ -6,6 +6,8 @@ import { headers, name } from './model';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormTeams from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
+import UserTeams from './user/page';
+import { Title } from '@/components/Title';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -22,11 +24,11 @@ export default async function Employees({ searchParams }: Params) {
   const totalPages = Math.ceil(data.count / limit);
 
   return (
-    <div className='container'>
-      <h2 className='text-primary '>Teams</h2>
-      <div className="row">
+    <div>  
+    <Title>Teams</Title>
+    <div className="row mt-5">
         <div className='col-12'>
-          <p className='float-end'>
+          <p className='float-start'>
             <ModalButton
               type={false}
               itemId={1}
@@ -36,13 +38,14 @@ export default async function Employees({ searchParams }: Params) {
           </p>
         </div>
         <div className='col-12 mt-3'>
-          <table className="table table-striped">
+          <table className="table table-hover">
             <thead>
               <tr>
                 <th>#</th>
                 {headers.map((header, key) => (
                   <th scope="col" key={key}>{header.name}</th>
                 ))}
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -54,7 +57,13 @@ export default async function Employees({ searchParams }: Params) {
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
-                      <td>
+                      <td className="text-end" >
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Users"
+                          FormComponent={UserTeams}
+                        />
                         <ModalButton
                           type={true}
                           itemId={item.id}
