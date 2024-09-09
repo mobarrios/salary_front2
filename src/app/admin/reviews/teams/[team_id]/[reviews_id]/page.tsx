@@ -12,6 +12,8 @@ import CloseButton from "@/components/Modal/CloseButton";
 import { ModalContent, ModalOverlay } from "@/components/Modal/StyleModal";
 import { Formik, Form } from 'formik';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import Modal from 'react-bootstrap/Modal';
+import { Button } from "react-bootstrap";
 
 const FormEmployees: React.FC = () => {
     // params
@@ -215,16 +217,29 @@ const FormEmployees: React.FC = () => {
         router.refresh();
     };
 
-    const Modal = ({ isOpen, onClose, children }) => {
+    const ModalComp = ({ isOpen, onClose, children }) => {
         if (!isOpen) return null;
 
         return (
-            <ModalOverlay>
-                <ModalContent onClick={e => e.stopPropagation()}> {/* Detener la propagación aquí */}
-                    <CloseButton onClose={onClose} />
-                    {children}
-                </ModalContent>
-            </ModalOverlay>
+            <Modal size="lg" fade show={true} onHide={onClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title><strong>Review </strong></Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{children}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onClose}>
+                        Close
+                    </Button>
+                
+                </Modal.Footer>
+            </Modal>
+
+            // <ModalOverlay>
+            //     <ModalContent onClick={e => e.stopPropagation()}> {/* Detener la propagación aquí */}
+            //         <CloseButton onClose={onClose} />
+            //         {children}
+            //     </ModalContent>
+            // </ModalOverlay>
         );
     };
 
@@ -249,7 +264,7 @@ const FormEmployees: React.FC = () => {
         return (
             <>
                 <button className="btn btn-primary" onClick={() => openModal(item.id)}>Review</button>
-                <Modal isOpen={modalId === item.id} onClose={closeModal}>
+                <ModalComp isOpen={modalId === item.id} onClose={closeModal}>
                     <Formik
                         initialValues={initialValues}
                         onSubmit={(values) => {
@@ -287,9 +302,10 @@ const FormEmployees: React.FC = () => {
                                     <tfoot>
                                         <tr>
                                             <th scope="row" colSpan={3}>
+                                                
                                                 <button
                                                     type="submit"
-                                                    className='btn btn-success btn-xs float-end'
+                                                    className="btn btn-primary mt-3"
                                                 >
                                                     <i className="bi bi-update"></i> update
                                                 </button>
@@ -300,7 +316,7 @@ const FormEmployees: React.FC = () => {
                             </Form>
                         )}
                     </Formik>
-                </Modal>
+                </ModalComp>
             </>
         );
     };

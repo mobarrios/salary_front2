@@ -39,9 +39,9 @@ const ReviewTeam: React.FC = ({id}) => {
 
   const updateReviewTeams = async () => {
     const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
-    console.log(reviewTeamsResponse)
+
     const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
-    console.log(employeesWithIdOne)
+  
     setUserTeams(employeesWithIdOne)
     setReviewTeam(employeesWithIdOne)
   }
@@ -53,6 +53,11 @@ const ReviewTeam: React.FC = ({id}) => {
       setTotalReview(reviewData.price)
 
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=10`);
+      console.log(teamsData)
+      // user por teams
+      const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=100`);
+      console.log(usersTeamsResponse)
+
       setOptions(teamsData.data)
 
       updateReviewTeams()
@@ -94,15 +99,12 @@ const ReviewTeam: React.FC = ({id}) => {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
       showSuccessAlert("Your work has been saved");
-      console.log(resp)
     } else {
 
       let reviewTeamId = reviewTeam.find(item => item.teams_id === parseInt(teamId));
-      console.log(reviewTeamId)
       // El checkbox está desmarcado
       if (reviewTeamId) {
         const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);
-        console.log(resp)
         showSuccessAlert("Your work has been saved");
       }
     }
@@ -120,8 +122,6 @@ const ReviewTeam: React.FC = ({id}) => {
       if (reviewTeamId) {
         let response = await apiRequest(`reviews_teams/edit/${reviewTeamId.id}`, 'PUT', { price: rangeValues[teamId] });
         showSuccessAlert("Your work has been saved");
-
-        console.log(response)
       } else {
         showErrorAlert("Error")
       }
