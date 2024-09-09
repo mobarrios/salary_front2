@@ -68,10 +68,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
     }
 
     return (
-        <div className="row">
-            <div className='col-12'>
-                <h1 className='text-primary'>New Merit Cycle</h1>
-            </div>
+        <div className="row m-2">
             <div className='col-12'>
                 {
                     !loading ?

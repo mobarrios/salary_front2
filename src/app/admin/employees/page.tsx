@@ -38,6 +38,7 @@ export default async function Employees({ searchParams }: Params) {
               itemId={1}
               name="New Employee"
               FormComponent={FormEmployees}
+              title="New Employee"
             />
             <Link href={`/admin/teams`} className="btn btn-primary  ms-3" >Teams </Link>
             <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
@@ -70,14 +71,14 @@ export default async function Employees({ searchParams }: Params) {
                           itemId={item.id}
                           name="Teams"
                           FormComponent={FormEmployeesTeams}
-                          title="Employees Teams"
+                          title= {item.associate_id + " Teams"}
                         />
                         <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Edit"
                           FormComponent={FormEmployees}
-                          title="Edit"
+                          title={item.associate_id}
                         />
                         <RemoveItem
                           url={name}

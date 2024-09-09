@@ -83,7 +83,8 @@ const FormEmployeesTeams: React.FC = ({id}) => {
           <p>Cargando...</p>
         ) : (
           options && options.map((option) => (
-            <div className="form-check form-switch" key={option.id}>
+            <div className="row form-check form-switch mt-2"  key={option.id}>
+              <div className="col-2">
               <input
                 className="form-check-input"
                 checked={Array.isArray(userTeams) && userTeams.some(item => item.teams_id === option.id)}
@@ -94,7 +95,10 @@ const FormEmployeesTeams: React.FC = ({id}) => {
                 value={option.id}
                 onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
               />
+              </div>
+              <div className="col-10 ms-3 ">
               <label className="form-check-label" htmlFor={option.id}>{option.name}</label>
+              </div>
             </div>
           ))
         )}
