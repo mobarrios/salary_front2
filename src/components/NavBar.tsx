@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 
 const NavbarComp = () => {
 
+
   const [activePath, setActivePath] = useState('');
 
   const { data: session, status } = useSession()
@@ -21,7 +22,10 @@ const NavbarComp = () => {
     }
   }, []);
 
+
+
   return (
+    <div>
     <Navbar expand="lg" className="bg-white shadow-sm navbar-fixed-top">
       <Container>
         <Navbar.Brand className="ms-auto" >
@@ -58,7 +62,14 @@ const NavbarComp = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
-
+    <div className="bg-primary">
+      <div className="container pt-5">
+      {/* <a onClick={() => (handleNavigation('dasdsasHome'))} >Home</a>
+      <h3 className="pt-4 pb-4 text-white">{pageTitle}</h3> */}
+      
+      </div>
+    </div>
+  </div>
   )
 }
 

@@ -31,10 +31,10 @@ const NewFormModal = ({ itemId, name, FormComponent, type }) => {
 
     return (
         <>
-            <button className="btn btn-primary" onClick={() => openModal(itemId)}>{name}</button>
-            <Modal isOpen={modalId === itemId} onClose={closeModal}>
-                <FormComponent type={type} id={modalId} onClose={closeModal} />
-            </Modal>
+            <button className="btn btn-primary ms-2" onClick={() => openModal(itemId)}>{name}</button>
+                <Modal isOpen={modalId === itemId} onClose={closeModal}>
+                    <FormComponent type={type} id={modalId} onClose={closeModal} />
+                </Modal>
         </>
     );
 };

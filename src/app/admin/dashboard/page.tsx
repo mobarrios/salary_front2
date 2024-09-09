@@ -13,11 +13,12 @@
 
 // components/Dashboard.js
 'use client'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
 
 const Dashboard = () => {
+   
   const [optionsMixedChart, setOptionsMixedChart] = useState({
     chart: {
       id: "basic-bar",
@@ -242,22 +243,22 @@ const Dashboard = () => {
 
   return (
     <div className="container">
-    <h1 className="text-primary">Dashboard</h1>
+    {/* <h1 className="text-primary fw-bold">Dashboard</h1> */}
     
-        <div className="row pt-4">
-         <Card className="col shadow pt-4 m-2">
+        <div className="row">
+         <Card className="col shadow  border-light pt-4 m-4">
               <CardTitle className="text-center">Employess</CardTitle>
               <CardBody className="text-center">
                   <h1><strong>20</strong></h1>
               </CardBody>
           </Card>
-          <Card className="col shadow pt-4 m-2">
+          <Card className="col shadow  border-light pt-4 m-4">
               <CardTitle className="text-center">Teams</CardTitle>
               <CardBody className="text-center">
                   <h1><strong>5</strong></h1>
               </CardBody>
           </Card>
-          <Card className="col shadow pt-4 m-2">
+          <Card className="col shadow border-light pt-4 m-4">
               <CardTitle className="text-center">Reviews</CardTitle>
               <CardBody className="text-center">
                   <h1><strong>15</strong></h1>
@@ -265,7 +266,7 @@ const Dashboard = () => {
           </Card>
         </div>
         <div className="row pt-4">
-          <div className="col shadow pt-4 m-2">
+          <div className="col shadow pt-4 m-4">
             <div className="text-center">
               {/* <CardTitle>Mixed Chart</CardTitle> */}
             </div>
@@ -276,7 +277,7 @@ const Dashboard = () => {
                       width="550"
                     /> 
           </div>
-          <div className="col shadow pt-4 m-2">
+          <div className="col shadow pt-4 m-4">
             <div className="text-center">
               {/* <CardTitle>Mixed Chart</CardTitle> */}
             </div>

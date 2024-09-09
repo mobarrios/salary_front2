@@ -97,6 +97,12 @@ const UserTeams: React.FC = ({ id }) => {
                                 onMenuOpen={handleSelectFocus} // O puedes usar onMenuOpen
                                 placeholder="Seleccione una o más opciones"
                                 value={options.filter(option => formik.values.users_teams.includes(option.value))}
+
+                                menuPortalTarget={document.body} // Añadir esta línea
+                                styles={{
+                                    menuPortal: base => ({ ...base, zIndex: 9999 }) // Asegúrate de que el z-index sea alto
+                                }}
+
                             />
                             {formik.touched.users_teams && formik.errors.users_teams ? (
                                 <div className="text-danger">{formik.errors.users_teams}</div>
