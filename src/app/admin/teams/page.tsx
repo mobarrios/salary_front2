@@ -24,12 +24,9 @@ export default async function Employees({ searchParams }: Params) {
   const totalPages = Math.ceil(data.count / limit);
 
   return (
-    <div className='container'>
-
-      <Title>Teams</Title>
-      <nav  aria-label="breadcrumb">
-</nav>
-      <div className="row mt-5">
+    <div>  
+    <Title>Teams</Title>
+    <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
             <ModalButton
