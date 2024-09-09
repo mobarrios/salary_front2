@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import { Title } from "@/components/Title";
 
 const FormEmployeesTeams: React.FC = ({id}) => {
 
@@ -76,10 +77,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
   };
 
   return (
-    <div className="row">
-      <div className='col-12'>
-        <h1 className='text-primary'>Employees Teams</h1>
-      </div>
+    <div className="row m-2">
       <div className='col-12'>
         {loading ? (
           <p>Cargando...</p>
