@@ -4,23 +4,23 @@ import { Button } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 
 // Componente Modal
-const ModalComp = ({ isOpen, onClose, children, title }) => {
+const ModalComp = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
     <Modal size="lg" fade show={true} onHide={onClose}>
       <Modal.Header closeButton>
-        <Modal.Title><strong> {title} </strong></Modal.Title>
+        <Modal.Title className="ms-3"><strong>{title}</strong></Modal.Title>
       </Modal.Header>
-      <Modal.Body>{children}</Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+      <Modal.Body >{children}</Modal.Body>
+      {/* <Modal.Footer> */}
+        {/* <Button variant="secondary" onClick={onClose}>
           Close
-        </Button>
+        </Button> */}
         {/* <Button variant="primary">
           Save Changes
         </Button> */}
-      </Modal.Footer>
+      {/* </Modal.Footer> */}
     </Modal>
   );
 };

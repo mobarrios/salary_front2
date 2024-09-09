@@ -42,6 +42,7 @@ export default async function Employees({ searchParams }: Params) {
               itemId={1}
               name="New Merit Cycle"
               FormComponent={FormReview}
+              title="New Merit Cycle"
             />
           )}
         </p>
@@ -65,7 +66,9 @@ export default async function Employees({ searchParams }: Params) {
                   <tr className="align-middle" key={rowIndex}>
                     <td>{item.id}</td>
                     {headers.map((header, colIndex) => (
-                      <td key={header.key}>{item[header.key]}</td>
+                      <>
+                      <td key={header.key}>{item[header.key]}</td>        
+                      </>
                     ))}
                     <td className="text-end">
                       {isAdmin && (
@@ -74,6 +77,7 @@ export default async function Employees({ searchParams }: Params) {
                           itemId={item.id}
                           name="Budgets"
                           FormComponent={ReviewTeam}
+                          title={"Budgets for  " + item.name}
                         />
                       )}
                       <ModalButton
@@ -81,6 +85,8 @@ export default async function Employees({ searchParams }: Params) {
                         itemId={item.id}
                         name="Edit"
                         FormComponent={FormReview}
+                        title={'Edit : ' + item.name}
+
                       />
                       <RemoveItem
                         url={name}
