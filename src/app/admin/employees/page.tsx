@@ -10,7 +10,7 @@ import FormEmployees from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
 import { Title } from '@/components/Title';
-import { BreadCrumb } from '@/components/BreadCrumb';
+import  Breadcrumb  from '@/components/BreadCrumb';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -27,7 +27,7 @@ export default async function Employees({ searchParams }: Params) {
   const totalPages = Math.ceil(data.count / limit);
 
   return (
-    <div className='container'>
+    <div>
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12'>

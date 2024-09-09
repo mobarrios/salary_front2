@@ -11,6 +11,7 @@ import { authOptions } from '@/server/auth'
 import ModalButton from '@/components/Modal/NewFormModal';
 import RemoveItem from '@/components/Core/RemoveItem';
 import Link from 'next/link';
+import { Title } from '@/components/Title';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -30,12 +31,11 @@ export default async function Employees({ searchParams }: Params) {
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
 
   return (
-    <div className="row">
+    <div>
+      <Title> Merit Cycle</Title>
+    <div className="row mt-5">
       <div className='col-12'>
-        <h1 className='text-primary'>Merit Cycle</h1>
-      </div>
-      <div className='col-12'>
-        <p className='float-end'>
+        <p className='float-start'>
           {isAdmin && (
             <ModalButton
               type={false}
@@ -48,13 +48,14 @@ export default async function Employees({ searchParams }: Params) {
       </div>
       <div className='col-12 mt-3'>
 
-        <table className="table table-striped">
+        <table className="table table-hover">
           <thead>
             <tr>
               <th>#</th>
               {headers.map((header, key) => (
                 <th scope="col" key={key}>{header.name}</th>
               ))}
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +67,7 @@ export default async function Employees({ searchParams }: Params) {
                     {headers.map((header, colIndex) => (
                       <td key={header.key}>{item[header.key]}</td>
                     ))}
-                    <td>
+                    <td className="text-end">
                       {isAdmin && (
                         <ModalButton
                           type={true}
@@ -100,6 +101,7 @@ export default async function Employees({ searchParams }: Params) {
       <div className='col-12 mt-3'>
         <Pagination page={page} totalPages={totalPages} />
       </div>
+    </div>
     </div>
   )
 };
