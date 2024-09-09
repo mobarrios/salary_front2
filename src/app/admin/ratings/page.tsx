@@ -2,7 +2,7 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name } from './model';
+import { buttonExtra, headers, name } from './model';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormRatings from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';

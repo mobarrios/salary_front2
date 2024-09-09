@@ -5,6 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useEffect, useState } from 'react';
+import { Button } from "react-bootstrap";
 
 const NavbarComp = () => {
 
@@ -52,23 +53,22 @@ const NavbarComp = () => {
               {/* <NavDropdown.Item href="/admin/roles" active={activePath === '/admin/roles'} >Roles</NavDropdown.Item> */}
             </NavDropdown>
           </Nav>
-          <Nav className="ms-auto">
-            <NavDropdown title={session?.user.name} id="basic-nav-dropdown">
-              <NavDropdown.Item href="/admin/users" >Profile</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.3"><a onClick={() => (handleLogout())} >Logout</a></NavDropdown.Item>
-            </NavDropdown>
+          <Nav >
+            {/* <NavDropdown title={session?.user.name} id="basic-nav-dropdown">
+              {/* <NavDropdown.Item href="/admin/users" >Profile</NavDropdown.Item> */}
+              {/* <NavDropdown.Divider /> */}
+              {/* <NavDropdown.Item href="#action/3.3"><a onClick={() => (handleLogout())} >Logout</a></NavDropdown.Item> */}
+            {/* </NavDropdown> */}
+            <Nav.Link href="#" onClick={() => (handleLogout())} >
+            <Button className="btn btn-light">
+              <i className="bi bi-box-arrow-right m-2"></i>
+              log out 
+            </Button>
+             </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>
-    <div className="bg-primary">
-      <div className="container pt-5">
-      {/* <a onClick={() => (handleNavigation('dasdsasHome'))} >Home</a>
-      <h3 className="pt-4 pb-4 text-white">{pageTitle}</h3> */}
-      
-      </div>
-    </div>
   </div>
   )
 }

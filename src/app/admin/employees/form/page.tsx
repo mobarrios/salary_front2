@@ -9,6 +9,7 @@ import FormComponent from "@/components/Core/FormComponent";
 import { useSession } from "next-auth/react";
 import { fetchData } from "@/server/services/core/fetchData";
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import { Title } from "@/components/Title";
 
 const FormEmployees: React.FC = ({ id, type, onClose }) => {
 
@@ -67,10 +68,7 @@ const FormEmployees: React.FC = ({ id, type, onClose }) => {
 
 
     return (
-        <div className="row">
-            <div className='col-12'>
-                <h1 className='text-primary'>New Employee</h1>
-            </div>
+        <div className="row m-2">
             <div className='col-12'>
                 {
                     !loading ?
