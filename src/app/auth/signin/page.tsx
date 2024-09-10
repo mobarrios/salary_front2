@@ -48,24 +48,25 @@ export default function SignIn({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="container">
+  <div className="container">
       <div className="row justify-content-center">
-        <div className="col-5 pt-5">
+        <div className="col-12  pt-5">
           <div className="p-5 bg-white rounded shadow">
-          <div className="mb-5 text-center">
-           <img
-              src="/equipay.png"
-              width="240"
-              height="60"
-              // className="d-inline-block align-top"
-              alt="Logo"
-            />
-          </div>  
-            <form className="" onSubmit={handleSubmit}>
-              <div >
-                <label htmlFor="email" className="form-label">Email address</label>
-                {/* <input type="email" className="form-control" id="email" placeholder="name@example.com" /> */}
-                <input
+            <div className="bg-danger col-4">
+              <div className="mb-5 text-center">
+                <img
+                src="/equipay.png"
+                width="240"
+                height="60"
+                // className="d-inline-block align-top"
+                alt="Logo"
+                />
+              </div>  
+              <form className="" onSubmit={handleSubmit}>
+                <div>
+                  <label htmlFor="email" className="form-label">Email address</label>
+                  {/* <input type="email" className="form-control" id="email" placeholder="name@example.com" /> */}
+                  <input
                   placeholder="name@example.com"
                   id="username"
                   name="username"
@@ -75,12 +76,12 @@ export default function SignIn({ searchParams }: PageProps) {
                   value={inputs.username || ""}
                   onChange={handleChange}
                   className="form-control"
-                />
-              </div>
-              <div className="mt-4" >
-                <label htmlFor="password" className="form-label ">Password</label>
-                {/* <input type="password" className="form-control" id="password" placeholder="Password" /> */}
-                <input
+                  />
+                </div>
+                <div className="mt-4" >
+                  <label htmlFor="password" className="form-label ">Password</label>
+                  {/* <input type="password" className="form-control" id="password" placeholder="Password" /> */}
+                  <input
                   placeholder="Password"
                   id="password"
                   name="password"
@@ -90,46 +91,59 @@ export default function SignIn({ searchParams }: PageProps) {
                   value={inputs.password || ""}
                   onChange={handleChange}
                   className="form-control"
-                />
-              </div>
-              <div className="mt-4 d-grid gap-2">
+                  />
+                </div>
+                <div className="mt-4 d-grid gap-2">
                 {/* <button type="submit" className="btn btn-primary">Login</button> */}
-                <input
+                  <input
                   type="submit"
                   value={loading ? 'Loading...' : 'Sign In'}
                   className="btn btn-primary"
                   disabled={loading}
-                />
-                {searchParams.error && (
+                  />
+                  {searchParams.error && (
                   <div className="mb-1">
-                    <p className="text-center capitalize">
-                      {searchParams.error}
-                    </p>
+                  <p className="text-center capitalize">
+                  {searchParams.error}
+                  </p>
                   </div>
-                )}
+                  )}
+                </div>
+                <div className="text-center mt-3">
+                  <a href="#">Forgot password?</a>
+                </div>
+              </form>
+              <div className="container mt-5 text-center">
+                <div>
+                  or continue with
+                </div>
+                <div>
+                  <button className="m-2 btn btn-danger btn-md"><i className="bi bi-google"></i></button>
+                  <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button>
+                </div>
               </div>
-              <div className="text-center mt-3">
-                <a href="#">Forgot password?</a>
-              </div>
-            </form>
-            <div className="container mt-5 text-center">
-              <div>or continue with</div>
-              <div>
-              <button className="m-2 btn btn-danger btn-md"><i className="bi bi-google"></i></button>
-              <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button>
-              </div>
-            </div>
               {searchParams.error && (
                 <div >
                   <p className="text-red text-center capitalize">
-                    Credenciales inválidas
+                  Credenciales inválidas
                   </p>
                 </div>
-              )}       
+                )}       
+            </div>
+
+            <div className="bg-success col-4 " >
+              <img
+                src="/login_img/1.jpg"
+                 width={'100%'}
+                // height="60"
+                // className="d-inline-block align-top"
+                alt="Logo"
+                />
+            </div>
           </div>
         </div>
-      </div>
     </div>
+  </div>
     // <div className="flex items-center justify-center h-screen">
     //   <div className="w-full max-w-md">
     //     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
