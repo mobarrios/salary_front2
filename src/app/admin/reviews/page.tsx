@@ -49,29 +49,43 @@ export default async function Employees({ searchParams }: Params) {
       </div>
       <div className='col-12 mt-3'>
 
-        <table className="table table-hover">
-          <thead>
-            <tr>
-              <th>#</th>
-              {headers.map((header, key) => (
-                <th scope="col" key={key}>{header.name}</th>
-              ))}
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              results ? (
-                results.map((item, rowIndex) => (
-                  <tr className="align-middle" key={rowIndex}>
-                    <td>{item.id}</td>
-                    {headers.map((header, colIndex) => (
-                      <>
-                      <td key={header.key}>{item[header.key]}</td>        
-                      </>
-                    ))}
-                    <td className="text-end">
-                      {isAdmin && (
+          <table className="table table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                {headers.map((header, key) => (
+                  <th scope="col" key={key}>{header.name}</th>
+                ))}
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                results ? (
+                  results.map((item, rowIndex) => (
+                    <tr className="align-middle" key={rowIndex}>
+                      <td>{item.id}</td>
+                      {headers.map((header, colIndex) => (
+                        <td key={header.key}>
+                          {header.key === 'price' ? (
+                            item[header.key]?.toFixed(2)
+                          ) : header.key === 'status' ? (
+                            header.options.find(option => option.value === String(item[header.key]))?.label || 'Desconocido'
+                          ) : (
+                            item[header.key]
+                          )}
+                        </td>
+                      ))}
+                      <td className="text-end">
+                        {isAdmin && (
+                          <ModalButton
+                            type={true}
+                            itemId={item.id}
+                            name="Budgets"
+                            FormComponent={ReviewTeam}
+                            title={"Budgets for  " + item.name}
+                          />
+                        )}
                         <ModalButton
                           type={true}
                           itemId={item.id}
