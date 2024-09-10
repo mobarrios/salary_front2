@@ -79,9 +79,6 @@ const UserTeams: React.FC = ({ id }) => {
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>Team User</h1>
-            </div>
-            <div className='col-12'>
                 {
                     !loading ?
                         <form onSubmit={formik.handleSubmit}>

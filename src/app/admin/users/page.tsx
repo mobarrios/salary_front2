@@ -37,6 +37,7 @@ export default async function Employees({ searchParams }: Params) {
               itemId={1}
               name="New user"
               FormComponent={FormUsers}
+              title={"New User"}
             />
           </p>
         </div>
@@ -66,12 +67,14 @@ export default async function Employees({ searchParams }: Params) {
                           itemId={item.id}
                           name="Rol"
                           FormComponent={FormRol}
+                          title={"Rol : " + item.user_name}
                         />
                         <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Edit"
                           FormComponent={FormUsers}
+                          title={"Edit : " + item.user_name}
                         />
                         <RemoveItem
                           url={name}

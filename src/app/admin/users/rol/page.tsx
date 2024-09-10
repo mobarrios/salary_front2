@@ -74,14 +74,6 @@ const FormRol: React.FC = ({id}) => {
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>Edit Data</h1>
-            </div>
-            <div className='col-12'>
-
-                <div>
-                    <p><strong>Username</strong> {user != 'undefined' ? user?.user_name : null}</p>
-                </div>
-
                 {options && options.map((option) => (
                     <div className="form-check form-switch" key={option.id}>
                         <input
