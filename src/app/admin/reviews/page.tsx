@@ -66,7 +66,13 @@ export default async function Employees({ searchParams }: Params) {
                       <td>{item.id}</td>
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>
-                          {header.key === 'price' ? item[header.key]?.toFixed(2) : item[header.key]}
+                          {header.key === 'price' ? (
+                            item[header.key]?.toFixed(2)
+                          ) : header.key === 'status' ? (
+                            header.options.find(option => option.value === String(item[header.key]))?.label || 'Desconocido'
+                          ) : (
+                            item[header.key]
+                          )}
                         </td>
                       ))}
                       <td className="text-end">
