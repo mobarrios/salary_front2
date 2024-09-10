@@ -32,7 +32,7 @@ export default async function Employees({ searchParams }: Params) {
               itemId={1}
               name="New rating"
               FormComponent={FormRatings}
-              title={'Ratings'}
+              title={'New Rating'}
             />
           </p>
         </div>
@@ -62,6 +62,7 @@ export default async function Employees({ searchParams }: Params) {
                           itemId={item.id}
                           name="Edit"
                           FormComponent={FormRatings}
+                          title={item.name}
                         />
                         <RemoveItem
                           url={name}

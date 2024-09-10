@@ -27,27 +27,26 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
-  const roles = session?.user.roles;
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
 
   return (
     <div>
       <Title> Merit Cycle</Title>
-    <div className="row mt-5">
-      <div className='col-12'>
-        <p className='float-start'>
-          {isAdmin && (
-            <ModalButton
-              type={false}
-              itemId={1}
-              name="New Merit Cycle"
-              FormComponent={FormReview}
-              title="New Merit Cycle"
-            />
-          )}
-        </p>
-      </div>
-      <div className='col-12 mt-3'>
+      <div className="row mt-5">
+        <div className='col-12'>
+          <p className='float-start'>
+            {isAdmin && (
+              <ModalButton
+                type={false}
+                itemId={1}
+                name="New Merit Cycle"
+                FormComponent={FormReview}
+                title="New Merit Cycle"
+              />
+            )}
+          </p>
+        </div>
+        <div className='col-12 mt-3'>
 
           <table className="table table-hover">
             <thead>
@@ -89,39 +88,31 @@ export default async function Employees({ searchParams }: Params) {
                         <ModalButton
                           type={true}
                           itemId={item.id}
-                          name="Budgets"
-                          FormComponent={ReviewTeam}
-                          title={"Budgets for  " + item.name}
-                        />
-                      )}
-                      <ModalButton
-                        type={true}
-                        itemId={item.id}
-                        name="Edit"
-                        FormComponent={FormReview}
-                        title={'Edit : ' + item.name}
+                          name="Edit"
+                          FormComponent={FormReview}
+                          title={'Edit : ' + item.name}
 
-                      />
-                      <RemoveItem
-                        url={name}
-                        id={item.id}
-                      />
-                    </td>
+                        />
+                        <RemoveItem
+                          url={name}
+                          id={item.id}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={headers.length + 2}>No data available</td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={headers.length + 2}>No data available</td>
-                </tr>
-              )
-            }
-          </tbody>
-        </table>
+                )
+              }
+            </tbody>
+          </table>
+        </div>
+        <div className='col-12 mt-3'>
+          <Pagination page={page} totalPages={totalPages} />
+        </div>
       </div>
-      <div className='col-12 mt-3'>
-        <Pagination page={page} totalPages={totalPages} />
-      </div>
-    </div>
     </div>
   )
 };
