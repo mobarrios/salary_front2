@@ -24,7 +24,6 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
-      <Title>Ratings</Title>
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
@@ -33,6 +32,7 @@ export default async function Employees({ searchParams }: Params) {
               itemId={1}
               name="New rating"
               FormComponent={FormRatings}
+              title={'New Rating'}
             />
           </p>
         </div>
@@ -62,6 +62,7 @@ export default async function Employees({ searchParams }: Params) {
                           itemId={item.id}
                           name="Edit"
                           FormComponent={FormRatings}
+                          title={item.name}
                         />
                         <RemoveItem
                           url={name}

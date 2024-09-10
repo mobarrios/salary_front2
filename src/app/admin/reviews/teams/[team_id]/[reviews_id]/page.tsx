@@ -8,12 +8,9 @@ import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
 import RatingRow from "@/components/Rating/RatingRow";
 import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee } from '@/functions/formEmployeeHandlers';
-import CloseButton from "@/components/Modal/CloseButton";
-import { ModalContent, ModalOverlay } from "@/components/Modal/StyleModal";
 import { Formik, Form } from 'formik';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import Modal from 'react-bootstrap/Modal';
-import { Button } from "react-bootstrap";
 
 const FormEmployees: React.FC = () => {
     // params
@@ -155,18 +152,16 @@ const FormEmployees: React.FC = () => {
     };
 
     const handleSubmit = async (values, item) => {
-        console.log(values, item, ratingsTeamEmployees);
+
         const items = Object.keys(values).reduce((acc, key) => {
             const [ratingsId, employeesId, field] = key.split('-');
             const ratingsIdInt = parseInt(ratingsId, 10);
             const employeesIdInt = parseInt(employeesId, 10);
-
             let item = acc.find(i => i.ratingsId === ratingsIdInt && i.employeesId === employeesIdInt);
             if (!item) {
                 item = { ratingsId: ratingsIdInt, employeesId: employeesIdInt, percent: "", comments: "", checked: false };
                 acc.push(item);
             }
-
             if (field === 'checked') {
                 item.checked = values[key];
             } else {
@@ -175,9 +170,26 @@ const FormEmployees: React.FC = () => {
             return acc;
         }, []);
 
-        const checkedItems = items.filter(item => item.checked);
-        console.log(checkedItems);
+        const checkedItems = items.filter(item => item.checked && item.percent !== null && item.percent !== "");
+        const uncheckedItems = items.filter(item => !item.checked);
 
+        // Borrar los registros desmarcados
+        for (const item of uncheckedItems) {
+            const existingRecord = ratingsTeamEmployees.find(r =>
+                r.ratings_id === item.ratingsId && r.employees_id === item.employeesId
+            );
+            if (existingRecord) {
+                try {
+                    // Realiza la solicitud DELETE
+                    await apiRequest(`reviews_teams_employees/delete/${existingRecord.id}`, 'DELETE');
+                    console.log('Eliminando...', existingRecord.id);
+                } catch (error) {
+                    console.error('Error al eliminar datos:', error);
+                }
+            }
+        }
+
+        // Guardar los registros marcados
         for (const item of checkedItems) {
             let currentSalary = calculatePorcent(teamEmployees, item.percent, item.employeesId);
             const payload = {
@@ -195,17 +207,14 @@ const FormEmployees: React.FC = () => {
             const existingRecord = ratingsTeamEmployees.find(r =>
                 r.ratings_id === item.ratingsId && r.employees_id === item.employeesId
             );
-
             try {
                 if (existingRecord) {
                     // Si existe, realiza un PUT
-                    const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                    console.log(response)
+                    await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
                     console.log('Actualizando...', payload);
                 } else {
                     // Si no existe, realiza un POST
-                    const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                    console.log(response)
+                    await apiRequest(`reviews_teams_employees/`, 'POST', payload);
                     console.log('Guardando...', payload);
                 }
             } catch (error) {
@@ -217,30 +226,41 @@ const FormEmployees: React.FC = () => {
         router.refresh();
     };
 
-    const ModalComp = ({ isOpen, onClose, children }) => {
+    const ModalComp = ({ isOpen, onClose, children, title }) => {
         if (!isOpen) return null;
 
         return (
             <Modal size="lg" fade show={true} onHide={onClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title><strong>Review </strong></Modal.Title>
+                    <Modal.Title><strong>Review: {title} </strong></Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{children}</Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={onClose}>
-                        Close
-                    </Button>
-                
-                </Modal.Footer>
             </Modal>
-
-            // <ModalOverlay>
-            //     <ModalContent onClick={e => e.stopPropagation()}> {/* Detener la propagación aquí */}
-            //         <CloseButton onClose={onClose} />
-            //         {children}
-            //     </ModalContent>
-            // </ModalOverlay>
         );
+    };
+
+    const changeStatusByRatings = async (e, employeesId, status) => {
+        console.log(employeesId, status)
+
+        /*
+        try {
+            const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
+                item.reviews_id == parseInt(reviews_id) &&
+                item.employees_id == employeesId &&
+                item.ratings_id == optionId &&
+                item.teams_id == parseInt(id)
+            );
+            console.log(reviewTeamEmployeesId)
+            const values = {
+                status: status,
+            };
+
+            const response = await apiRequest(`reviews_teams_employees/edit/${reviewTeamEmployeesId.id}`, 'PUT', values);
+            console.log(response)
+        } catch (error) {
+            console.error('Error updating:', error);
+        }
+            */
     };
 
 
@@ -248,7 +268,7 @@ const FormEmployees: React.FC = () => {
         const [modalId, setModalId] = useState(null);
         const openModal = (id) => setModalId(id);
         const closeModal = () => {
-            load();
+            //load();
             setModalId(null);
         }
 
@@ -264,7 +284,7 @@ const FormEmployees: React.FC = () => {
         return (
             <>
                 <button className="btn btn-primary" onClick={() => openModal(item.id)}>Review</button>
-                <ModalComp isOpen={modalId === item.id} onClose={closeModal}>
+                <ModalComp isOpen={modalId === item.id} onClose={closeModal} title={item.name}>
                     <Formik
                         initialValues={initialValues}
                         onSubmit={(values) => {
@@ -302,13 +322,25 @@ const FormEmployees: React.FC = () => {
                                     <tfoot>
                                         <tr>
                                             <th scope="row" colSpan={3}>
-                                                
+
                                                 <button
                                                     type="submit"
-                                                    className="btn btn-primary mt-3"
+                                                    className="btn btn-primary"
                                                 >
                                                     <i className="bi bi-update"></i> update
                                                 </button>
+
+                                                {isValidator && (
+                                                    <div className="float-end">
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a>
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}>aproved</a>
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}>rejected</a>
+
+                                                    </div>
+                                                )}
                                             </th>
                                         </tr>
                                     </tfoot>
@@ -343,8 +375,8 @@ const FormEmployees: React.FC = () => {
                                 <tr>
                                     <td><strong>$ {reviewTeam ? reviewTeam.price.toFixed(2) : 0}</strong></td>
                                     <td>% {totalPercent ? totalPercent : 0}</td>
-                                    <td>$ {totalSpend ? totalSpend : 0}</td>
-                                    <td style={{ color: color }}>$ {totalRemaining ? totalRemaining : 0}</td>
+                                    <td>$ {totalSpend ? totalSpend.toFixed(2) : 0}</td>
+                                    <td style={{ color: color }}>$ {totalRemaining ? totalRemaining.toFixed(2) : 0}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -367,8 +399,8 @@ const FormEmployees: React.FC = () => {
                                         <tr key={item.id}>
                                             <td>{item.name} {item.last_name}</td>
                                             <td>{item.actual_external_data.annual_salary || 0}</td>
-                                            <td>$ {totalPriceByEmployee[item.id] || 0}</td>
-                                            <td>$ {totalPercentByEmployee[item.id] || 0}</td>
+                                            <td>% {totalPriceByEmployee[item.id] || 0}</td>
+                                            <td>$ {totalPercentByEmployee[item.id]?.toFixed(2) || 0}</td>
                                             <td>$ 0</td>
                                             <td>
                                                 <NewFormModal item={item} />
