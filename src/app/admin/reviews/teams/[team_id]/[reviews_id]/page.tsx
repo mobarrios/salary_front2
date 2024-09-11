@@ -428,7 +428,7 @@ const FormEmployees: React.FC = () => {
                                             <td>
                                                 <NewFormModal item={item} />
 
-                                                {isValidator && (
+                                                {/* {isValidator && (
                                                     <div className="float-end">
 
                                                         <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1, values)}>pending</a>
@@ -438,7 +438,7 @@ const FormEmployees: React.FC = () => {
                                                         <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3, values)}>rejected</a>
 
                                                     </div>
-                                                )}
+                                                )} */}
                                             </td>
                                         </tr>
                                     ))}
