@@ -49,6 +49,20 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
                     placeholder="Comments"
                 />
             </td>
+            <td className='text-end'>
+                    {isValidator && (
+                    <>
+
+                    {/* <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a> */}
+
+                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}><i className="text-success bi bi-hand-thumbs-up"></i></a>
+
+                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}><i className="text-danger bi bi-hand-thumbs-down"></i>
+                    </a>
+
+                    </>
+                    )}
+            </td>
         </tr>
     );
 };

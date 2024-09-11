@@ -11,6 +11,8 @@ import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calcula
 import { Formik, Form } from 'formik';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import Modal from 'react-bootstrap/Modal';
+import { Button } from "react-bootstrap";
+import { Title } from "@/components/Title";
 
 const FormEmployees: React.FC = () => {
     // params
@@ -322,12 +324,13 @@ const FormEmployees: React.FC = () => {
                     >
                         {({ values, setFieldValue }) => (
                             <Form>
-                                <table className="table table-bordered">
+                                <table className="table table-hover">
                                     <thead>
                                         <tr>
                                             <th>Ratings</th>
                                             <th>%</th>
                                             <th>Comments</th>
+                                            <th className='text-end'>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -358,6 +361,7 @@ const FormEmployees: React.FC = () => {
                                                     <i className="bi bi-update"></i> {loading ? 'Save...' : 'Update'}
                                                 </button>
                                             </th>
+                                            <th></th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -376,8 +380,10 @@ const FormEmployees: React.FC = () => {
                 <div>Cargando...</div>
             ) : (
                 <>
-                    <div className='col-12'>
-                        <h3 className='text-primary mb-5'>Reviews - {team?.name}</h3>
+                    <Title>Reviews - {team?.name}</Title>
+
+                    <div className='col-12 mt-5'>
+                        {/* <h3 className='text-primary mb-5'></h3> */}
                         <table className="table">
                             <thead>
                                 <tr>
@@ -399,7 +405,7 @@ const FormEmployees: React.FC = () => {
                     </div>
 
                     <div className='col-12'>
-                        <table className="table table-bordered">
+                        <table className="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Employees</th>

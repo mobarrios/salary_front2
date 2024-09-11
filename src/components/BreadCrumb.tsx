@@ -8,7 +8,11 @@ import { usePathname } from 'next/navigation';
 
 const Breadcrumb = () => {
   const pathname = usePathname();
-  const pathArray = pathname.split('/').filter((path) => path);
+  // const pathArray = pathname.split('/').filter((path) => path);
+   // Split the path into segments and filter out 'admin'
+  const pathArray = pathname
+    .split('/')
+    .filter((path) => path && path !== 'admin'); // Exclude 'admin'
 
   return (
     <nav aria-label="breadcrumb">
