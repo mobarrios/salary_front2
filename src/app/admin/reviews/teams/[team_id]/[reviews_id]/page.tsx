@@ -155,6 +155,7 @@ const FormEmployees: React.FC = () => {
 
     const handleSubmit = async (values, item) => {
 
+        setLoading(true)
         const items = Object.keys(values).reduce((acc, key) => {
             const [ratingsId, employeesId, field] = key.split('-');
             const ratingsIdInt = parseInt(ratingsId, 10);
@@ -223,9 +224,10 @@ const FormEmployees: React.FC = () => {
                 console.error('Error al enviar datos:', error);
             }
         }
+        setLoading(false)
+
         showSuccessAlert("Your work has been saved");
-        load();
-        router.refresh();
+        //load();
     };
 
     const ModalComp = ({ isOpen, onClose, children, title }) => {
@@ -241,28 +243,54 @@ const FormEmployees: React.FC = () => {
         );
     };
 
-    const changeStatusByRatings = async (e, employeesId, status) => {
-        console.log(employeesId, status)
+    const changeStatusByRatings = async (e, employeesId, status, values) => {
 
-        /*
-        try {
-            const reviewTeamEmployeesId = ratingsTeamEmployees.find(item =>
-                item.reviews_id == parseInt(reviews_id) &&
-                item.employees_id == employeesId &&
-                item.ratings_id == optionId &&
-                item.teams_id == parseInt(id)
-            );
-            console.log(reviewTeamEmployeesId)
-            const values = {
+        const items = Object.keys(values).reduce((acc, key) => {
+            const [ratingsId, employeesId, field] = key.split('-');
+            const ratingsIdInt = parseInt(ratingsId, 10);
+            const employeesIdInt = parseInt(employeesId, 10);
+            let item = acc.find(i => i.ratingsId === ratingsIdInt && i.employeesId === employeesIdInt);
+            if (!item) {
+                item = { ratingsId: ratingsIdInt, employeesId: employeesIdInt, percent: "", comments: "", checked: false };
+                acc.push(item);
+            }
+            if (field === 'checked') {
+                item.checked = values[key];
+            } else {
+                item[field] = values[key];
+            }
+            return acc;
+        }, []);
+
+        const checkedItems = items.filter(item => item.checked && item.percent !== null && item.percent !== "");
+        console.log(checkedItems)
+
+        for (const item of checkedItems) {
+
+            const payload = {
                 status: status,
             };
 
-            const response = await apiRequest(`reviews_teams_employees/edit/${reviewTeamEmployeesId.id}`, 'PUT', values);
-            console.log(response)
-        } catch (error) {
-            console.error('Error updating:', error);
+            // Verificar si el registro ya existe
+            const existingRecord = ratingsTeamEmployees.find(r =>
+                r.ratings_id === item.ratingsId && r.employees_id === item.employeesId
+            );
+
+            try {
+                if (existingRecord) {
+                    // Si existe, realiza un PUT
+                    await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                    showSuccessAlert("Your work has been saved");
+                    console.log('Actualizando...', payload);
+
+                }
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+            }
         }
-            */
+
+        load();
+        router.refresh();
     };
 
 
@@ -325,25 +353,13 @@ const FormEmployees: React.FC = () => {
                                     <tfoot>
                                         <tr>
                                             <th scope="row" colSpan={3}>
-
                                                 <button
                                                     type="submit"
                                                     className="btn btn-primary"
+                                                    disabled={loading}
                                                 >
-                                                    <i className="bi bi-update"></i> update
+                                                    <i className="bi bi-update"></i> {loading ? 'Save...' : 'Update'}
                                                 </button>
-
-                                                {isValidator && (
-                                                    <div className="float-end">
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a>
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}>aproved</a>
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}>rejected</a>
-
-                                                    </div>
-                                                )}
                                             </th>
                                             <th></th>
                                         </tr>
@@ -387,6 +403,7 @@ const FormEmployees: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
+
                     <div className='col-12'>
                         <table className="table table-hover">
                             <thead>
@@ -410,6 +427,18 @@ const FormEmployees: React.FC = () => {
                                             <td>$ 0</td>
                                             <td>
                                                 <NewFormModal item={item} />
+
+                                                {/* {isValidator && (
+                                                    <div className="float-end">
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1, values)}>pending</a>
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2, values)}>aproved</a>
+
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3, values)}>rejected</a>
+
+                                                    </div>
+                                                )} */}
                                             </td>
                                         </tr>
                                     ))}

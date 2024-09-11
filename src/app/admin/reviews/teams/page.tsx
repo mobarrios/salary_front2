@@ -134,26 +134,26 @@ const ReviewTeam: React.FC = ({ id }) => {
     <>
       <div className='row p-3'>
         <div className="col-12">
-        <table className="table ">
-          <thead>
-            <tr className="text-center">
-             <td colSpan={3}>Resume</td></tr>
-            <tr>
-              <th>Budget Total</th>
-              <th>Asigned</th>
-              <th>Remaining</th>
-            </tr>  
-          </thead>
-          <tbody>
-            <tr>
-              <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
-              <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
-              <td>
-                $ {totalRemaining < 0 ? <b className='bg-danger'>{totalRemaining?.toFixed(2)}</b>: <b>{totalRemaining?.toFixed(2)}</b>}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+          <table className="table ">
+            <thead>
+              <tr className="text-center">
+                <td colSpan={3}>Resume</td></tr>
+              <tr>
+                <th>Budget Total</th>
+                <th>Asigned</th>
+                <th>Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
+                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
+                <td>
+                  $ {totalRemaining < 0 ? <b className='bg-danger'>{totalRemaining?.toFixed(2)}</b> : <b>{totalRemaining?.toFixed(2)}</b>}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div className='col-12 mt-3'>
           <table className='table table-hover '>
@@ -181,7 +181,6 @@ const ReviewTeam: React.FC = ({ id }) => {
                         value={option.id}
                         onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
                       />
-
                     </div>
                   </td>
                   <td>
@@ -196,7 +195,7 @@ const ReviewTeam: React.FC = ({ id }) => {
                         onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
 
                       />
-                    </div>
+                   
                   </td>
                   <td className="text-center">
                       <button
@@ -220,10 +219,10 @@ const ReviewTeam: React.FC = ({ id }) => {
                 </tr>
 
               ))}
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
       </div>
+    </div >
     </>
   );
 };
