@@ -9,62 +9,6 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
     const handleCheckboxChange = async (e) => {
         const isChecked = e.target.checked;
         setFieldValue(`${option.id}-${item.id}-checked`, isChecked);
-
-        if (!isChecked) {
-            let reviewTeamEmployeesId = ratingsTeamEmployees.find(reviewItem =>
-                reviewItem.reviews_id == reviews_id &&
-                reviewItem.employees_id == item.id &&
-                reviewItem.ratings_id == option.id &&
-                reviewItem.teams_id == team_id
-            );
-
-            console.log(reviews_id, item.id, option.id, team_id)
-            console.log(reviewTeamEmployeesId, ratingsTeamEmployees)
-            if (reviewTeamEmployeesId) {
-                // El checkbox está desmarcado
-                const response = await fetchData(session, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
-                console.log(response);
-
-            } else {
-                console.log('No se encontró el elemento para desmarcar');
-            }
-        }
-
-        /*
-        if (isChecked) {
-
-            const postData = {
-                reviews_id: reviews_id,
-                teams_id: team_id,
-                employees_id: item.id,
-                ratings_id: option.id,
-                status: 1
-            };
-
-            const response = await apiRequest(`reviews_teams_employees/`, 'POST', postData);
-            console.log(response)
-        } else {
-
-            let reviewTeamEmployeesId = ratingsTeamEmployees.find(reviewItem =>
-                reviewItem.reviews_id == reviews_id &&
-                reviewItem.employees_id == item.id &&
-                reviewItem.ratings_id == option.id &&
-                reviewItem.teams_id == team_id
-            );
-
-            console.log(reviews_id, item.id, option.id, team_id)
-            console.log(reviewTeamEmployeesId, ratingsTeamEmployees)
-            if (reviewTeamEmployeesId) {
-                // El checkbox está desmarcado
-                const response = await fetchData(session, 'DELETE', `reviews_teams_employees/delete/${reviewTeamEmployeesId.id}`);
-                console.log(response);
-
-            } else {
-                console.log('No se encontró el elemento para desmarcar');
-            }
-        }
-        */
-
     };
 
     return (
@@ -104,6 +48,20 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
                     name={`${option.id}-${item.id}-comments`}
                     placeholder="Comments"
                 />
+            </td>
+            <td className='text-end'>
+                    {isValidator && (
+                    <>
+
+                    {/* <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a> */}
+
+                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}><i className="text-success bi bi-hand-thumbs-up"></i></a>
+
+                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}><i className="text-danger bi bi-hand-thumbs-down"></i>
+                    </a>
+
+                    </>
+                    )}
             </td>
         </tr>
     );

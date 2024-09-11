@@ -25,7 +25,8 @@ export const authOptions: NextAuthOptions = {
 
       //console.log("------------ SESSION ------------");
       if (token) {
-        session.user.token = token.user.token
+        session.user.token = token.user.token;
+        session.user.id = token.user.id;
         session.user.roles = token.user.roles; // Asegúrate de incluir roles        
       }
       //console.log({ session });
@@ -67,10 +68,12 @@ export const authOptions: NextAuthOptions = {
           });
 
           const data = await res.json();
+          console.log('data', data)
           if (res.ok && data) {
             const user = {
               token: data.access_token,
               name: data.user_data.user_name,
+              id: data.user_data.id,
               roles: data.user_roles
             }
             console.log('User login', user)

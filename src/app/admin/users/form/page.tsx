@@ -71,9 +71,6 @@ const FormUsers: React.FC = ({ id, type, onClose }) => {
     return (
         <div className="row">
             <div className='col-12'>
-                <h1 className='text-primary'>New User</h1>
-            </div>
-            <div className='col-12'>
                 {
                     !loading ?
                         <FormComponent

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
-const ReviewTeam: React.FC = ({id}) => {
+const ReviewTeam: React.FC = ({ id }) => {
 
   const { data: session, status } = useSession()
   const [totalTeams, setTotalTeams] = useState();
@@ -16,8 +16,6 @@ const ReviewTeam: React.FC = ({id}) => {
   const [userTeams, setUserTeams] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalRemaining, setTotalRemaining] = useState(0);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
 
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
@@ -41,7 +39,7 @@ const ReviewTeam: React.FC = ({id}) => {
     const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
     const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
-  
+
     setUserTeams(employeesWithIdOne)
     setReviewTeam(employeesWithIdOne)
   }
@@ -52,14 +50,14 @@ const ReviewTeam: React.FC = ({id}) => {
       const reviewData = await fetchData(session?.user.token, 'GET', `reviews/${id}`);
       setTotalReview(reviewData.price)
 
-      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=10`);
-      console.log(teamsData)
-      // user por teams
-      const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=100`);
-      console.log(usersTeamsResponse)
+      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
+      const userIdToFilter = session?.user.id;
 
-      setOptions(teamsData.data)
-
+      const teamUserFilter = teamsData.data.filter(grupo =>
+        grupo.users.some(user => user.id === userIdToFilter)
+      );
+      console.log(teamUserFilter, userIdToFilter)
+      setOptions(teamUserFilter)
       updateReviewTeams()
 
     } catch (error) {
@@ -94,7 +92,7 @@ const ReviewTeam: React.FC = ({id}) => {
   }
 
   const handleCheckboxChange = async (teamId, isChecked) => {
-   
+
     if (isChecked) {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
@@ -114,7 +112,7 @@ const ReviewTeam: React.FC = ({id}) => {
   };
 
   const handleSubmit = async (e, teamId) => {
-    setShowToast(false);
+
     let reviewTeamId = reviewTeam.find(item => item.teams_id === parseInt(teamId));
 
     try {
@@ -134,16 +132,37 @@ const ReviewTeam: React.FC = ({id}) => {
 
   return (
     <>
-      <div className='row mt-5'>
-        <div className='col-12'>
-          <table className='table '>
+      <div className='row p-3'>
+        <div className="col-12">
+          <table className="table ">
+            <thead>
+              <tr className="text-center">
+                <td colSpan={3}>Resume</td></tr>
+              <tr>
+                <th>Budget Total</th>
+                <th>Asigned</th>
+                <th>Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
+                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
+                <td>
+                  $ {totalRemaining < 0 ? <b className='bg-danger'>{totalRemaining?.toFixed(2)}</b> : <b>{totalRemaining?.toFixed(2)}</b>}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className='col-12 mt-3'>
+          <table className='table table-hover '>
             <thead>
               <tr>
                 <th>Active</th>
                 <th>Team</th>
                 <th>Amount</th>
-                <th>Acciones</th>
-
+                <th className="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -162,28 +181,12 @@ const ReviewTeam: React.FC = ({id}) => {
                         value={option.id}
                         onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
                       />
-
                     </div>
                   </td>
                   <td>
-
-                    {
-                      userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                        ?
-                        <Link
-                          //href={`/admin/reviews/teams/${option.id}/employees/${id}`}
-                          href={`/admin/reviews/teams/${option.id}/${id}`}
-                          className="form-check-label btn btn-success">
-                          {option.name}
-                        </Link>
-                        : <label className="form-check-label btn " htmlFor="flexSwitchCheckDefault">{option.name}</label>
-                    }
-
+                      {option.name}
                   </td>
-                  <td>
-
-                    <div className="col-4">
-
+                  <td>   
                       <input
                         disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
                         type='number'
@@ -192,48 +195,34 @@ const ReviewTeam: React.FC = ({id}) => {
                         onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
 
                       />
-
-                      {/* <Form.Range
-                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
-                        step={1000}
-                        min={0}
-                        max={totalReview}
-                        value={rangeValues[option.id] || 0}
-                        onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
-                      /> */}
-                    </div>
+                   
                   </td>
-                  <td>
-                    <div className="col-2">
+                  <td className="text-center">
                       <button
                         disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
                         //disabled={totalRemaining < 0}
-                        className='btn btn-primary btn-xs'
+                        className='btn btn-light btn-xs'
                         onClick={(e) => handleSubmit(e, option.id)}>
-                        <i className="bi bi-update"></i>  update
+                        <i className="bi bi-arrow-clockwise"></i>
                       </button>
-                    </div>
+                       {
+                          userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                          ?
+                        <a
+                          href={`/admin/reviews/teams/${option.id}/${id}`}
+                          className="btn btn-success ms-2">
+                          <i className="bi bi-pencil"></i> 
+                        </a>
+                        : ''
+                    }
                   </td>
                 </tr>
 
               ))}
-
-              <tr>
-                <td colSpan={5}>
-
-                  <h6>Total amount : $<b>{totalReview ? totalReview.toFixed(2) : 0}</b> </h6>
-                  <h6>Total team  : $<b>{totalAmount ? totalAmount.toFixed(2) : 0}</b> </h6>
-
-                  {totalRemaining < 0 ?
-                    <h6 className='text-danger'>Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
-                    : <h6 >Total Remaining  : $<b>{totalRemaining?.toFixed(2)}</b> </h6>
-                  }
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
       </div>
+    </div >
     </>
   );
 };
