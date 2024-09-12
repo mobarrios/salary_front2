@@ -1,15 +1,30 @@
+'use client'
 import React from 'react';
 import { Field } from 'formik';
-import { apiRequest } from '@/server/services/core/apiRequest';
-import { fetchData } from '@/server/services/core/fetchData';
 
-const RatingRow = ({ key, option, item, isManager, isValidator, values, setFieldValue, reviews_id, team_id, ratingsTeamEmployees, session }) => {
-
+const RatingRow = ({ key, option, item, isManager, isValidator, values, setFieldValue }) => {
+   
     // send rating checked
     const handleCheckboxChange = async (e) => {
         const isChecked = e.target.checked;
         setFieldValue(`${option.id}-${item.id}-checked`, isChecked);
+        //setFieldValue(`${option.id}-${item.id}-status`, 0);
     };
+
+    const toggleLike = (type) => {
+        setFieldValue(`${option.id}-${item.id}-status`, type);
+    };
+
+    // statuts
+    const status = values[`${option.id}-${item.id}-status`];
+    let statusText = ''; 
+    if (status === 1) {
+        statusText = <span className="badge rounded-pill bg-success">aproved</span>; 
+    } else if (status === 2) {
+        statusText = <span className="badge rounded-pill bg-danger">rejected</span>; 
+    } else if (status === 0) {
+        statusText = <span className="badge rounded-pill bg-secondary">pending</span>;
+    } 
 
     return (
         <tr key={key}>
@@ -50,22 +65,31 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
                 />
             </td>
             <td className='text-end'>
-                    {isValidator && (
+                {statusText}
+
+                {isValidator && (
                     <>
-
-                    {/* <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a> */}
-
-                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}><i className="text-success bi bi-hand-thumbs-up"></i></a>
-
-                    <a className='btn btn-light btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}><i className="text-danger bi bi-hand-thumbs-down"></i>
-                    </a>
-
+                        <a
+                            className={`btn btn-light btn-xs m-1 ${values[`${option.id}-${item.id}-checked`] == false ? 'disabled' : ''}`}
+                            onClick={(e) => {
+                                toggleLike(1);
+                            }}
+                        >
+                            <i className={`bi bi-hand-thumbs-up ${values[`${option.id}-${item.id}-status`] == 1 ? 'text-success' : ''}`}></i>
+                        </a>
+                        <a
+                            className={`btn btn-light btn-xs m-1 ${values[`${option.id}-${item.id}-checked`] == false ? 'disabled' : ''}`}
+                            onClick={(e) => {
+                                toggleLike(2);
+                            }}
+                        >
+                            <i className={`bi bi-hand-thumbs-down ${values[`${option.id}-${item.id}-status`] == 2 ? 'text-danger' : ''}`}></i>
+                        </a>
                     </>
-                    )}
+                )}
             </td>
         </tr>
     );
 };
-
 
 export default RatingRow;
