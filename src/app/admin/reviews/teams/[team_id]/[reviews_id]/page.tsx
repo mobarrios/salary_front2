@@ -26,6 +26,7 @@ const FormEmployees: React.FC = () => {
     const [rangeValues, setRangeValues] = useState({});
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
     const [commnetsValues, setCommnetsValues] = useState({});
+    const [statusValues, setStatusValues] = useState({});
 
     const [color, setColor] = useState('trasparent');
     const [loading, setLoading] = useState(false)
@@ -119,17 +120,19 @@ const FormEmployees: React.FC = () => {
         const updatedPercentValues = {};
         const updateCommentsValues = {};
         const updatePriceValues = {};
+        const updateStatus = {};
 
         data.forEach(item => {
             updatedPercentValues[`${item.ratings_id}-${item.employees_id}`] = item.percent;
             updateCommentsValues[`${item.ratings_id}-${item.employees_id}`] = item.comments;
             updatePriceValues[`${item.ratings_id}-${item.employees_id}`] = item.price;
+            updateStatus[`${item.ratings_id}-${item.employees_id}`] = item.status;
         });
 
         const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
         const { totalPrice } = calculateTotalPrice(updatePriceValues);
         const { totalPercentSum } = calculateTotalsPercentEmployee(updatedPercentValues)
-
+        console.log(updateStatus)
         //total team
         setTotalPercent(totalPercentSum);
         setTotalSpend(totalPrice)
@@ -147,6 +150,12 @@ const FormEmployees: React.FC = () => {
             ...prevState,
             ...updateCommentsValues
         }));
+
+        // update status
+        setStatusValues(prevState => ({
+            ...prevState,
+            ...updateStatus
+        }));
     }
 
     const isCheckboxChecked = (optionId, itemId) => {
@@ -154,8 +163,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const handleSubmit = async (values, item) => {
-
-        setLoading(true)
+        console.log(values)
         const items = Object.keys(values).reduce((acc, key) => {
             const [ratingsId, employeesId, field] = key.split('-');
             const ratingsIdInt = parseInt(ratingsId, 10);
@@ -172,7 +180,7 @@ const FormEmployees: React.FC = () => {
             }
             return acc;
         }, []);
-
+        console.log(items)
         const checkedItems = items.filter(item => item.checked && item.percent !== null && item.percent !== "");
         const uncheckedItems = items.filter(item => !item.checked);
 
@@ -203,7 +211,7 @@ const FormEmployees: React.FC = () => {
                 price: currentSalary,
                 percent: item.percent,
                 comments: item.comments,
-                status: 1,
+                status: item.status ? item.status : 0,
             };
 
             // Verificar si el registro ya existe
@@ -213,21 +221,19 @@ const FormEmployees: React.FC = () => {
             try {
                 if (existingRecord) {
                     // Si existe, realiza un PUT
-                    await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                    console.log('Actualizando...', payload);
+                    const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                    console.log('Actualizando...', payload, response);
                 } else {
                     // Si no existe, realiza un POST
-                    await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                    console.log('Guardando...', payload);
+                    const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+                    console.log('Guardando...', payload, response);
                 }
             } catch (error) {
                 console.error('Error al enviar datos:', error);
             }
         }
-        setLoading(false)
-
         showSuccessAlert("Your work has been saved");
-        //load();
+        load();
     };
 
     const ModalComp = ({ isOpen, onClose, children, title }) => {
@@ -243,8 +249,33 @@ const FormEmployees: React.FC = () => {
         );
     };
 
-    const changeStatusByRatings = async (e, employeesId, status, values) => {
+    const changeStatusByRatings = async (e, ratingId, employeesId, status) => {
 
+        const payload = {
+            status: status,
+        };
+
+        // Verificar si el registro ya existe
+        const existingRecord = ratingsTeamEmployees.find(r =>
+            r.ratings_id === ratingId && r.employees_id === employeesId && r.reviews_id === reviews_id && r.teams_id === team_id
+        );
+
+        try {
+            if (existingRecord) {
+                // Si existe, realiza un PUT
+                //await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                showSuccessAlert("Your work has been saved");
+                console.log('Actualizando...', payload);
+
+            }
+        } catch (error) {
+            console.error('Error al enviar datos:', error);
+        }
+    };
+
+    /*
+    const changeStatusByRatings = async (e, employeesId, status, values) => {
+        
         const items = Object.keys(values).reduce((acc, key) => {
             const [ratingsId, employeesId, field] = key.split('-');
             const ratingsIdInt = parseInt(ratingsId, 10);
@@ -292,7 +323,7 @@ const FormEmployees: React.FC = () => {
         load();
         router.refresh();
     };
-
+    */
 
     const NewFormModal = ({ item }) => {
         const [modalId, setModalId] = useState(null);
@@ -305,7 +336,7 @@ const FormEmployees: React.FC = () => {
         const initialValues = (ratings || []).reduce((acc, option) => {
             acc[`${option.id}-${item.id}-percent`] = rangeValues[`${option.id}-${item.id}`] || '';
             acc[`${option.id}-${item.id}-comments`] = commnetsValues[`${option.id}-${item.id}`] || '';
-            //acc[`${option.id}-${item.id}-checked`] = rangeValues[`${option.id}-${item.id}`] ? true : false;  // Inicializa como false por defecto
+            acc[`${option.id}-${item.id}-status`] = statusValues[`${option.id}-${item.id}`];
             acc[`${option.id}-${item.id}-checked`] = isCheckboxChecked(option.id, item.id)
 
             return acc;
@@ -343,10 +374,7 @@ const FormEmployees: React.FC = () => {
                                                 isValidator={isValidator}
                                                 values={values}
                                                 setFieldValue={setFieldValue} // Pasa setFieldValue a RatingRow
-                                                reviews_id={reviews_id}
-                                                team_id={team_id}
-                                                ratingsTeamEmployees={ratingsTeamEmployees}
-                                                session={session?.user.token}
+                                                changeStatusByRatings={changeStatusByRatings}
                                             />
                                         ))}
                                     </tbody>
@@ -431,11 +459,11 @@ const FormEmployees: React.FC = () => {
                                                 {/* {isValidator && (
                                                     <div className="float-end">
 
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1, values)}>pending</a>
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a>
 
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2, values)}>aproved</a>
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}>aproved</a>
 
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3, values)}>rejected</a>
+                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}>rejected</a>
 
                                                     </div>
                                                 )} */}

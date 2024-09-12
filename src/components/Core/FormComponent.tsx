@@ -7,15 +7,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
 
     const handleFormSubmit = async (values, onSubmit) => {
         try {
-            //const confirmed = await confirmSave();
-
-            // if (confirmed) {
             onSubmit(values);
-            //     Swal.fire({
-            //         title: "Save!",
-            //         icon: "success"
-            //     });
-            // }
         } catch (error) {
             console.log("error ===> ", error);
         }
@@ -48,8 +40,10 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                 .nullable()
                 .typeError('Debe ser una fecha válida')
                 .test('is-greater', 'La fecha "to" debe ser mayor que "from"', function(value) {
-                    const { from } = this.parent; // Accede al valor de "from"
-                    console.log(from)
+                    //const { from } = this.parent; // Accede al valor de "from"
+                    const from = this.resolve(Yup.ref('from')); // Usa this.resolve para obtener el valor de "from"
+
+                    console.log(from, value)
                     return validateDateRange(from, value); // Llama a tu función de validación
                 });
         } else {
