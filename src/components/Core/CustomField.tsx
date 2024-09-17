@@ -1,4 +1,5 @@
 import React from 'react';
+import DateRange  from './DateRange';
 
 const CustomField = ({ field, formik }) => {
     return (
@@ -22,6 +23,8 @@ const CustomField = ({ field, formik }) => {
                         <option value="" disabled>No hay opciones disponibles</option>
                     )}
                 </select>
+            ) : field.type === 'daterange' ? (
+                <DateRange date={formik.values[field.key]} formik={formik} />
             ) : (
                 <input
                     type={field.type === 'date' ? 'date' : 'text'}
