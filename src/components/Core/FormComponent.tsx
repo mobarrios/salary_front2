@@ -13,12 +13,6 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
         }
     };
 
-    const validateDateRange = (startDate, endDate) => {
-        if (!startDate || !endDate) return true; // Si alguna de las fechas no está presente, la validación pasa
-       console.log(startDate, endDate)
-        return new Date(startDate) < new Date(endDate); // Validar que startDate sea menor que endDate
-    };
-
     // Crear un objeto con las reglas de validación para cada campo
     const validationRules = fields.reduce((rules, field) => {
         if (field.key === 'email') {
@@ -29,12 +23,24 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
             rules[field.key] = Yup.number()
                 .required('Requerido')
                 .min(Yup.ref('percent_min'), 'percent_max debe ser mayor o igual que percent_min');
-        } else if (field.key === 'from') {
+        } else if (field.key === 'daterange') {
+            rules[field.key] = Yup.object().shape({
+                form: Yup.date()
+                    .required('La fecha de inicio es requerida')
+                    .typeError('Debe ser una fecha válida'),
+                to: Yup.date()
+                    .required('La fecha de fin es requerida')
+                    .typeError('Debe ser una fecha válida')
+            });
+        }
+        /*
+        else if (field.key === 'from') {
             rules[field.key] = Yup.date()
                 .required('Requerido')
                 .nullable()
                 .typeError('Debe ser una fecha válida');
-        } else if (field.key === 'to') {
+        }
+        else if (field.key === 'to') {
             rules[field.key] = Yup.date()
                 .required('Requerido')
                 .nullable()
@@ -43,10 +49,11 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                     //const { from } = this.parent; // Accede al valor de "from"
                     const from = this.resolve(Yup.ref('from')); // Usa this.resolve para obtener el valor de "from"
 
-                    console.log(from, value)
                     return validateDateRange(from, value); // Llama a tu función de validación
                 });
-        } else {
+        }
+        */
+        else {
             rules[field.key] = Yup.string().required('Requerido');
         }
         return rules;

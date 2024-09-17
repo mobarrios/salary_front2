@@ -19,6 +19,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
     const [item, setItem] = useState(model)
 
     const fields = useFields(headers);
+
     const keys = fields.map(header => header.key);
 
     useEffect(() => {
@@ -28,33 +29,65 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
                 setLoading(true);
                 const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
                 if (jsonData) {
-                    updateItemState(jsonData, keys);
+                  
+                    updateItemState(jsonData);
                     setLoading(false);
+
                 }
             }
         };
         fetchDataAndUpdateItem();
     }, [id, session?.user.token, type]);
 
-    const updateItemState = (jsonData: Partial<Model>, properties: Array<keyof Model>) => {
+    /*
+    const updateItemState = (jsonData: any) => {
+
+        const updatedModel = {
+            status: jsonData.status || model.status,
+            name: jsonData.name || model.name,
+            price: jsonData.price || model.price,
+            dateRange: {
+                form: jsonData.form || model.dateRange.form,
+                to: jsonData.to || model.dateRange.to,
+            }
+        };
+        setItem(updatedModel)
+        //return updatedModel;
+    };
+    */
+
+    const updateItemState = (jsonData: Partial<Model>) => {
         setItem(prevItem => {
             const updatedItem = { ...prevItem };
-            properties.forEach(property => {
-                if (jsonData[property] !== undefined) {
-                    updatedItem[property] = jsonData[property];
-                }
-            });
+            updatedItem['status'] = jsonData.status
+            updatedItem['name'] = jsonData.name
+            updatedItem['price'] = jsonData.price
+            updatedItem['daterange'].form = jsonData.form
+            updatedItem['daterange'].to = jsonData.to
+
             return updatedItem;
         });
     };
+ 
 
     const handleSubmit = async values => {
+        console.log(values)
+        const valuesData = {
+            status: values.status,
+            price: values.price,
+            name: values.name,
+            //form: '2024-09-16',
+            //to: '2024-09-20',
+            form: values.daterange.form,
+            to:values.daterange.to,
+        }
+        console.log(valuesData)
 
         try {
             if (type) {
-                await apiRequest(`${name}/edit/${id}`, 'PUT', values)
+                await apiRequest(`${name}/edit/${id}`, 'PUT', valuesData)
             } else {
-                await apiRequest(`${name}/`, 'POST', values)
+                await apiRequest(`${name}/`, 'POST', valuesData)
             }
             showSuccessAlert("Your work has been saved");
             onClose()
