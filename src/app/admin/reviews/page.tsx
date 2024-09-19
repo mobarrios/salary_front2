@@ -70,15 +70,6 @@ export default async function Employees({ searchParams }: Params) {
                         {formatDate(item.form)} - {formatDate(item.to)}
                       </td>
                       <td className="text-end">
-                        {/* {isAdmin && (
-                          <ModalButton
-                            type={true}
-                            itemId={item.id}
-                            name="Budgets"
-                            FormComponent={ReviewTeam}
-                            title={"Budgets for  " + item.name}
-                          />
-                        )} */}
                         <ModalButton
                           type={true}
                           itemId={item.id}
@@ -86,7 +77,7 @@ export default async function Employees({ searchParams }: Params) {
                           FormComponent={ReviewTeam}
                           title={"Budgets for  " + item.name}
                         />
-                        <ModalButton
+                        {isAdmin && (<> <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Edit"
@@ -94,10 +85,10 @@ export default async function Employees({ searchParams }: Params) {
                           title={'Edit : ' + item.name}
 
                         />
-                        <RemoveItem
-                          url={name}
-                          id={item.id}
-                        />
+                          <RemoveItem
+                            url={name}
+                            id={item.id}
+                          /></>)}
                       </td>
                     </tr>
                   ))

@@ -7,24 +7,19 @@ import ModalButton from '@/components/Modal/NewFormModal';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormUsers from './form/page';
 import FormRol from './rol/page';
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/server/auth'
 import { Title } from '@/components/Title';
 import { redirect } from 'next/navigation'
-
+import { getUserRoles } from '@/functions/getRoles'
 
 export default async function Employees({ searchParams }: Params) {
 
-  const session = await getServerSession(authOptions)
-
-  const isSuper = session?.user.roles.some(role => role.name === 'superuser');
+  const { page, search, limit, skip } = usePaginate(searchParams)
+  const roles = await getUserRoles();
   
-  if(!isSuper){
-    redirect('/admin/dashboard')
+  if (!roles.some(role => ['superuser'].includes(role))) {
+    redirect('/admin/dashboard');
   }
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
-  
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
 
   if (!res?.status) {

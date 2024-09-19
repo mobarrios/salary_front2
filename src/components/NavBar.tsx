@@ -18,6 +18,7 @@ const NavbarComp = () => {
   }
 
   const isSuper = session?.user.roles.some(role => role.name === 'superuser');
+  const isAdmin = session?.user.roles.some(role => role.name === 'administrator');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -43,10 +44,18 @@ const NavbarComp = () => {
           <Navbar.Collapse id="basic-navbar-nav ">
             <Nav className="me-auto" variant="underline" defaultActiveKey="/admin/dashboard" >
               <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
-              <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
-              {/* <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link> */}
+
+              {(isSuper || isAdmin) ? (
+                <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
+              ) : (
+                <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>People</Nav.Link>
+              )}
+
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Merit Cycle</Nav.Link>
-              <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
+              {isSuper || isAdmin && (
+                <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
+              )}
+
               {isSuper && (
                 <NavDropdown title="Setting" id="basic-nav-dropdown" active={activePath === '/admin/users' || activePath === '/admin/roles'}>
                   <NavDropdown.Item href="/admin/users" active={activePath === '/admin/users'}>User management</NavDropdown.Item>

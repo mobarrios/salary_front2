@@ -9,10 +9,14 @@ import FormEmployees from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
 import { Title } from '@/components/Title';
+import { getUserRoles } from '@/functions/getRoles'
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
+
+  const roles = await getUserRoles();
+  const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role));
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
 
@@ -23,36 +27,38 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data
   const totalPages = Math.ceil(data.count / limit);
-  console.log(results)
+
   return (
     <div>
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
-            
-            <ModalButton
-              type={false}
-              itemId={1}
-              name="New Employee"
-              FormComponent={FormEmployees}
-              title="New Employee"
-            />
+            {
+              isAdmin && (
+                <ModalButton
+                  type={false}
+                  itemId={1}
+                  name="New Employee"
+                  FormComponent={FormEmployees}
+                  title="New Employee"
+                />
+              )}
             <Link href={`/admin/teams`} className="btn btn-primary  ms-3" >Teams </Link>
             <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
-           
+
           </p>
         </div>
         <div className='col-12 mt-3'>
           <table className="table table-hover ">
             <thead>
-                <tr>
-                  <th>#</th>
-                  {headers.map((header, key) => (
-                    <th key={key}>{header.name}</th>
-                  ))}
-                  <th></th>
-                </tr>
+              <tr>
+                <th>#</th>
+                {headers.map((header, key) => (
+                  <th key={key}>{header.name}</th>
+                ))}
+                <th></th>
+              </tr>
             </thead>
             <tbody>
               {
@@ -65,16 +71,16 @@ export default async function Employees({ searchParams }: Params) {
                       ))}
                       <td className="text-end" >
                         <Link
-                          href={ '/admin/employees/external_data/' + item.id }
+                          href={'/admin/employees/external_data/' + item.id}
                           className='btn btn-primary'
-                         >External data </Link>
-                       
+                        >External data </Link>
+
                         <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Teams"
                           FormComponent={FormEmployeesTeams}
-                          title= {item.associate_id + " Teams"}
+                          title={item.associate_id + " Teams"}
                         />
                         <ModalButton
                           type={true}

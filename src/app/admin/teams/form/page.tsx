@@ -12,7 +12,6 @@ import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
 const FormTeams: React.FC = ({ id, type, onClose }) => {
 
-
     const { data: session } = useSession()
 
     const [loading, setLoading] = useState(false)
