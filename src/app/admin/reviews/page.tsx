@@ -10,7 +10,7 @@ import { authOptions } from '@/server/auth'
 import ModalButton from '@/components/Modal/NewFormModal';
 import RemoveItem from '@/components/Core/RemoveItem';
 import { Title } from '@/components/Title';
-import { formatDate } from '../../../functions/formatDate';
+import { formatDate, formatPrice } from '../../../functions/formatDate';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -64,13 +64,13 @@ export default async function Employees({ searchParams }: Params) {
                     <tr className="align-middle" key={rowIndex}>
                       <td>{item.id}</td>
                       <td>{item.name}</td>
-                      <td>{item.price.toFixed(2)}</td>
-                      <td>{item.status === 1 ? 'Active' : 'Close'}</td>
+                      <td>{formatPrice(item.price)}</td>
+                      <td>{item.status === 1 ? 'Progress' : 'Clossed'}</td>
                       <td>
                         {formatDate(item.form)} - {formatDate(item.to)}
                       </td>
                       <td className="text-end">
-                        {isAdmin && (
+                        {/* {isAdmin && (
                           <ModalButton
                             type={true}
                             itemId={item.id}
@@ -78,7 +78,14 @@ export default async function Employees({ searchParams }: Params) {
                             FormComponent={ReviewTeam}
                             title={"Budgets for  " + item.name}
                           />
-                        )}
+                        )} */}
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Budgets"
+                          FormComponent={ReviewTeam}
+                          title={"Budgets for  " + item.name}
+                        />
                         <ModalButton
                           type={true}
                           itemId={item.id}

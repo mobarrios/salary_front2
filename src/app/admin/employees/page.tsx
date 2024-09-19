@@ -1,16 +1,14 @@
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
-import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name, buttonExtra } from './model';
+import { headers, name } from './model';
 import Link from 'next/link';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormEmployees from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
 import { Title } from '@/components/Title';
-import  Breadcrumb  from '@/components/BreadCrumb';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -25,7 +23,7 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data
   const totalPages = Math.ceil(data.count / limit);
-
+  console.log(results)
   return (
     <div>
       <Title>Employees</Title>
@@ -66,6 +64,11 @@ export default async function Employees({ searchParams }: Params) {
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
                       <td className="text-end" >
+                        <Link
+                          href={ '/admin/employees/external_data/' + item.id }
+                          className='btn btn-primary'
+                         >External data </Link>
+                       
                         <ModalButton
                           type={true}
                           itemId={item.id}

@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
-import { Title } from "@/components/Title";
 
 const FormEmployeesTeams: React.FC = ({id}) => {
 
@@ -20,6 +19,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
     try {
       console.log(id)
       const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=100`);
+      console.log(jsonData)
       const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 

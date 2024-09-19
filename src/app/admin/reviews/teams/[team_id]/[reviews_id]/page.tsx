@@ -13,6 +13,7 @@ import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import Modal from 'react-bootstrap/Modal';
 import { Button } from "react-bootstrap";
 import { Title } from "@/components/Title";
+import { formatPrice } from '@/functions/formatDate';
 
 const FormEmployees: React.FC = () => {
     // params
@@ -40,15 +41,15 @@ const FormEmployees: React.FC = () => {
     const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
     const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
 
-    const router = useRouter();
-    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'validator');
+    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
     const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
+    const isAdmin = session?.user.roles.some(role => role.name === 'administrator');
+    const isSuper = session?.user.roles.some(role => role.name === 'superuser');
 
     useEffect(() => {
         if (session?.user.token) {
             load();
         }
-
     }, [team_id, session?.user.token]);
 
     useEffect(() => {
@@ -272,58 +273,7 @@ const FormEmployees: React.FC = () => {
             console.error('Error al enviar datos:', error);
         }
     };
-
-    /*
-    const changeStatusByRatings = async (e, employeesId, status, values) => {
-        
-        const items = Object.keys(values).reduce((acc, key) => {
-            const [ratingsId, employeesId, field] = key.split('-');
-            const ratingsIdInt = parseInt(ratingsId, 10);
-            const employeesIdInt = parseInt(employeesId, 10);
-            let item = acc.find(i => i.ratingsId === ratingsIdInt && i.employeesId === employeesIdInt);
-            if (!item) {
-                item = { ratingsId: ratingsIdInt, employeesId: employeesIdInt, percent: "", comments: "", checked: false };
-                acc.push(item);
-            }
-            if (field === 'checked') {
-                item.checked = values[key];
-            } else {
-                item[field] = values[key];
-            }
-            return acc;
-        }, []);
-
-        const checkedItems = items.filter(item => item.checked && item.percent !== null && item.percent !== "");
-        console.log(checkedItems)
-
-        for (const item of checkedItems) {
-
-            const payload = {
-                status: status,
-            };
-
-            // Verificar si el registro ya existe
-            const existingRecord = ratingsTeamEmployees.find(r =>
-                r.ratings_id === item.ratingsId && r.employees_id === item.employeesId
-            );
-
-            try {
-                if (existingRecord) {
-                    // Si existe, realiza un PUT
-                    await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                    showSuccessAlert("Your work has been saved");
-                    console.log('Actualizando...', payload);
-
-                }
-            } catch (error) {
-                console.error('Error al enviar datos:', error);
-            }
-        }
-
-        load();
-        router.refresh();
-    };
-    */
+    console.log('isAdmin', isAdmin)
 
     const NewFormModal = ({ item }) => {
         const [modalId, setModalId] = useState(null);
@@ -379,18 +329,20 @@ const FormEmployees: React.FC = () => {
                                         ))}
                                     </tbody>
                                     <tfoot>
-                                        <tr>
-                                            <th scope="row" colSpan={3}>
-                                                <button
-                                                    type="submit"
-                                                    className="btn btn-primary"
-                                                    disabled={loading}
-                                                >
-                                                    <i className="bi bi-update"></i> {loading ? 'Save...' : 'Update'}
-                                                </button>
-                                            </th>
-                                            <th></th>
-                                        </tr>
+                                        {isValidator || isSuper || isManager ? (
+                                            <tr>
+                                                <th scope="row" colSpan={3}>
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary"
+                                                        disabled={loading}
+                                                    >
+                                                        <i className="bi bi-update"></i> {loading ? 'Save...' : 'Update'}
+                                                    </button>
+                                                </th>
+                                                <th></th>
+                                            </tr>
+                                        ) : null}
                                     </tfoot>
                                 </table>
                             </Form>
@@ -423,10 +375,10 @@ const FormEmployees: React.FC = () => {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>$ {reviewTeam ? reviewTeam.price.toFixed(2) : 0}</strong></td>
+                                    <td><strong>$ {reviewTeam ? formatPrice(reviewTeam.price) : 0}</strong></td>
                                     <td>% {totalPercent ? totalPercent : 0}</td>
-                                    <td>$ {totalSpend ? totalSpend.toFixed(2) : 0}</td>
-                                    <td style={{ color: color }}>$ {totalRemaining ? totalRemaining.toFixed(2) : 0}</td>
+                                    <td>$ {totalSpend ? formatPrice(totalSpend) : 0}</td>
+                                    <td style={{ color: color }}>$ {totalRemaining ? formatPrice(totalRemaining) : 0}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -451,22 +403,14 @@ const FormEmployees: React.FC = () => {
                                             <td>{item.name} {item.last_name}</td>
                                             <td>{item.actual_external_data.annual_salary || 0}</td>
                                             <td>% {totalPriceByEmployee[item.id] || 0}</td>
-                                            <td>$ {totalPercentByEmployee[item.id]?.toFixed(2) || 0}</td>
+                                            <td>
+                                                {totalPercentByEmployee[item.id] !== undefined
+                                                    ? `$ ${formatPrice(totalPercentByEmployee[item.id])}`
+                                                    : `$ 0.00`}
+                                            </td>
                                             <td>$ 0</td>
                                             <td>
                                                 <NewFormModal item={item} />
-
-                                                {/* {isValidator && (
-                                                    <div className="float-end">
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 1)}>pending</a>
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 2)}>aproved</a>
-
-                                                        <a className='btn btn-primary btn-xs m-1' onClick={(e) => changeStatusByRatings(e, item.id, 3)}>rejected</a>
-
-                                                    </div>
-                                                )} */}
                                             </td>
                                         </tr>
                                     ))}

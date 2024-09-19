@@ -3,7 +3,6 @@ import React from 'react';
 import { Field } from 'formik';
 
 const RatingRow = ({ key, option, item, isManager, isValidator, values, setFieldValue }) => {
-   
     // send rating checked
     const handleCheckboxChange = async (e) => {
         const isChecked = e.target.checked;
@@ -17,14 +16,14 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
 
     // statuts
     const status = values[`${option.id}-${item.id}-status`];
-    let statusText = ''; 
+    let statusText = '';
     if (status === 1) {
-        statusText = <span className="badge rounded-pill bg-success">aproved</span>; 
+        statusText = <span className="badge rounded-pill bg-success">aproved</span>;
     } else if (status === 2) {
-        statusText = <span className="badge rounded-pill bg-danger">rejected</span>; 
+        statusText = <span className="badge rounded-pill bg-danger">rejected</span>;
     } else if (status === 0) {
         statusText = <span className="badge rounded-pill bg-secondary">pending</span>;
-    } 
+    }
 
     return (
         <tr key={key}>
@@ -47,7 +46,7 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
             <td style={{ width: '100px' }}>
                 <small className="margin-bottom">{option.percent_min} %</small>
                 <Field
-                    disabled={!values[`${option.id}-${item.id}-checked`]} // Enable/disable based on checkbox
+                    disabled={!values[`${option.id}-${item.id}-checked`] || !isManager} // Habilitar/deshabilitar según el checkbox y si isManager es true
                     type='number'
                     step={1}
                     min={option.percent_min}
@@ -58,7 +57,7 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
             </td>
             <td style={{ width: '150px' }}>
                 <Field
-                    disabled={!values[`${option.id}-${item.id}-checked`]} // Enable/disable based on checkbox
+                    disabled={!values[`${option.id}-${item.id}-checked`] || !isManager} // Enable/disable based on checkbox
                     type="text"
                     name={`${option.id}-${item.id}-comments`}
                     placeholder="Comments"

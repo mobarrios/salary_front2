@@ -2,20 +2,29 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name, buttonExtra } from './model';
-import Link from 'next/link';
-import TableComponent from '@/components/Core/TableComponent';
+import { headers, name } from './model';
 import ModalButton from '@/components/Modal/NewFormModal';
 import RemoveItem from '@/components/Core/RemoveItem';
 import FormUsers from './form/page';
 import FormRol from './rol/page';
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/server/auth'
 import { Title } from '@/components/Title';
+import { redirect } from 'next/navigation'
 
 
 export default async function Employees({ searchParams }: Params) {
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
+  const session = await getServerSession(authOptions)
 
+  const isSuper = session?.user.roles.some(role => role.name === 'superuser');
+  
+  if(!isSuper){
+    redirect('/admin/dashboard')
+  }
+
+  const { page, search, limit, skip } = usePaginate(searchParams)
+  
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
 
   if (!res?.status) {
