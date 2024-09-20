@@ -6,6 +6,7 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import Link from 'next/link';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import { formatPrice } from '@/functions/formatDate';
 
 const ReviewTeam: React.FC = ({ id }) => {
 
@@ -137,19 +138,19 @@ const ReviewTeam: React.FC = ({ id }) => {
           <table className="table ">
             <thead>
               <tr className="text-center">
-                <td colSpan={3}>Resume</td></tr>
+                <td colSpan={3}>Summary</td></tr>
               <tr>
                 <th>Budget Total</th>
-                <th>Asigned</th>
+                <th>Assigned</th>
                 <th>Remaining</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
-                <td>$ {totalReview ? totalReview.toFixed(2) : 0} </td>
+                <td>$ {totalReview ? formatPrice(totalReview) : 0} </td>
+                <td>$ {totalReview ? formatPrice(totalReview) : 0} </td>
                 <td>
-                  $ {totalRemaining < 0 ? <b className='bg-danger'>{totalRemaining?.toFixed(2)}</b> : <b>{totalRemaining?.toFixed(2)}</b>}
+                  $ {totalRemaining < 0 ? <b className='bg-danger'>{formatPrice(totalRemaining)}</b> : <b>{formatPrice(totalRemaining)}</b>}
                 </td>
               </tr>
             </tbody>
@@ -172,6 +173,7 @@ const ReviewTeam: React.FC = ({ id }) => {
                   <td>
                     <div className="form-check form-switch" key={option.id}>
                       <input
+                        disabled={!isAdmin}
                         className="form-check-input"
                         checked={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)}
                         type="checkbox"
@@ -184,34 +186,38 @@ const ReviewTeam: React.FC = ({ id }) => {
                     </div>
                   </td>
                   <td>
-                      {option.name}
+                    {option.name}
                   </td>
-                  <td>   
-                      <input
-                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
-                        type='number'
-                        className='form-control'
-                        value={rangeValues[option.id] || 0}
-                        onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
-
-                      />
-                   
+                  <td>
+                    <input
+                      disabled={
+                        (userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) && isAdmin)
+                          ? false
+                          : true
+                      }
+                      type='number'
+                      className='form-control'
+                      value={rangeValues[option.id] || 0}
+                      onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
+                    />
                   </td>
                   <td className="text-center">
-                      <button
-                        disabled={userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) ? false : true}
-                        //disabled={totalRemaining < 0}
-                        className='btn btn-light btn-xs'
-                        onClick={(e) => handleSubmit(e, option.id)}>
-                        <i className="bi bi-arrow-clockwise"></i>
-                      </button>
-                       {
-                          userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
-                          ?
+                    <button
+                      disabled={
+                        (userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) && isAdmin)
+                          ? false
+                          : true
+                      } className='btn btn-light btn-xs'
+                      onClick={(e) => handleSubmit(e, option.id)}>
+                      <i className="bi bi-arrow-clockwise"></i>
+                    </button>
+                    {
+                      userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
+                        ?
                         <a
                           href={`/admin/reviews/teams/${option.id}/${id}`}
                           className="btn btn-success ms-2">
-                          <i className="bi bi-pencil"></i> 
+                          <i className="bi bi-pencil"></i>
                         </a>
                         : ''
                     }
@@ -219,10 +225,10 @@ const ReviewTeam: React.FC = ({ id }) => {
                 </tr>
 
               ))}
-          </tbody>
-        </table>
-      </div>
-    </div >
+            </tbody>
+          </table>
+        </div>
+      </div >
     </>
   );
 };

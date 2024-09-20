@@ -8,34 +8,54 @@ import FormTeams from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import UserTeams from './user/page';
 import { Title } from '@/components/Title';
+import { getUserRoles, getUserId } from '@/functions/getRoles'
+import Link from 'next/link';
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  const roles = await getUserRoles();
+  const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role))
 
   if (!res?.status) {
     throw new Error('Failed to fetch data');
   }
 
   const data = await res.json();
-  const results = data.data;
+  let results = data.data;
   const totalPages = Math.ceil(data.count / limit);
 
+  if (!isAdmin) {
+    const loggedInUserId = await getUserId();
+    console.log('loggedInUserId', loggedInUserId);
+
+    const teamsUsers = await apiRequest(`teams_users/all/?skip=${skip}&limit=${limit}`, 'GET');
+    const teamsData = await teamsUsers.json();
+
+    const filteredTeams = teamsData.data.filter(team => team.users_id === loggedInUserId);
+    console.log('filteredTeams', filteredTeams);
+
+    // Filtrar los resultados según los equipos que tiene el usuario logueado
+    results = results.filter(result =>
+      filteredTeams.some(team => team.teams_id === result.id)
+    );
+  }
+
   return (
-    <div>  
-    <Title>Teams</Title>
-    <div className="row mt-5">
+    <div>
+      <Title>Teams</Title>
+      <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
-            <ModalButton
+            {isAdmin && (<ModalButton
               type={false}
               itemId={1}
               name="New Team"
               FormComponent={FormTeams}
               title={"New Team"}
-            />
+            />)}
           </p>
         </div>
         <div className='col-12 mt-3'>
@@ -59,24 +79,29 @@ export default async function Employees({ searchParams }: Params) {
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
                       <td className="text-end" >
-                        <ModalButton
+                        {!isAdmin && (<Link
+                          href={'/admin/teams/' + item.id + '/employees'}
+                          className='btn btn-primary'
+                        >Employees</Link>)}
+
+                        {isAdmin && (<> <ModalButton
                           type={true}
                           itemId={item.id}
                           name="Users"
                           FormComponent={UserTeams}
                           title={item.name + " : Users"}
                         />
-                        <ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Edit"
-                          FormComponent={FormTeams}
-                          title={"Edit : "+ item.name}
-                        />
-                        <RemoveItem
-                          url={name}
-                          id={item.id}
-                        />
+                          <ModalButton
+                            type={true}
+                            itemId={item.id}
+                            name="Edit"
+                            FormComponent={FormTeams}
+                            title={"Edit : " + item.name}
+                          />
+                          <RemoveItem
+                            url={name}
+                            id={item.id}
+                          /> </>)}
                       </td>
                     </tr>
                   ))
