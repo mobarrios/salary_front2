@@ -39,7 +39,7 @@ const FormEmployees: React.FC = () => {
     const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
 
     const router = useRouter();
-    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'validator');
+    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
     const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
 
     useEffect(() => {

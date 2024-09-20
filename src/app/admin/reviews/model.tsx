@@ -29,7 +29,7 @@ export const headers = [
     { name: 'Budget', key: 'price' },
     //{ name: 'From', key: 'form', type: 'date' },
     //{ name: 'To', key: 'to', type: 'date' },
-    { name: 'Status', key: 'status', type: 'select', options: [{ label: 'Active', value: '1' }, { label: 'Close', value: '0' }] }, // Opciones con valores
+    { name: 'Status', key: 'status', type: 'select', options: [{ label: 'Progress', value: '1' }, { label: 'Clossed', value: '0' }] }, // Opciones con valores
     { name: 'Date', key: 'daterange', type: 'daterange' },
 
 ];

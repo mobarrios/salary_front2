@@ -2,15 +2,21 @@ import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
 import Pagination from '@/components/Pagination/Pagination';
-import { buttonExtra, headers, name } from './model';
+import { headers, name } from './model';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormRatings from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
-import { Title } from '@/components/Title';
+import { redirect } from 'next/navigation'
+import { getUserRoles } from '@/functions/getRoles'
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
+  const roles = await getUserRoles();
+
+  if (!roles.some(role => ['superuser', 'administrator'].includes(role))) {
+    redirect('/admin/dashboard');
+  }
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
 
