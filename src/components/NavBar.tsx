@@ -25,6 +25,7 @@ const NavbarComp = () => {
       setActivePath(window.location.pathname);
     }
   }, []);
+  
 
   return (
     <div>
@@ -52,7 +53,7 @@ const NavbarComp = () => {
               )}
 
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Merit Cycle</Nav.Link>
-              {isSuper || isAdmin && (
+              {isSuper && (
                 <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
               )}
 

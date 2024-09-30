@@ -385,32 +385,65 @@ const FormEmployees: React.FC = () => {
                     </div>
 
                     <div className='col-12'>
+
                         <table className="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Employees</th>
-                                    <th>Current Base Annual Salary</th>
-                                    <th>Proposed Total Increase %</th>
-                                    <th>Proposed Total Increase $</th>
-                                    <th>Proposed New Base Hourly Rate</th>
-                                    <th>Proposed New Base Annual Salary</th>
+                                    <th style={{ width: '10%' }}>Employees</th>
+                                    <th style={{ width: '10%' }}>Current Base Annual Salary</th>
+                                    <th style={{ width: '10%' }}>Proposed Total Increase %</th>
+                                    <th style={{ width: '10%' }}>Proposed Total Increase $</th>
+                                    <th style={{ width: '10%' }}>Proposed New Base Hourly Rate</th>
+                                    <th style={{ width: '15%' }}>Ratings</th>
+                                    <th>Percent</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {
-                                    teamEmployees && teamEmployees.map((item, rowIndex) => (
+                                    teamEmployees && teamEmployees.map((item) => (
                                         <tr key={item.id}>
-                                            <td>{item.name} {item.last_name}</td>
-                                            <td>{item.actual_external_data.annual_salary || 0}</td>
-                                            <td>% {totalPriceByEmployee[item.id] || 0}</td>
-                                            <td>
+                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
+                                                {item.name} {item.last_name}
+                                            </td>
+                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
+                                                {item.actual_external_data.annual_salary || 0}
+                                            </td>
+                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                % {totalPriceByEmployee[item.id] || 0}
+                                            </td>
+                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {totalPercentByEmployee[item.id] !== undefined
                                                     ? `$ ${formatPrice(totalPercentByEmployee[item.id])}`
                                                     : `$ 0.00`}
                                             </td>
-                                            <td>$ 0</td>
+                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td>
                                             <td>
-                                                <NewFormModal item={item} />
+                                                <select className="form-control" style={{ width: '100%' }}>
+                                                    <option value="" label="Seleccione una opción" />
+                                                    <option value="exceeds" label="Exceeds expectations" />
+                                                    <option value="not_meet" label="Doesn't Meet Exp." />
+                                                    <option value="meets" label="Meets expectations" />
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type='number'
+                                                    step={1}
+                                                    className="form-control"
+                                                    style={{ width: '150px', margin: '0 5px' }}
+                                                    placeholder="min 2% - max 50%"
+                                                />
+                                            </td>
+                                            <td>
+                                                <>
+                                                    <a className={`btn btn-light btn-xs m-1`} onClick={(e) => { /*toggleLike(1);*/ }}>
+                                                        <i className={`bi bi-hand-thumbs-up`}></i>
+                                                    </a>
+                                                    <a className={`btn btn-light btn-xs m-1`} onClick={(e) => { /*toggleLike(2);*/ }}>
+                                                        <i className={`bi bi-hand-thumbs-down `}></i>
+                                                    </a>
+                                                </>
                                             </td>
                                         </tr>
                                     ))}
