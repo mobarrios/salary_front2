@@ -13,12 +13,15 @@
 
 // components/Dashboard.js
 'use client'
+import { Title } from "@/components/Title";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
 
 const Dashboard = () => {
-   
+  const { data: session, status } = useSession()
+
   const [optionsMixedChart, setOptionsMixedChart] = useState({
     chart: {
       id: "basic-bar",
@@ -243,7 +246,7 @@ const Dashboard = () => {
 
   return (
     <div>
-    {/* <h1 className="text-primary fw-bold">Dashboard</h1> */}
+          <Title>Welcome  {session?.user.name} ! </Title>
         <div className="row mt-5">
          <Card className="col shadow  border-light pt-4  ">
               <CardTitle className="text-center">Employess</CardTitle>
