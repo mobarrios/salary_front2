@@ -25,8 +25,9 @@ useEffect(() => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/uploads/uploads', {
-        method: 'POST',
+      // const response = await fetch('http://localhost:8000/api/v1/uploads/uploads', {
+       const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/uploads/uploads', {
+         method: 'POST',
         body: formData,
       });
 
