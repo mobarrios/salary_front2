@@ -23,7 +23,7 @@ function ToastComponent({ show, message }) {
                 <Toast show={showB} onClose={toggleShowB}>
                     <Toast.Header closeButton={true}>
                         <strong className="me-auto">Message</strong>
-                        <small>11 mins ago</small>
+                        {/* <small>11 mins ago</small> */}
                     </Toast.Header>
                     <Toast.Body>{message}.</Toast.Body>
                 </Toast>
