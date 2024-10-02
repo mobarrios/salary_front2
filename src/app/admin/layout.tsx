@@ -8,7 +8,8 @@ export default async function Dashboard({ children }) {
     <>
       <Navbar/>
       <main className="container mt-5 bg-white  ">
-      <Breadcrumb />
+      {/* <Breadcrumb /> */}
+     
       {children}
       </main>
 
