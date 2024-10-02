@@ -10,7 +10,8 @@ export default function Upload() {
 
   const [file, setFile] = useState(null);
   const [ status , setStatus ] = useState(null);
-
+  const [isLoading, setIsLoading] = useState(false);
+  
 useEffect(() => {
 
   }, [status]);
@@ -24,9 +25,11 @@ useEffect(() => {
     const formData = new FormData();
     formData.append('file', file);
 
+    setIsLoading(true)
+
     try {
       // const response = await fetch('http://localhost:8000/api/v1/uploads/uploads', {
-       const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/uploads/uploads', {
+       const response = await fetch(process.env.API_SALARY+'/uploads/uploads', {
          method: 'POST',
         body: formData,
       });
@@ -37,6 +40,7 @@ useEffect(() => {
       const data = await response.json();
       console.log('File uploaded successfully', data);
       setStatus(data.message)
+      setIsLoading(false)
     } catch (error) {
       console.error('Error uploading file', error);
       setStatus(error)
