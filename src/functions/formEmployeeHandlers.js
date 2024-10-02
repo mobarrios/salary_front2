@@ -9,7 +9,7 @@ export const calculateTotalRemaining = (totalPrice, totalSpend) => {
 };
 
 export const calculatePorcent = (teamEmployees, value, key) => {
-    /*
+
     if (!Array.isArray(teamEmployees)) {
         return;
     }
@@ -28,10 +28,8 @@ export const calculatePorcent = (teamEmployees, value, key) => {
     }
     const result = (montoNumero * value) / 100;
     console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
-    */
 
-    const result = (10000 * value) / 100;
-  
+    //const result = (10000 * value) / 100;
     return result;
 }
 
