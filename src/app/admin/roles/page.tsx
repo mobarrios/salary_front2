@@ -17,7 +17,7 @@ export default async function Employees({ searchParams }: Params) {
 
   const isSuper = session?.user.roles.some(role => role.name === 'superuser');
   if(!isSuper){
-    redirect('/admin/dashboard')
+    redirect('/admin/home')
   }
   
   const { page, search, limit, skip } = usePaginate(searchParams)

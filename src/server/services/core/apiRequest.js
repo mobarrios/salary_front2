@@ -23,7 +23,7 @@ export const apiRequest = async (url, method, data) => {
     const response = await fetch(process.env.API_SALARY + `/${url}`, requestOptions);
     console.log(response)
     if (response.status === 403) {
-        redirect('/admin/dashboard')
+        redirect('/admin/home')
     }
     const result = data ? response.json() : response
 

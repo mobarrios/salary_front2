@@ -1,17 +1,3 @@
-// import {apiRequest} from '@/server/services/core/apiRequest';
-// import { usePaginate } from "@/hooks/usePagination"
-// import { Params } from '@/types/params';
-
-// export default async function Dashboard({searchParams}: Params) {
-
- 
-//   return (
-//     <div className="container">
-//         <h1>Dashboard</h1>
-//     </div>
-//   )};
-
-// components/Dashboard.js
 'use client'
 import { Title } from "@/components/Title";
 import { useSession } from "next-auth/react";
@@ -246,8 +232,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      
-      <Title>Welcome  {session?.user.name} ! </Title>
+        <Title>Dashboard</Title>
         <div className="row mt-5">
          <Card className="col shadow  border-light pt-4  ">
               <CardTitle className="text-center">Employess</CardTitle>

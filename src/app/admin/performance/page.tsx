@@ -15,7 +15,7 @@ export default async function Employees({ searchParams }: Params) {
   const roles = await getUserRoles();
 
   if (!roles.some(role => ['superuser', 'administrator'].includes(role))) {
-    redirect('/admin/dashboard');
+    redirect('/admin/home');
   }
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
@@ -36,9 +36,9 @@ export default async function Employees({ searchParams }: Params) {
             <ModalButton
               type={false}
               itemId={1}
-              name="New rating"
+              name="New performance"
               FormComponent={FormRatings}
-              title={'New Rating'}
+              title={'New Performance'}
             />
           </p>
         </div>
