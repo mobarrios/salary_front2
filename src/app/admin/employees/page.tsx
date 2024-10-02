@@ -26,6 +26,7 @@ export default async function Employees({ searchParams }: Params) {
 
   const data = await res.json();
   const results = data.data
+  console.log(results)
   const totalPages = Math.ceil(data.count / limit);
 
   return (
