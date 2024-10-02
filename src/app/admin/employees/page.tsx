@@ -58,6 +58,7 @@ export default async function Employees({ searchParams }: Params) {
                 {headers.map((header, key) => (
                   <th key={key}>{header.name}</th>
                 ))}
+                <th>Team</th>
                 <th></th>
               </tr>
             </thead>
@@ -70,6 +71,11 @@ export default async function Employees({ searchParams }: Params) {
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
+                      <td>
+                        {item.teams.map((team, i) => (
+                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
+                        ))}
+                      </td>
                       <td className="text-end" >
                         <Link
                           href={'/admin/employees/external_data/' + item.id}

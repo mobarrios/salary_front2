@@ -3,7 +3,7 @@ import { Title } from "@/components/Title";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
-const Dashboard = () => {
+const Home = () => {
   const { data: session, status } = useSession()
 
   return (
@@ -13,6 +13,6 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Home;
 
 

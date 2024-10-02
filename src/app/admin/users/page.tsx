@@ -17,7 +17,7 @@ export default async function Employees({ searchParams }: Params) {
   const roles = await getUserRoles();
   
   if (!roles.some(role => ['superuser'].includes(role))) {
-    redirect('/admin/dashboard');
+    redirect('/admin/home');
   }
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');

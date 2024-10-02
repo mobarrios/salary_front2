@@ -43,8 +43,10 @@ const NavbarComp = () => {
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav  " />
           <Navbar.Collapse id="basic-navbar-nav ">
-            <Nav className="me-auto" defaultActiveKey="/admin/dashboard" >
-              <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
+            <Nav className="me-auto" defaultActiveKey="/admin/home" >
+            <Nav.Link href="/admin/home" active={activePath === '/admin/home'}>Home</Nav.Link>
+
+              <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Dashboard</Nav.Link>
 
               {(isSuper || isAdmin) ? (
                 <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
@@ -54,7 +56,7 @@ const NavbarComp = () => {
 
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Review Cycle</Nav.Link>
               {isSuper && (
-                <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
+                <Nav.Link href="/admin/performance" active={activePath === '/admin/performance'}>Performance</Nav.Link>
               )}
 
               {isSuper && (

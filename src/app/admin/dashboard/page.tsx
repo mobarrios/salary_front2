@@ -232,7 +232,7 @@ const Dashboard = () => {
 
   return (
     <div>
-          <Title>Dashboard</Title>
+        <Title>Dashboard</Title>
         <div className="row mt-5">
          <Card className="col shadow  border-light pt-4  ">
               <CardTitle className="text-center">Employess</CardTitle>
