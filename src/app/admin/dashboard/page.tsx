@@ -246,7 +246,8 @@ const Dashboard = () => {
 
   return (
     <div>
-          <Title>Welcome  {session?.user.name} ! </Title>
+      
+      <Title>Welcome  {session?.user.name} ! </Title>
         <div className="row mt-5">
          <Card className="col shadow  border-light pt-4  ">
               <CardTitle className="text-center">Employess</CardTitle>
