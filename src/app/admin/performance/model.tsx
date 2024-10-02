@@ -14,7 +14,7 @@ export const model: Model = {
 };
 
 export const headers = [
-    { name: 'Name', span: 3, key: 'name' },
+    { name: 'Performance', span: 3, key: 'name' },
     { name: 'Min Percent', span: 3, key: 'percent_min' },
     { name: 'Max Percent', span: 3, key: 'percent_max' }
 ];

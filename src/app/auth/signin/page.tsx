@@ -44,7 +44,7 @@ export default function SignIn({ searchParams }: PageProps) {
       await signIn('credentials', {
         username: inputs.username,
         password: inputs.password,
-        callbackUrl: '/admin/dashboard'
+        callbackUrl: '/admin/home'
       });
     } catch (error) {
       // Manejar el error aquí
