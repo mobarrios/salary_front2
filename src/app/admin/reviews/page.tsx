@@ -30,7 +30,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
-      <Title> Merit Cycle</Title>
+      <Title>Review Cycle</Title>
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>

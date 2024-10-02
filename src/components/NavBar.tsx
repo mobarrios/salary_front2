@@ -25,7 +25,7 @@ const NavbarComp = () => {
       setActivePath(window.location.pathname);
     }
   }, []);
-  
+
 
   return (
     <div>
@@ -39,16 +39,12 @@ const NavbarComp = () => {
               // className="d-inline-block align-top"
               alt="Logo"
             />
-          {/* <h4 className="text-primary "><strong>$alary</strong></h4> */}
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav  " />
-        <Navbar.Collapse id="basic-navbar-nav ">
-          <Nav className="me-auto" defaultActiveKey="/admin/dashboard" >
-            <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
-            <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
-            {/* <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>Teams</Nav.Link> */}
-            <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Merit Cycle</Nav.Link>
-            <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
+            {/* <h4 className="text-primary "><strong>$alary</strong></h4> */}
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav  " />
+          <Navbar.Collapse id="basic-navbar-nav ">
+            <Nav className="me-auto" defaultActiveKey="/admin/dashboard" >
+              <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Home</Nav.Link>
 
               {(isSuper || isAdmin) ? (
                 <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
@@ -56,7 +52,7 @@ const NavbarComp = () => {
                 <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>People</Nav.Link>
               )}
 
-              <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Merit Cycle</Nav.Link>
+              <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Review Cycle</Nav.Link>
               {isSuper && (
                 <Nav.Link href="/admin/ratings" active={activePath === '/admin/ratings'}>Ratings</Nav.Link>
               )}
