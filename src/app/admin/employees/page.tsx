@@ -113,7 +113,7 @@ export default async function Employees({ searchParams }: Params) {
           </table>
         </div>
         <div className='col mt-5'>
-          <Pagination page={page} totalPages={totalPages} />
+          <Pagination page={page} totalPages={totalPages} totalData={data.count} />
         </div>
       </div>
     </div>
