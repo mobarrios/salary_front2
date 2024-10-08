@@ -10,6 +10,7 @@ import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
 import { Title } from '@/components/Title';
 import { getUserRoles } from '@/functions/getRoles'
+import SearchBar from '@/components/Search/Search';
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -49,7 +50,12 @@ export default async function Employees({ searchParams }: Params) {
             <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
 
           </p>
+
+  
+        
         </div>
+        
+       
         <div className='col-12 mt-3'>
           <table className="table table-hover ">
             <thead>

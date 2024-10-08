@@ -46,7 +46,7 @@ const NavbarComp = () => {
             <Nav className="me-auto" defaultActiveKey="/admin/home" >
             <Nav.Link href="/admin/home" active={activePath === '/admin/home'}>Home</Nav.Link>
 
-              <Nav.Link href="/admin/dashboard" active={activePath === '/admin/dashboard'}>Dashboard</Nav.Link>
+              <Nav.Link href="/admin/analytics" active={activePath === '/admin/analytics'}>Analytics</Nav.Link>
 
               {(isSuper || isAdmin) ? (
                 <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
