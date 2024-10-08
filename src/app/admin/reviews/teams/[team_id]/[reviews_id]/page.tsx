@@ -29,6 +29,7 @@ const FormEmployees: React.FC = () => {
     const [commnetsValues, setCommnetsValues] = useState({});
     const [statusValues, setStatusValues] = useState({});
 
+
     const [color, setColor] = useState('trasparent');
     const [loading, setLoading] = useState(false)
 
@@ -36,6 +37,8 @@ const FormEmployees: React.FC = () => {
     const [totalPercent, setTotalPercent] = useState();
     const [totalSpend, setTotalSpend] = useState();
     const [totalRemaining, setTotalRemaining] = useState();
+    const [totalApproved, setTotalApprovede] = useState(0);
+    const [totalRejected, setTotalRejected] = useState(0);
 
     //const employees-ratings
     const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
@@ -45,6 +48,7 @@ const FormEmployees: React.FC = () => {
     const [selectedRatings, setSelectedRatings] = useState({});
     const [inputValues, setInputValues] = useState({});
     const [ratingRanges, setRatingRanges] = useState({}); // Estado para almacenar min y max
+    const [approvedIds, setApprovedIds] = useState([]);
 
     const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
     const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
@@ -66,11 +70,13 @@ const FormEmployees: React.FC = () => {
 
     useEffect(() => {
         if (teamEmployees && totalPriceByEmployee) {
+            //console.log(teamEmployees, totalPriceByEmployee)
             const valuesByEmployeeWithPercentage = {};
             for (const key in totalPriceByEmployee) {
                 valuesByEmployeeWithPercentage[key] = calculatePorcent(teamEmployees, totalPriceByEmployee[key], key);
             }
             setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
+            
         }
     }, [teamEmployees, totalPriceByEmployee]);
 
@@ -128,6 +134,10 @@ const FormEmployees: React.FC = () => {
         const updatePriceValues = {};
         const updateStatus = {};
         const updateRatingsValues = {};
+        
+        // Inicializar contadores para totales aprobados y rechazados
+        let totalApproved = 0;
+        let totalRejected = 0;
 
         data.forEach(item => {
             updatedPercentValues[`${item.employees_id}`] = item.percent;
@@ -135,6 +145,12 @@ const FormEmployees: React.FC = () => {
             updateRatingsValues[`${item.employees_id}`] = item.ratings_id;
             updatePriceValues[`${item.employees_id}`] = item.price;
             updateStatus[`${item.employees_id}`] = item.status;
+            
+            if (item.status === 1) {
+                totalApproved += 1; // Aumentar el contador de aprobados
+            } else if (item.status === 2) {
+                totalRejected += 1; // Aumentar el contador de rechazados
+            }
         });
 
         const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
@@ -144,6 +160,8 @@ const FormEmployees: React.FC = () => {
         //total team
         setTotalPercent(totalPercentSum);
         setTotalSpend(totalPrice)
+        setTotalApprovede(totalApproved)
+        setTotalRejected(totalRejected)
 
         // total employees rating
         setTotalPriceByEmployee(totalByEmployees);
@@ -311,12 +329,32 @@ const FormEmployees: React.FC = () => {
 
         try {
             if (existingRecord) {
-                // Si existe, realiza un PUT
-                await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                showSuccessAlert("Your work has been saved");
-                load();
-                console.log('Actualizando...', payload);
+                const previousStatus = statusValues[employeesId];
 
+                const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                console.log(response);
+
+                // Actualizar contadores según el nuevo estado
+                if (status === 1) { // Aprobado
+                    if (previousStatus === 2) { // Cambiando de rechazado a aprobado
+                        setTotalRejected(prevTotal => prevTotal - 1);
+                    }
+                    if (!approvedIds.includes(employeesId)) {
+                        setTotalApprovede(prevTotal => prevTotal + 1);
+                        setApprovedIds(prevIds => [...prevIds, employeesId]);
+                    }
+                } else if (status === 2) { // Rechazado
+                    if (previousStatus === 1) {
+                        setTotalApprovede(prevTotal => prevTotal - 1);
+                        setApprovedIds(prevIds => prevIds.filter(id => id !== employeesId));
+                    }
+                    setTotalRejected(prevTotal => prevTotal + 1);
+                }
+
+                setStatusValues(prevState => ({
+                    ...prevState,
+                    [employeesId]: status
+                }));
             }
         } catch (error) {
             console.error('Error al enviar datos:', error);
@@ -340,14 +378,18 @@ const FormEmployees: React.FC = () => {
                                     <th>Total percent</th>
                                     <th>Total Spend</th>
                                     <th>Total Remaining</th>
+                                    <th>Approved </th>
+                                    <th>rejected </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td><strong>$ {reviewTeam ? formatPrice(reviewTeam.price) : 0}</strong></td>
-                                    <td>% {totalPercent ? totalPercent : 0}</td>
+                                    <td> {totalPercent ? totalPercent : 0} %</td>
                                     <td>$ {totalSpend ? formatPrice(totalSpend) : 0}</td>
                                     <td style={{ color: color }}>$ {totalRemaining ? formatPrice(totalRemaining) : 0}</td>
+                                    <td>{totalApproved}</td>
+                                    <td>{totalRejected}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -379,7 +421,7 @@ const FormEmployees: React.FC = () => {
                                                 {item.actual_external_data.annual_salary || 0}
                                             </td>
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                % {rangeValues[item.id] || 0}
+                                                {rangeValues[item.id] || 0} %
                                             </td>
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 $ {formatPrice(calculatePrice(item.actual_external_data.annual_salary, item.id))}

@@ -17,6 +17,7 @@ const ReviewTeam: React.FC = ({ id }) => {
   const [userTeams, setUserTeams] = useState();
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalRemaining, setTotalRemaining] = useState(0);
+  const [totalAssigned, setTotalAssigned] = useState(0);
 
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
@@ -33,14 +34,20 @@ const ReviewTeam: React.FC = ({ id }) => {
       total += updatedRangeValues[key];
     }
     setTotalAmount(total);
+    setTotalTeams(total)
+    setTotalAssigned(total)
     setTotalRemaining(totalReview - total)
   };
 
   const updateReviewTeams = async () => {
     const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
-
     const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
 
+    //const teamIds = teamsData.data.map(team => team.id); // Asegúrate de que `team.id` sea el campo correcto
+    // Filtrar employeesWithIdOne según los team_ids
+    //const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.team_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
+
+    //console.log(filteredEmployees)
     setUserTeams(employeesWithIdOne)
     setReviewTeam(employeesWithIdOne)
   }
@@ -48,18 +55,33 @@ const ReviewTeam: React.FC = ({ id }) => {
   const userData = async () => {
     try {
 
+      // find review
       const reviewData = await fetchData(session?.user.token, 'GET', `reviews/${id}`);
       setTotalReview(reviewData.price)
 
+      // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
       const userIdToFilter = session?.user.id;
 
+      // todos los teams que tienen al usuario logeado
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-      console.log(teamUserFilter, userIdToFilter)
+     
       setOptions(teamUserFilter)
-      updateReviewTeams()
+      setTotalAssigned(1)
+
+      const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
+      const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
+      const teamIds = teamUserFilter.map(team => team.id); // Asegúrate de que `team.id` sea el campo correcto
+      //console.log(teamIds)
+      // Filtrar employeesWithIdOne según los team_ids
+      const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.teams_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
+      console.log(filteredEmployees, employeesWithIdOne)
+
+      setUserTeams(filteredEmployees)
+      setReviewTeam(employeesWithIdOne)
+     
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -79,10 +101,14 @@ const ReviewTeam: React.FC = ({ id }) => {
       userTeams.forEach(item => {
         initialRangeValues[item.teams_id] = item.price;
       });
+
       setRangeValues(initialRangeValues);
+      console.log('userTeams',userTeams)
+      //filtrar por employees
       const total = userTeams.reduce((accumulator, item) => accumulator + item.price, 0);
       setTotalTeams(total)
-      setTotalAmount(total);
+      setTotalAmount(totalReview - total);
+      setTotalAssigned(totalReview)
       setTotalRemaining(totalReview - total)
     }
 
@@ -140,15 +166,15 @@ const ReviewTeam: React.FC = ({ id }) => {
               <tr className="text-center">
                 <td colSpan={3}>Summary</td></tr>
               <tr>
-                <th>Budget Total</th>
+                {isAdmin && (<th>Budget Total</th>)}
                 <th>Assigned</th>
                 <th>Remaining</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>$ {totalReview ? formatPrice(totalReview) : 0} </td>
-                <td>$ {totalReview ? formatPrice(totalReview) : 0} </td>
+                {isAdmin && (<td>$ {totalReview ? formatPrice(totalReview) : 0} </td>)}
+                <td>$ {totalTeams ? formatPrice(totalTeams) : 0} </td>
                 <td>
                   $ {totalRemaining < 0 ? <b className='bg-danger'>{formatPrice(totalRemaining)}</b> : <b>{formatPrice(totalRemaining)}</b>}
                 </td>

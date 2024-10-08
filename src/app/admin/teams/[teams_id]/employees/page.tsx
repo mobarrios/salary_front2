@@ -11,6 +11,7 @@ import FormEmployees from '@/app/admin/employees/form/page';
 import { getUserRoles } from '@/functions/getRoles'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/server/auth';
+import Link from 'next/link';
 
 
 const TeamsEmployees: React.FC = () => {
@@ -25,7 +26,7 @@ const TeamsEmployees: React.FC = () => {
   const roles = session?.user.roles.map(role => role.name)
   const isAdmin = roles?.some(role => ['manager'].includes(role))
   console.log(isAdmin)
-  
+
   const load = async () => {
     try {
       setLoading(true)
@@ -77,6 +78,7 @@ const TeamsEmployees: React.FC = () => {
                 {headers.map((header, key) => (
                   <th key={key}>{header.name}</th>
                 ))}
+                <th>Team</th>
                 <th></th>
               </tr>
             </thead>
@@ -89,7 +91,16 @@ const TeamsEmployees: React.FC = () => {
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}
+                      <td>
+                        {item.teams.map((team, i) => (
+                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
+                        ))}
+                      </td>
                       <td className="text-end" >
+                        <Link
+                          href={'/admin/employees/external_data/' + item.id}
+                          className='btn btn-primary'
+                        >External data </Link>
                         {isAdmin && (<ModalButton
                           type={true}
                           itemId={item.id}
