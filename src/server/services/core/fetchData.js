@@ -1,8 +1,8 @@
 'use client';
+import { redirect } from 'next/navigation'
 
 export const fetchData = async (session,method,url) => {
   try {
-    console.log(process.env.NEXT_PUBLIC_SALARY + `/${url}`)
     const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${url}`, {
       method: method,
       headers: {
@@ -10,6 +10,11 @@ export const fetchData = async (session,method,url) => {
         "Authorization": `Bearer ${session}`
       },
     });
+
+    if (response.status === 403 || response.status === 401 || response.status === 0) {
+      redirect('/admin/home'); // Redirige a la página deseada
+    }
+
     const jsonData = await response.json();
     return jsonData;
   } catch (error) {

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
 import RatingRow from "@/components/Rating/RatingRow";
-import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee } from '@/functions/formEmployeeHandlers';
+import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee, formatSalary } from '@/functions/formEmployeeHandlers';
 import { Formik, Form } from 'formik';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import Modal from 'react-bootstrap/Modal';
@@ -28,9 +28,11 @@ const FormEmployees: React.FC = () => {
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
     const [commnetsValues, setCommnetsValues] = useState({});
     const [statusValues, setStatusValues] = useState({});
+    const [salaryValues, setSalaryValues] = useState({});
 
 
     const [color, setColor] = useState('trasparent');
+    const [errorRemaining, setErrorRemaining] = useState(false)
     const [loading, setLoading] = useState(false)
 
     //const team
@@ -41,19 +43,18 @@ const FormEmployees: React.FC = () => {
     const [totalRejected, setTotalRejected] = useState(0);
 
     //const employees-ratings
-    const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
-    const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
+    //const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
+    //const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
 
     // ratings
     const [selectedRatings, setSelectedRatings] = useState({});
-    const [inputValues, setInputValues] = useState({});
     const [ratingRanges, setRatingRanges] = useState({}); // Estado para almacenar min y max
+
     const [approvedIds, setApprovedIds] = useState([]);
 
+    //const [calculatedPrices, setCalculatedPrices] = useState({});
     const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
     const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
-    //const isAdmin = session?.user.roles.some(role => role.name === 'administrator');
-    //const isSuper = session?.user.roles.some(role => role.name === 'superuser');
 
     useEffect(() => {
         if (session?.user.token) {
@@ -65,20 +66,20 @@ const FormEmployees: React.FC = () => {
         if (reviewTeam?.price !== undefined && totalSpend !== undefined) {
             const totalRemaining = calculateTotalRemaining(reviewTeam?.price, totalSpend);
             setTotalRemaining(totalRemaining);
+
+            if (totalRemaining < 0) {
+                console.log(totalRemaining)
+                setColor('red')
+                setErrorRemaining(true)
+            } else {
+                console.log(totalRemaining)
+                setColor('')
+                setErrorRemaining(false)
+            }
         }
     }, [reviewTeam, totalSpend]);
 
-    useEffect(() => {
-        if (teamEmployees && totalPriceByEmployee) {
-            //console.log(teamEmployees, totalPriceByEmployee)
-            const valuesByEmployeeWithPercentage = {};
-            for (const key in totalPriceByEmployee) {
-                valuesByEmployeeWithPercentage[key] = calculatePorcent(teamEmployees, totalPriceByEmployee[key], key);
-            }
-            setTotalPercentByEmployee(valuesByEmployeeWithPercentage);
-            
-        }
-    }, [teamEmployees, totalPriceByEmployee]);
+
 
     const updateEmployeesTeams = async (team) => {
 
@@ -88,6 +89,14 @@ const FormEmployees: React.FC = () => {
 
         const teamResponses = await Promise.all(promises);
         setTeamEmployees(teamResponses)
+
+        const newSalaryValues = {};
+
+        // Iterar sobre las respuestas y guardar el id y el salary
+        teamResponses.forEach(employee => {
+            newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary); // Asegúrate de que 'salary' sea el campo correcto
+        });
+        setSalaryValues(newSalaryValues)
     }
 
     const load = async () => {
@@ -134,18 +143,18 @@ const FormEmployees: React.FC = () => {
         const updatePriceValues = {};
         const updateStatus = {};
         const updateRatingsValues = {};
-        
+
         // Inicializar contadores para totales aprobados y rechazados
         let totalApproved = 0;
         let totalRejected = 0;
-
+        console.log(data)
         data.forEach(item => {
             updatedPercentValues[`${item.employees_id}`] = item.percent;
             updateCommentsValues[`${item.employees_id}`] = item.comments;
             updateRatingsValues[`${item.employees_id}`] = item.ratings_id;
             updatePriceValues[`${item.employees_id}`] = item.price;
             updateStatus[`${item.employees_id}`] = item.status;
-            
+
             if (item.status === 1) {
                 totalApproved += 1; // Aumentar el contador de aprobados
             } else if (item.status === 2) {
@@ -153,18 +162,19 @@ const FormEmployees: React.FC = () => {
             }
         });
 
-        const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
+
+        //const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
         const { totalPrice } = calculateTotalPrice(updatePriceValues);
         const { totalPercentSum } = calculateTotalsPercentEmployee(updatedPercentValues)
+        //const totalSpend = calculateTotalSpend(updatePriceValues);
+        //console.log(totalSpend)
+        //setTotalSpend(totalSpend.totalSpend);
 
         //total team
         setTotalPercent(totalPercentSum);
         setTotalSpend(totalPrice)
         setTotalApprovede(totalApproved)
         setTotalRejected(totalRejected)
-
-        // total employees rating
-        setTotalPriceByEmployee(totalByEmployees);
 
         setRangeValues(prevState => ({
             ...prevState,
@@ -191,11 +201,6 @@ const FormEmployees: React.FC = () => {
     }
 
     const handleSubmit = async (employeesId) => {
-        console.log('employeesId', employeesId)
-
-        console.log('selec:', selectedRatings[employeesId])
-        console.log('percent:', rangeValues[employeesId])
-
 
         let employeesSalary = teamEmployees.find(item => item.id == parseInt(employeesId));
 
@@ -205,7 +210,8 @@ const FormEmployees: React.FC = () => {
 
         //console.log(employeesSalary.actual_external_data.annual_salary)
 
-        let currentSalary = calculatePrice(employeesSalary.actual_external_data.annual_salary, employeesId)
+        //let currentSalary = calculatePrice(employeesSalary.actual_external_data.annual_salary, employeesId)
+        let currentSalary = calculatePriceByEmployee(employeesId)
         let ratingId = selectedRatings[employeesId]
         let percent = rangeValues[employeesId]
 
@@ -268,51 +274,63 @@ const FormEmployees: React.FC = () => {
         }
     };
 
-    const calculatePrice = (salary, employeesId) => {
-
-        const percent = rangeValues[employeesId];
-
-        const montoSinFormato = salary.replace(/\$|,/g, '');
-        const montoNumero = parseFloat(montoSinFormato);
-        if (isNaN(montoNumero)) {
-            return;
+    const calculateTotalSpend = (updatedRangeValues) => {
+        console.log(updatedRangeValues)
+        let totalSpend = 0;
+        for (const key in updatedRangeValues) {
+            const totalByEmployee = calculatePrice(key, updatedRangeValues[key]);
+            console.log(totalByEmployee)
+            totalSpend += totalByEmployee;
         }
-        const result = (montoNumero * percent) / 100;
+        console.log(totalSpend);
+        return { totalSpend };
+    };
 
+    const calculatePrice = (employeeId, percent) => {
+        const salary = salaryValues[employeeId];
+        const numericPercent = percent === '' ? 0 : parseFloat(percent);
+
+        if (isNaN(salary) || isNaN(numericPercent)) {
+            console.error(`Invalid salary or percent for employeeId ${employeeId}: salary=${salary}, percent=${numericPercent}`);
+            return 0; // O maneja el error de otra manera
+        }
+
+        const result = (salary * numericPercent) / 100;
+        return result;
+    };
+
+    const calculatePriceByEmployee = (employeeId) => {
+        const percent = rangeValues[employeeId];
+        const salary = salaryValues[employeeId]
+        const result = (salary * percent) / 100;
         return result
-    }
+    };
 
     const handleInputChange = (e, id) => {
         const newValue = e.target.value; // Obtén el nuevo valor del input
         const numericValue = newValue === '' ? 0 : Number(newValue); // Convierte a número o deja en 0 si está vacío
 
-        setRangeValues(prevState => ({
-            ...prevState,
-            [id]: newValue // Actualiza el valor específico del empleado
-        }));
+        // Actualiza el estado de rangeValues
+        setRangeValues(prevState => {
+            const updatedRangeValues = {
+                ...prevState,
+                [id]: numericValue // Actualiza el valor específico del empleado
+            };
 
-        // Aquí puedes hacer algo con el nuevo valor cada vez que cambie
-        console.log(`Nuevo valor para ${id}:`, newValue);
+            // Calcula el total de gastos usando el nuevo estado
+            const totalSpend = calculateTotalSpend(updatedRangeValues);
 
-        /*
-        const updatedTotalSpend = Object.keys(rangeValues).reduce((total, employeeId) => {
-            const employeeValue = rangeValues[employeeId] || 0; // Obtén el valor actual o 0 si no existe
-            return total + employeeValue; // Suma el valor del empleado al total
-        }, 0) + numericValue; // Agrega el nuevo valor
+            // Actualiza el porcentaje total
+            const { totalPrice } = calculateTotalPrice(updatedRangeValues);
+            setTotalPercent(totalPrice); // Actualiza el porcentaje total
 
-        // Actualiza el total de gastos
-        setTotalSpend(updatedTotalSpend);
+            // Establece el nuevo total de gastos
+            setTotalSpend(totalSpend.totalSpend);
 
-        // Calcular el total restante
-        const totalRemaining = calculateTotalRemaining(reviewTeam?.price, updatedTotalSpend);
-        console.log(totalRemaining);
-        setTotalRemaining(totalRemaining);
-        */
+            return updatedRangeValues; // Devuelve el nuevo estado
+        });
     };
 
-    const toggleLike = (type) => {
-        //setFieldValue(`${option.id}-${item.id}-status`, type);
-    };
 
     const changeStatusByRatings = async (employeesId, status) => {
 
@@ -332,7 +350,7 @@ const FormEmployees: React.FC = () => {
                 const previousStatus = statusValues[employeesId];
 
                 const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                console.log(response);
+                //console.log(response);
 
                 // Actualizar contadores según el nuevo estado
                 if (status === 1) { // Aprobado
@@ -361,6 +379,23 @@ const FormEmployees: React.FC = () => {
         }
     };
 
+    const findStatusByRatings = (employeeId) => {
+
+        const status = statusValues[employeeId];
+        let statusText = '';
+        if (status === 1) {
+            statusText = <span className="badge rounded-pill bg-success">aproved</span>;
+        } else if (status === 2) {
+            statusText = <span className="badge rounded-pill bg-danger">rejected</span>;
+        } else if (status === 0) {
+            statusText = <span className="badge rounded-pill bg-secondary">pending</span>;
+        }
+
+        return statusText
+    }
+
+
+
     return (
         <div className="row">
             {loading ? (
@@ -387,7 +422,9 @@ const FormEmployees: React.FC = () => {
                                     <td><strong>$ {reviewTeam ? formatPrice(reviewTeam.price) : 0}</strong></td>
                                     <td> {totalPercent ? totalPercent : 0} %</td>
                                     <td>$ {totalSpend ? formatPrice(totalSpend) : 0}</td>
-                                    <td style={{ color: color }}>$ {totalRemaining ? formatPrice(totalRemaining) : 0}</td>
+                                    <td style={{ color: color }}>
+                                        $ {totalRemaining ? formatPrice(totalRemaining) : 0}
+                                    </td>
                                     <td>{totalApproved}</td>
                                     <td>{totalRejected}</td>
                                 </tr>
@@ -408,6 +445,7 @@ const FormEmployees: React.FC = () => {
                                     <th style={{ width: '15%' }}>Ratings</th>
                                     <th>Percent</th>
                                     <th></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -424,11 +462,7 @@ const FormEmployees: React.FC = () => {
                                                 {rangeValues[item.id] || 0} %
                                             </td>
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                $ {formatPrice(calculatePrice(item.actual_external_data.annual_salary, item.id))}
-
-                                                {/* {totalPercentByEmployee[item.id] !== undefined
-                                                    ? `$ ${formatPrice(totalPercentByEmployee[item.id])}`
-                                                    : `$ 0.00`} */}
+                                                $ {formatPrice(calculatePriceByEmployee(item.id))}
                                             </td>
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td>
                                             <td>
@@ -446,6 +480,7 @@ const FormEmployees: React.FC = () => {
                                             </td>
                                             <td>
                                                 <input
+                                                    min={0}
                                                     type='number'
                                                     step={1}
                                                     className="form-control"
@@ -454,6 +489,9 @@ const FormEmployees: React.FC = () => {
                                                     placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`} // Usar los rangos
                                                     onChange={(e) => handleInputChange(e, item.id)}
                                                 />
+                                            </td>
+                                            <td>
+                                                {findStatusByRatings(item.id)}
                                             </td>
                                             {isValidator && (
                                                 <td>
