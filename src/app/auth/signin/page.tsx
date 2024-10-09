@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { error } from "console";
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 type LoginInput = {
   username: string;
@@ -22,6 +23,14 @@ export default function SignIn({ searchParams }: PageProps) {
   const [inputs, setInputs] = useState<LoginInput>({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
 
+  const [randomImage, setRandomImage] = useState('/login_img/1.jpg');
+
+  // Cambia la imagen aleatoriamente al cargar el componente
+  useEffect(() => {
+    const randomNumber = Math.floor(Math.random() * 6) + 1; // Genera un número aleatorio entre 1 y 6
+    setRandomImage(`/login_img/${randomNumber}.jpg`); // Cambia la ruta según tu estructura
+  }, []);
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -35,7 +44,7 @@ export default function SignIn({ searchParams }: PageProps) {
       await signIn('credentials', {
         username: inputs.username,
         password: inputs.password,
-        callbackUrl: '/admin/dashboard'
+        callbackUrl: '/admin/home'
       });
     } catch (error) {
       // Manejar el error aquí
@@ -48,23 +57,22 @@ export default function SignIn({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="container">
-      <div className="row justify-content-center align-items-center p-5 ">
-        <div className="col-12 col-md-8 col-lg-6">
-          <div className="p-5 bg-white rounded shadow-sm">
-          <div className="mb-5 text-center">
-           <img
-              src="/equipay.png"
-              width="240"
-              height="60"
-              // className="d-inline-block align-top"
-              alt="Logo"
-            />
-          </div>  
-            <form className="" onSubmit={handleSubmit}>
-              <div >
+ <div className="container vh-100 d-flex align-items-center justify-content-center">
+      <div className="row bg-white rounded shadow overflow-hidden" style={{ maxWidth: '900px', width: '100%' }}>
+        {/* Columna del formulario */}
+        <div className="col-12 col-md-6 p-5 d-flex align-items-center">
+          <div style={{ width: '100%' }}>
+            <div className="mb-5 text-center">
+              <img
+                src="/equipay.png"
+                width="240"
+                height="60"
+                alt="Logo"
+              />
+            </div>  
+            <form onSubmit={handleSubmit}>
+              <div>
                 <label htmlFor="email" className="form-label">Email address</label>
-                {/* <input type="email" className="form-control" id="email" placeholder="name@example.com" /> */}
                 <input
                   placeholder="name@example.com"
                   id="username"
@@ -77,9 +85,8 @@ export default function SignIn({ searchParams }: PageProps) {
                   className="form-control"
                 />
               </div>
-              <div className="mt-4" >
-                <label htmlFor="password" className="form-label ">Password</label>
-                {/* <input type="password" className="form-control" id="password" placeholder="Password" /> */}
+              <div className="mt-4">
+                <label htmlFor="password" className="form-label">Password</label>
                 <input
                   placeholder="Password"
                   id="password"
@@ -92,8 +99,7 @@ export default function SignIn({ searchParams }: PageProps) {
                   className="form-control"
                 />
               </div>
-              <div className="mt-5 d-grid gap-2">
-                {/* <button type="submit" className="btn btn-primary">Login</button> */}
+              <div className="mt-4 d-grid gap-2">
                 <input
                   type="submit"
                   value={loading ? 'Loading...' : 'Sign In'}
@@ -115,21 +121,32 @@ export default function SignIn({ searchParams }: PageProps) {
             <div className="container mt-5 text-center">
               <div>or continue with</div>
               <div>
-              <button className="m-2 btn btn-outline-danger btn-lg"><i className="bi bi-google"></i></button>
-              <button className="m-2 btn btn-outline-success btn-lg"><i className="bi bi-microsoft"></i></button>
+                <button className="m-2 btn btn-danger btn-md"><i className="bi bi-google"></i></button>
+                <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button>
               </div>
             </div>
-              {searchParams.error && (
-                <div >
-                  <p className="text-red text-center capitalize">
-                    Credenciales inválidas
-                  </p>
-                </div>
-              )}       
+            {searchParams.error && (
+              <div>
+                <p className="text-red text-center capitalize">
+                  Credenciales inválidas
+                </p>
+              </div>
+            )}       
           </div>
+        </div>
+
+        {/* Columna de la imagen */}
+        <div className="col-12 col-md-6 p-0">
+          <img
+            src={randomImage}
+            alt="Imagen de login"
+            className="img-fluid w-100 h-100"
+            style={{ objectFit: 'cover' }}
+          />
         </div>
       </div>
     </div>
+
     // <div className="flex items-center justify-center h-screen">
     //   <div className="w-full max-w-md">
     //     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">

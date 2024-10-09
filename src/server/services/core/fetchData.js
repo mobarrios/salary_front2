@@ -2,6 +2,7 @@
 
 export const fetchData = async (session,method,url) => {
   try {
+    console.log(process.env.NEXT_PUBLIC_SALARY + `/${url}`)
     const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${url}`, {
       method: method,
       headers: {

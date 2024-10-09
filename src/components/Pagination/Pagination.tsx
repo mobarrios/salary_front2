@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const Pagination = ({ totalPages, page }) => {
+const Pagination = ({ totalPages, page , totalData}) => {
 
 
     const prevPage = page - 1 > 0 ? page - 1 : 1;
@@ -18,13 +18,13 @@ const Pagination = ({ totalPages, page }) => {
             pageNumbers.push(i);
         }
     }
-
+    
     return (
 
-        <nav aria-label="...">
+        <nav>
             <ul className="pagination">
                 <li className="page-item disabled">
-                    <span className="page-link">Anterior</span>
+                    <span className="page-link">Previous</span>
                 </li>
 
                 {
@@ -41,11 +41,23 @@ const Pagination = ({ totalPages, page }) => {
                             </Link>
                         </li>
                     ))
+                    
                 }
-
-
-                <li className="page-item">
-                    <a className="page-link" href="#">Siguiente</a>
+                {  page != totalPages ?
+                <> 
+                    <li className="page-item">
+                        <a className="page-link disabled" >...</a>
+                    </li>
+                    <li className="page-item">
+                        <a className="page-link"  href={`?page=${totalPages}`}>{totalPages}</a>
+                    </li>
+                    <li className="page-item">
+                        <a className="page-link" href="#">Next</a>
+                    </li>
+                </>
+                :''}
+                <li >
+                <small className="fs-6 m-2" >Total records </small><strong className="text-dark">{totalData}</strong>
                 </li>
             </ul>
         </nav>

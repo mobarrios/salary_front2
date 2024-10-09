@@ -1,14 +1,23 @@
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
-import TableComponent from '@/components/Core/TableComponent';
 import Pagination from '@/components/Pagination/Pagination';
-import { headers, name, buttonExtra } from './model';
+import { headers, name } from './model';
 import Link from 'next/link';
+import ModalButton from '@/components/Modal/NewFormModal';
+import FormEmployees from './form/page';
+import RemoveItem from '@/components/Core/RemoveItem';
+import FormEmployeesTeams from './teams/page';
+import { Title } from '@/components/Title';
+import { getUserRoles } from '@/functions/getRoles'
+import SearchBar from '@/components/Search/Search';
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
+
+  const roles = await getUserRoles();
+  const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role));
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
 
@@ -17,25 +26,102 @@ export default async function Employees({ searchParams }: Params) {
   }
 
   const data = await res.json();
+  const results = data.data
+  console.log(results)
   const totalPages = Math.ceil(data.count / limit);
 
-  console.log(data)
   return (
-  <div className='container'>
-    <h2 className='text-primary '>Employees</h2>
-    <div className="row">
-      <div className='col-12'>
-        <Link href={`/admin/${name}/form`} className="btn btn-primary mt-3" > New </Link>
-        <Link href={'/admin/employees/upload'} className="btn btn-secondary mt-3 ms-3" > Import data</Link>
+    <div>
+      <Title>Employees</Title>
+      <div className="row mt-5">
+        <div className='col-12'>
+          <p className='float-start'>
+            {
+              isAdmin && (
+                <ModalButton
+                  type={false}
+                  itemId={1}
+                  name="New Employee"
+                  FormComponent={FormEmployees}
+                  title="New Employee"
+                />
+              )}
+            <Link href={`/admin/teams`} className="btn btn-primary  ms-3" >Teams </Link>
+            <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
 
-      </div>
-      <div className='col-12 mt-3'>
-        <TableComponent data={data.data} model={name} headers={headers} buttonExtra={buttonExtra} />
-      </div>
-      <div className='col-12 mt-3'>
-        <Pagination page={page} totalPages={totalPages} />
+          </p>
+
+  
+        
+        </div>
+        
+       
+        <div className='col-12 mt-3'>
+          <table className="table table-hover ">
+            <thead>
+              <tr>
+                <th>#</th>
+                {headers.map((header, key) => (
+                  <th key={key}>{header.name}</th>
+                ))}
+                <th>Team</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                results ? (
+                  results.map((item, rowIndex) => (
+                    <tr key={rowIndex}>
+                      <td>{item.id}</td>
+                      {headers.map((header, colIndex) => (
+                        <td key={header.key}>{item[header.key]}</td>
+                      ))}
+                      <td>
+                        {item.teams.map((team, i) => (
+                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
+                        ))}
+                      </td>
+                      <td className="text-end" >
+                        <Link
+                          href={'/admin/employees/external_data/' + item.id}
+                          className='btn btn-primary'
+                        >External data </Link>
+
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Teams"
+                          FormComponent={FormEmployeesTeams}
+                          title={item.associate_id + " Teams"}
+                        />
+                        <ModalButton
+                          type={true}
+                          itemId={item.id}
+                          name="Edit"
+                          FormComponent={FormEmployees}
+                          title={item.associate_id}
+                        />
+                        <RemoveItem
+                          url={name}
+                          id={item.id}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={headers.length + 2}>No data available</td>
+                  </tr>
+                )
+              }
+            </tbody>
+          </table>
+        </div>
+        <div className='col mt-5'>
+          <Pagination page={page} totalPages={totalPages} totalData={data.count} />
+        </div>
       </div>
     </div>
-  </div>
   )
 };
