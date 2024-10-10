@@ -10,7 +10,12 @@ import RemoveItem from '@/components/Core/RemoveItem';
 import FormEmployeesTeams from './teams/page';
 import { Title } from '@/components/Title';
 import { getUserRoles } from '@/functions/getRoles'
-import SearchBar from '@/components/Search/Search';
+
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import PrimeDataTable from '@/components/DataTable';
+
+
 
 export default async function Employees({ searchParams }: Params) {
 
@@ -27,7 +32,7 @@ export default async function Employees({ searchParams }: Params) {
 
   const data = await res.json();
   const results = data.data
-  console.log(results)
+  
   const totalPages = Math.ceil(data.count / limit);
 
   return (
@@ -50,13 +55,25 @@ export default async function Employees({ searchParams }: Params) {
             <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
 
           </p>
-
-  
-        
         </div>
-        
+        <DataTable
+        value={results}
+        paginator
+        rows={10}
+        // header={header}
+        // globalFilter={globalFilter}
+        emptyMessage="No data found." 
+        >
+        <Column field="associate_id" sortable header="ID" />
+        <Column field="name" sortable header="Name" />
+        {/* <Column body={actionBodyTemplate} header="Actions"/>  */}
+        {/* Columna personalizada */}
+        </DataTable>
+
+        {/* <PrimeDataTable users={results}/> */}
+
        
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <table className="table table-hover ">
             <thead>
               <tr>
@@ -121,7 +138,9 @@ export default async function Employees({ searchParams }: Params) {
         <div className='col mt-5'>
           <Pagination page={page} totalPages={totalPages} totalData={data.count} />
         </div>
-      </div>
+      </div> */}
+
+    </div>
     </div>
   )
 };

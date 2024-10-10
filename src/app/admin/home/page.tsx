@@ -5,11 +5,10 @@ import React, { useEffect, useState } from "react";
 
 const Home = () => {
   const { data: session, status } = useSession()
-
   return (
     <div>
       <Title>Welcome  {session?.user.name} ! </Title>
-    </div>
+    </div>    
   );
 };
 
