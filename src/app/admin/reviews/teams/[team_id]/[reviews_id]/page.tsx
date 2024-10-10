@@ -55,7 +55,7 @@ const FormEmployees: React.FC = () => {
     //const [calculatedPrices, setCalculatedPrices] = useState({});
     const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
     const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
-
+    const [errors, setErrors] = useState({});
     useEffect(() => {
         if (session?.user.token) {
             load();
@@ -68,11 +68,11 @@ const FormEmployees: React.FC = () => {
             setTotalRemaining(totalRemaining);
 
             if (totalRemaining < 0) {
-                console.log(totalRemaining)
+
                 setColor('red')
                 setErrorRemaining(true)
             } else {
-                console.log(totalRemaining)
+
                 setColor('')
                 setErrorRemaining(false)
             }
@@ -122,9 +122,9 @@ const FormEmployees: React.FC = () => {
 
             //all review teams employees
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
-
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
+            console.log(filterRatingEmployees)
 
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
@@ -147,7 +147,7 @@ const FormEmployees: React.FC = () => {
         // Inicializar contadores para totales aprobados y rechazados
         let totalApproved = 0;
         let totalRejected = 0;
-        console.log(data)
+
         data.forEach(item => {
             updatedPercentValues[`${item.employees_id}`] = item.percent;
             updateCommentsValues[`${item.employees_id}`] = item.comments;
@@ -201,20 +201,34 @@ const FormEmployees: React.FC = () => {
     }
 
     const handleSubmit = async (employeesId) => {
-
         let employeesSalary = teamEmployees.find(item => item.id == parseInt(employeesId));
-
         if (!employeesSalary) {
             return;
         }
 
-        //console.log(employeesSalary.actual_external_data.annual_salary)
+        // Validar campos requeridos
+        const currentRating = selectedRatings[employeesId];
+        const currentRangeValue = rangeValues[employeesId];
+        console.log(currentRating)
+           console.log(currentRating)
+        const newErrors = {};
+        if (!currentRating) {
+            newErrors.rating = 'Required.';
+        }
+        if (currentRangeValue === undefined || currentRangeValue === '') {
+            newErrors.range = 'Required.';
+        }
 
-        //let currentSalary = calculatePrice(employeesSalary.actual_external_data.annual_salary, employeesId)
-        let currentSalary = calculatePriceByEmployee(employeesId)
-        let ratingId = selectedRatings[employeesId]
-        let percent = rangeValues[employeesId]
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            showErrorAlert("required fields error");
+            return; // Detener el envío si hay errores
+        }
 
+        // Si no hay errores, continuar con el envío
+        let currentSalary = calculatePriceByEmployee(employeesId);
+        let ratingId = selectedRatings[employeesId];
+        let percent = rangeValues[employeesId];
         const payload = {
             reviews_id: reviews_id,
             teams_id: team_id,
@@ -222,8 +236,6 @@ const FormEmployees: React.FC = () => {
             employees_id: employeesId,
             price: currentSalary,
             percent: percent,
-            //comments: item.comments,
-            //status: item.status ? item.status : 0,
         };
 
         // Verificar si el registro ya existe
@@ -231,23 +243,23 @@ const FormEmployees: React.FC = () => {
             r.ratings_id === ratingId && r.employees_id === employeesId
         );
 
-
         try {
+            let response;
             if (existingRecord) {
-                // Si existe, realiza un PUT
-                const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                console.log('Actualizando...', payload, response);
+                response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                setRatingsTeamEmployees(prevState =>
+                    prevState.map(item =>
+                        item.id === existingRecord.id ? { ...item, ...payload } : item
+                    )
+                );
             } else {
-                // Si no existe, realiza un POST
-                const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                console.log('Guardando...', payload, response);
+                response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+                setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
         } catch (error) {
             console.error('Error al enviar datos:', error);
         }
-
         showSuccessAlert("Your work has been saved");
-        load();
     };
 
     const handleSelectChange = (employeeId, event) => {
@@ -275,14 +287,14 @@ const FormEmployees: React.FC = () => {
     };
 
     const calculateTotalSpend = (updatedRangeValues) => {
-        console.log(updatedRangeValues)
+
         let totalSpend = 0;
         for (const key in updatedRangeValues) {
             const totalByEmployee = calculatePrice(key, updatedRangeValues[key]);
             console.log(totalByEmployee)
             totalSpend += totalByEmployee;
         }
-        console.log(totalSpend);
+
         return { totalSpend };
     };
 
@@ -335,7 +347,7 @@ const FormEmployees: React.FC = () => {
     const changeStatusByRatings = async (employeesId, status) => {
 
         let ratingId = selectedRatings[employeesId]
-
+        console.log('gfcfg')
         const payload = {
             status: status,
         };
@@ -344,7 +356,7 @@ const FormEmployees: React.FC = () => {
         const existingRecord = ratingsTeamEmployees.find(r =>
             r.ratings_id == ratingId && r.employees_id == employeesId && r.reviews_id == reviews_id && r.teams_id == team_id
         );
-
+        console.log(existingRecord)
         try {
             if (existingRecord) {
                 const previousStatus = statusValues[employeesId];
@@ -394,8 +406,26 @@ const FormEmployees: React.FC = () => {
         return statusText
     }
 
+    const changeStatusByReview = async () => {
 
+        const valuesData = {
+            status: 1,
+        }
 
+        try {
+
+            await apiRequest(`reviews/edit/${reviewTeam.id}`, 'PUT', valuesData)
+            showSuccessAlert("Your work has been saved");
+
+        } catch (error) {
+            showErrorAlert("An error occurred while saving");
+            console.error('Error:', error);
+        }
+
+        showSuccessAlert("Your work has been saved");
+        console.log(team_id, reviews_id)
+    }
+    console.log(teamEmployees?.length, totalApproved)
     return (
         <div className="row">
             {loading ? (
@@ -467,6 +497,7 @@ const FormEmployees: React.FC = () => {
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td>
                                             <td>
                                                 <select
+                                                    required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
                                                     value={selectedRatings[item.id] || ''} // Usar el estado específico para este empleado
@@ -480,7 +511,10 @@ const FormEmployees: React.FC = () => {
                                             </td>
                                             <td>
                                                 <input
+                                                    required
                                                     min={0}
+                                                    //minLength={`${ratingRanges[item.id]?.min || 0}`}
+                                                    //maxLength={`${ratingRanges[item.id]?.max || 0}`}
                                                     type='number'
                                                     step={1}
                                                     className="form-control"
@@ -527,7 +561,19 @@ const FormEmployees: React.FC = () => {
                     </div>
                 </>
             )}
+
+            <div className="col-12">
+                <div className="bg-white">
+                    <a
+                        onClick={changeStatusByReview}
+                        className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
+                        <i className="bi bi-save"></i> Submit
+                    </a>
+                </div>
+            </div>
         </div>
+
+
     );
 };
 

@@ -65,7 +65,7 @@ export default async function Employees({ searchParams }: Params) {
                       <td>{item.id}</td>
                       <td>{item.name}</td>
                       <td>{formatPrice(item.price)}</td>
-                      <td>{item.status === 1 ? 'Progress' : 'Clossed'}</td>
+                      <td>{item.status === 1 ? 'Active' : 'Clossed'}</td>
                       <td>
                         {formatDate(item.form)} - {formatDate(item.to)}
                       </td>
