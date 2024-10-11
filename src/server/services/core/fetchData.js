@@ -1,9 +1,6 @@
 'use client';
-import { getServerSession } from 'next-auth'
 
-export const fetchData = async (method, url) => {
-   const session = await getServerSession(authOptions)
-    const jwt = session.user.token;
+export const fetchData = async (session,method, url) => {
 
   try {
     console.log(process.env.NEXT_PUBLIC_SALARY + `/${url}`)
