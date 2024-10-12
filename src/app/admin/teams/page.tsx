@@ -10,8 +10,10 @@ import UserTeams from './user/page';
 import { Title } from '@/components/Title';
 import { getUserRoles, getUserId } from '@/functions/getRoles'
 import Link from 'next/link';
+import Breadcrumb from "@/components/BreadCrumb";
 
 export default async function Employees({ searchParams }: Params) {
+  const bc = [{ label: 'People',url:'/admin/employees'},{ label: 'Teams'}];
 
   const { page, search, limit, skip } = usePaginate(searchParams)
 
@@ -45,6 +47,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
       <Title>Teams</Title>
       <div className="row mt-5">
         <div className='col-12'>

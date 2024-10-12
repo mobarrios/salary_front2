@@ -8,11 +8,14 @@ import FormRatings from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import { redirect } from 'next/navigation'
 import { getUserRoles } from '@/functions/getRoles'
+import Breadcrumb from "@/components/BreadCrumb";
+import { Title } from '@/components/Title';
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
+  const bc = [{ label: 'Users'}];
 
   if (!roles.some(role => ['superuser', 'administrator'].includes(role))) {
     redirect('/admin/home');
@@ -30,6 +33,9 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
+      <Title>Performances</Title>
+
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
