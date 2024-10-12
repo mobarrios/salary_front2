@@ -10,6 +10,7 @@ import { getUserRoles } from '@/functions/getRoles';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { fetchData } from '@/server/services/core/fetchData'
+import Breadcrumb from "@/components/BreadCrumb";
 
 export default function Employees({ searchParams }: Params) {
   const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
@@ -20,6 +21,8 @@ export default function Employees({ searchParams }: Params) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { data: session } = useSession()
   const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
+
+  const bc = [{ label: 'People'}];
 
   useEffect(() => {
     const load = async () => {
@@ -48,6 +51,8 @@ export default function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
+
       <h1>Employees</h1>
       <div className="row mt-5">
         <div className='col-12'>

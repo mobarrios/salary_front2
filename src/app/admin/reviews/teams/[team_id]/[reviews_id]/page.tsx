@@ -14,10 +14,12 @@ import Modal from 'react-bootstrap/Modal';
 import { Button } from "react-bootstrap";
 import { Title } from "@/components/Title";
 import { formatPrice } from '@/functions/formatDate';
+import Breadcrumb from "@/components/BreadCrumb";
 
 const FormEmployees: React.FC = () => {
     // params
     const { team_id, reviews_id } = useParams();
+  const bc = [{ label: 'Review cycle',url:'/admin/reviews'},{ label: 'Review'}];
 
     const { data: session } = useSession()
     const [team, setTeam] = useState();
@@ -367,6 +369,8 @@ const FormEmployees: React.FC = () => {
                 <div>Cargando...</div>
             ) : (
                 <>
+                      <Breadcrumb items={bc}/>
+
                     <Title>Reviews - {team?.name}</Title>
 
                     <div className='col-12 mt-5'>

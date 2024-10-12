@@ -1,16 +1,27 @@
+import React from 'react';
+import { BreadCrumb } from 'primereact/breadcrumb';
+
+export default function Bread({items}) {
+      // const items = [{ label: 'Electronics' }, { label: 'Computer' }, { label: 'Accessories' }, { label: 'Keyboard' }, { label: 'Wireless' }];
+      const home = { icon: 'pi pi-home', url: '/' }
+
+    return (
+        <BreadCrumb  model={items} home={home} className='mb-3' />
+    )
+}
 
 
-// components/Breadcrumb.js
-'use client'; // Esto marca el componente como un Client Component
+// // components/Breadcrumb.js
+// 'use client'; // Esto marca el componente como un Client Component
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation'; // Importa el enrutador del App Router
+// import Link from 'next/link';
+// import { usePathname } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // Importa el enrutador del App Router
 
-import { Button } from 'react-bootstrap'; // O utiliza cualquier otro botón o estilo
+// import { Button } from 'react-bootstrap'; // O utiliza cualquier otro botón o estilo
 
 
-const Breadcrumb = () => {
+// const Breadcrumb = () => {
   // const pathname = usePathname();
   // // const pathArray = pathname.split('/').filter((path) => path);
   //  // Split the path into segments and filter out 'admin'
@@ -40,18 +51,19 @@ const Breadcrumb = () => {
   //       })}
   //     </ol>
   //   </nav>
-  const router = useRouter();
+  // const router = useRouter();
 
-  const goBack = () => {
-    router.back();
-  };
-  return (
-    <Button variant="link" onClick={goBack}>
-       <i className="bi bi-arrow-left"></i>
-    </Button>
-  );
+//   const goBack = () => {
+//     router.back();
+//   };
+//   return (
+//     <Button variant="link" onClick={goBack}>
+//        <i className="bi bi-arrow-left"></i>
+//     </Button>
+//   );
 
   
-};
+// };
 
-export default Breadcrumb;
+// export default Breadcrumb;
+

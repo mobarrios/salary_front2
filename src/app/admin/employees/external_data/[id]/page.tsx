@@ -7,8 +7,12 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import {fetchData} from '@/server/services/core/fetchData'
 import { Button, Form, Table } from 'react-bootstrap';
+import Breadcrumb from "@/components/BreadCrumb";
+import { Title } from '@/components/Title';
 
 const FormEmployees: React.FC = () => {
+
+  const bc = [{ label: 'People',url:'/admin/employees'},{ label: 'External data'}];
 
   const { data: session, status } = useSession()
   const [options, setOptions] = useState();
@@ -45,11 +49,13 @@ const FormEmployees: React.FC = () => {
 
   
   return (
-    <div className="row">
+    <div >
+      <Breadcrumb items={bc}/>
+
       <div className='col-12'>
-        <h1 className='text-primary'>Employees Teams</h1>
+        <Title>External Data</Title>
       </div>
-      <div className='col-12'>
+      <div className='col-12 mt-4'>
       <Form>
         <h5>Last updated data : </h5> <small>{actual.created_at}</small>
         <div className='row mt-3'>
@@ -90,7 +96,7 @@ const FormEmployees: React.FC = () => {
           </div>
       </Form>
       </div>
-      <div className='col-12 table-responsive'>
+      <div className='col-12 table-responsive mt-4'>
         <div>
         <Table className='table table-striped'>
         <thead>
