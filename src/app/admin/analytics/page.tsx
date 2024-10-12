@@ -4,9 +4,12 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
+import Breadcrumb from "@/components/BreadCrumb";
 
 const Dashboard = () => {
   const { data: session, status } = useSession()
+  const bc = [{ label: 'Dashboard'}];
+
 
   const [optionsMixedChart, setOptionsMixedChart] = useState({
     chart: {
@@ -232,6 +235,7 @@ const Dashboard = () => {
 
   return (
     <div>
+        <Breadcrumb items={bc}/>
         <Title>Dashboard</Title>
         <div className="row mt-5">
          <Card className="col shadow  border-light pt-4  ">

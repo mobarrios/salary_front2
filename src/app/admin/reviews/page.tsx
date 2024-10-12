@@ -11,10 +11,12 @@ import ModalButton from '@/components/Modal/NewFormModal';
 import RemoveItem from '@/components/Core/RemoveItem';
 import { Title } from '@/components/Title';
 import { formatDate, formatPrice } from '../../../functions/formatDate';
+import Breadcrumb from "@/components/BreadCrumb";
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
+  const bc = [{ label: 'Review Cycle'}];
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
   const session = await getServerSession(authOptions)
@@ -30,6 +32,8 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
+
       <Title>Review Cycle</Title>
       <div className="row mt-5">
         <div className='col-12'>

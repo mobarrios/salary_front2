@@ -3,7 +3,6 @@ import { Inter, Sora, Roboto , Titillium_Web } from "next/font/google";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './custom.scss'
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
 
 import Bootstrap from "@/components/Boostrap"
 import { SessionProvider } from "next-auth/react";
@@ -23,11 +22,9 @@ export default function RootLayout({
     <SessionProvider>
     <html lang="en">
       <Bootstrap />
-      <PrimeReactProvider>
       <body className={titillium_web.className}>
           {children}
       </body>
-      </PrimeReactProvider>
     </html>
     </SessionProvider>
   );
