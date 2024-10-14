@@ -24,7 +24,7 @@ const FormEmployees: React.FC = () => {
     const { data: session } = useSession()
     const [team, setTeam] = useState();
     const [teamEmployees, setTeamEmployees] = useState();
-    const [reviewTeam, setReviewTeam] = useState();
+    const [reviewTeam, setReviewTeam] = useState({});
     const [ratings, setRatings] = useState();
     const [rangeValues, setRangeValues] = useState({});
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
@@ -416,6 +416,10 @@ const FormEmployees: React.FC = () => {
             console.log(resp)
             showSuccessAlert("Your work has been saved");
 
+            setReviewTeam(prevState => ({
+                ...prevState,
+                status: 1, // Actualiza el status
+            }));
         } catch (error) {
             showErrorAlert("An error occurred while saving");
             console.error('Error:', error);
@@ -571,9 +575,9 @@ const FormEmployees: React.FC = () => {
                             className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
                             <i className="bi bi-save"></i> Submit
                         </a>
-                        : <span className="badge rounded-pill bg-success float-end p-3" style={{fontSize: '1.0rem' }}>
+                        : <span className="badge rounded-pill bg-success float-end p-3" style={{ fontSize: '1.0rem' }}>
                             <i className="bi bi-check-circle"></i> Done
-                            </span>
+                        </span>
 
                     }
                 </div>
