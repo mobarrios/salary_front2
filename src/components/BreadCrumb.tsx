@@ -3,7 +3,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 export default function Bread({items}) {
       // const items = [{ label: 'Electronics' }, { label: 'Computer' }, { label: 'Accessories' }, { label: 'Keyboard' }, { label: 'Wireless' }];
-      const home = { icon: 'pi pi-home', url: '/' }
+      const home = { label:'Home', url: '/' }
 
     return (
         <BreadCrumb  model={items} home={home} className='mb-3' />

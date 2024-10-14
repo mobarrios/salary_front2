@@ -105,7 +105,7 @@ const Dashboard = () => {
             fontSize: "13px"
           },
           value: {
-            formatter: function (val) {
+            formatter: function (val:any) {
               return val;
             },
             color: "#111",
@@ -211,8 +211,8 @@ const Dashboard = () => {
   const updateCharts = () => {
     const max = 90;
     const min = 30;
-    const newMixedSeries = [];
-    const newBarSeries = [];
+    const newMixedSeries:any = [];
+    const newBarSeries:any = [];
 
     seriesMixedChart.forEach((s) => {
       const data = s.data.map(() => {

@@ -15,7 +15,7 @@ const FormEmployees: React.FC = () => {
   const bc = [{ label: 'People',url:'/admin/employees'},{ label: 'External data'}];
 
   const { data: session, status } = useSession()
-  const [options, setOptions] = useState();
+  const [options, setOptions] = useState([]);
   const [actual, setActual] = useState();
 
   const [userTeams, setUserTeams] = useState();
@@ -57,38 +57,38 @@ const FormEmployees: React.FC = () => {
       </div>
       <div className='col-12 mt-4'>
       <Form>
-        <h5>Last updated data : </h5> <small>{actual.created_at}</small>
+        <h5>Last updated data : </h5> <small>{actual['created_at']}</small>
         <div className='row mt-3'>
            <div className="col-3">
               <label className="form-label">Anual Salary</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.annual_salary}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['annual_salary']}/>
             </div>
           </div>
 
           <div className='row mt-3'>
            <div className="col-3">
               <label className="form-label">Associate Id</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.associate_id}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['associate_id']}/>
             </div>
              <div className="col-3">
               <label className="form-label">Hire date</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.hire_data}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['hire_data']}/>
             </div>
           </div>
           <div className='row mt-3'>
             <div className="col-3">
               <label className="form-label">Job title description</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.job_title_description}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['job_title_description']}/>
             </div>
 
             <div className="col-3">
               <label className="form-label">Job class description</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.job_title_description}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['job_title_description']}/>
             </div>
 
             <div className="col-3">
               <label className="form-label">Job Function description</label>
-              <input type="text" className="form-control"name="associate_id" value={actual.job_function_description}/>
+              <input type="text" className="form-control"name="associate_id" value={actual['job_function_description']}/>
             </div>
           </div>
           <div >
@@ -130,7 +130,7 @@ const FormEmployees: React.FC = () => {
         </tr>
         </thead>
         <tbody>
-        {options && options.map((option) => (
+        {options && options.map((option:any) => (
           <tr>
             <td>{option.created_at}</td>
             <td>{option.associate_id}</td>
