@@ -19,7 +19,7 @@ import Breadcrumb from "@/components/BreadCrumb";
 const FormEmployees: React.FC = () => {
     // params
     const { team_id, reviews_id } = useParams();
-  const bc = [{ label: 'Review cycle',url:'/admin/reviews'},{ label: 'Review'}];
+    const bc = [{ label: 'Review cycle', url: '/admin/reviews' }, { label: 'Review' }];
 
     const { data: session } = useSession()
     const [team, setTeam] = useState();
@@ -126,7 +126,6 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
-            console.log(filterRatingEmployees)
 
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
@@ -211,8 +210,6 @@ const FormEmployees: React.FC = () => {
         // Validar campos requeridos
         const currentRating = selectedRatings[employeesId];
         const currentRangeValue = rangeValues[employeesId];
-        console.log(currentRating)
-           console.log(currentRating)
         const newErrors = {};
         if (!currentRating) {
             newErrors.rating = 'Required.';
@@ -293,7 +290,6 @@ const FormEmployees: React.FC = () => {
         let totalSpend = 0;
         for (const key in updatedRangeValues) {
             const totalByEmployee = calculatePrice(key, updatedRangeValues[key]);
-            console.log(totalByEmployee)
             totalSpend += totalByEmployee;
         }
 
@@ -349,7 +345,7 @@ const FormEmployees: React.FC = () => {
     const changeStatusByRatings = async (employeesId, status) => {
 
         let ratingId = selectedRatings[employeesId]
-        console.log('gfcfg')
+
         const payload = {
             status: status,
         };
@@ -358,7 +354,7 @@ const FormEmployees: React.FC = () => {
         const existingRecord = ratingsTeamEmployees.find(r =>
             r.ratings_id == ratingId && r.employees_id == employeesId && r.reviews_id == reviews_id && r.teams_id == team_id
         );
-        console.log(existingRecord)
+
         try {
             if (existingRecord) {
                 const previousStatus = statusValues[employeesId];
@@ -409,14 +405,15 @@ const FormEmployees: React.FC = () => {
     }
 
     const changeStatusByReview = async () => {
-
+        console.log(reviewTeam)
         const valuesData = {
             status: 1,
         }
 
         try {
 
-            await apiRequest(`reviews/edit/${reviewTeam.id}`, 'PUT', valuesData)
+            const resp = await apiRequest(`reviews_teams/edit/${reviewTeam.id}`, 'PUT', valuesData)
+            console.log(resp)
             showSuccessAlert("Your work has been saved");
 
         } catch (error) {
@@ -427,14 +424,14 @@ const FormEmployees: React.FC = () => {
         showSuccessAlert("Your work has been saved");
         console.log(team_id, reviews_id)
     }
-    console.log(teamEmployees?.length, totalApproved)
+
     return (
         <div className="row">
             {loading ? (
                 <div>Cargando...</div>
             ) : (
                 <>
-                      <Breadcrumb items={bc}/>
+                    <Breadcrumb items={bc} />
 
                     <Title>Reviews - {team?.name}</Title>
 
@@ -568,11 +565,17 @@ const FormEmployees: React.FC = () => {
 
             <div className="col-12">
                 <div className="bg-white">
-                    <a
-                        onClick={changeStatusByReview}
-                        className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
-                        <i className="bi bi-save"></i> Submit
-                    </a>
+                    {reviewTeam?.status !== 1 ?
+                        <a
+                            onClick={changeStatusByReview}
+                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
+                            <i className="bi bi-save"></i> Submit
+                        </a>
+                        : <span className="badge rounded-pill bg-success float-end p-3" style={{fontSize: '1.0rem' }}>
+                            <i className="bi bi-check-circle"></i> Done
+                            </span>
+
+                    }
                 </div>
             </div>
         </div>
