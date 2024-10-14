@@ -10,7 +10,7 @@ import { useSession } from "next-auth/react";
 import { fetchData } from "@/server/services/core/fetchData";
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
-const FormEmployees: React.FC = ({ id, type, onClose }) => {
+const FormEmployees: React.FC = ({ id , type, onClose }) => {
 
     const router = useRouter()
     const { data: session } = useSession()
