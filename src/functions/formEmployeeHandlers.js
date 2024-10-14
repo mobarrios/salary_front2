@@ -8,8 +8,21 @@ export const calculateTotalRemaining = (totalPrice, totalSpend) => {
     return 0;
 };
 
-export const calculatePorcent = (teamEmployees, value, key) => {
+export const formatSalary = (salary) => {
 
+    //let salary = employeesSalary.actual_external_data.annual_salary;
+    const montoSinFormato = salary.replace(/\$|,/g, '');
+    const montoNumero = parseFloat(montoSinFormato);
+    if (isNaN(montoNumero)) {
+        return;
+    }
+    
+    return montoNumero;
+
+}
+
+export const calculatePorcent = (teamEmployees, value, key) => {
+    /*
     if (!Array.isArray(teamEmployees)) {
         return;
     }
@@ -26,6 +39,7 @@ export const calculatePorcent = (teamEmployees, value, key) => {
     if (isNaN(montoNumero)) {
         return;
     }
+    */
     const result = (montoNumero * value) / 100;
     console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
 

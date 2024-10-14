@@ -1,6 +1,6 @@
 // components/PrimeDataTable.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -11,11 +11,14 @@ import FormEmployeesTeams from "@/app/admin/employees/teams/page";
 import RemoveItem from "./Core/RemoveItem";
 import { Paginator } from 'primereact/paginator';
 
+import { Toolbar } from 'primereact/toolbar';
+import { Button } from 'primereact/button';
 
 const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearchChange }) => {
-  const [globalFilter, setGlobalFilter] = useState<string | null>(null);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(limit);
+    const [globalFilter, setGlobalFilter] = useState<string | null>(null);
+    const [first, setFirst] = useState(0);
+    const [rows, setRows] = useState(limit);
+    const dt = useRef(null);
 
   const handlePageChange = (event) => {
     setFirst(event.first);
@@ -31,7 +34,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
 
   const renderHeader = () => {
     return (
-      <div className="table-header">
+      <div className="table-header text-end">
         <span className="p-input-icon-left">
         <InputText
             type="search"
@@ -40,9 +43,17 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
             style={{ width: "100%" }}
           />
         </span>
+        <span className="ms-5">
+         <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
+        </span>
       </div>
     );
   };
+
+  const exportCSV = () => {
+    dt.current.exportCSV();
+ };
+  
 
   const header = renderHeader();
   const actionBodyTemplate = (item) => (
@@ -54,8 +65,9 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
   );
 
   return (
-    <>
+    <div className="mb-5">
       <DataTable
+        ref={dt}
         value={users}
         //paginator
         rows={rows}
@@ -68,8 +80,9 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
         <Column field="name" sortable header="Name" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
-      <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
-    </>
+      <Paginator className="mt-4" first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
+    </div>
+
   );
 };
 

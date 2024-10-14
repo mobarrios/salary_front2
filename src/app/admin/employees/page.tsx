@@ -31,14 +31,13 @@ export default function Employees({ searchParams }: Params) {
       //const res = await apiRequest(`${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${search ? `&search=${search}` : ''}`, 'GET');
       //const res = await apiRequest(`${name}/all/?skip=${page}&limit=${limit}`, 'GET');
       const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`);
-      console.log(res)
-
+    
       setResults(res.data);
       setTotalCount(res.count);
     };
 
     load();
-  }, [page, limit, search, session?.user.token]); // Dependencias que activan el efecto
+  }, [page, limit, searchTerm, session?.user.token]); // Dependencias que activan el efecto
 
   const handlePageChange = (newPage) => {
     setPage(newPage); // Cambia la página
@@ -77,7 +76,6 @@ export default function Employees({ searchParams }: Params) {
           page={page}
           onPageChange={handlePageChange}
           onSearchChange={onSearchChange} // Pasa la función de búsqueda
-
         />
       </div>
     </div>
