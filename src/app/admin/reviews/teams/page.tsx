@@ -21,6 +21,7 @@ const ReviewTeam: React.FC = ({ id }) => {
 
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
+  const [statusTeams, setStatusTeams] = useState({});
   const [reviewTeam, setReviewTeam] = useState({});
 
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
@@ -67,7 +68,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-     
+      console.log(teamUserFilter)
       setOptions(teamUserFilter)
       setTotalAssigned(1)
 
@@ -77,11 +78,17 @@ const ReviewTeam: React.FC = ({ id }) => {
       //console.log(teamIds)
       // Filtrar employeesWithIdOne según los team_ids
       const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.teams_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
-      console.log(filteredEmployees, employeesWithIdOne)
+      const updatedPercentValues = {}; // Inicializa el objeto
+      console.log(filteredEmployees)
+      filteredEmployees.forEach(item => {
+        updatedPercentValues[`${item.teams_id}`] = item.status; // Guarda el estado
+      });
 
+
+      setStatusTeams(updatedPercentValues);
       setUserTeams(filteredEmployees)
       setReviewTeam(employeesWithIdOne)
-     
+
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -103,7 +110,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       });
 
       setRangeValues(initialRangeValues);
-      console.log('userTeams',userTeams)
+
       //filtrar por employees
       const total = userTeams.reduce((accumulator, item) => accumulator + item.price, 0);
       setTotalTeams(total)
@@ -117,7 +124,7 @@ const ReviewTeam: React.FC = ({ id }) => {
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
-
+  console.log(statusTeams)
   const handleCheckboxChange = async (teamId, isChecked) => {
 
     if (isChecked) {
@@ -189,6 +196,7 @@ const ReviewTeam: React.FC = ({ id }) => {
                 <th>Active</th>
                 <th>Team</th>
                 <th>Amount</th>
+                <th>Status</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
@@ -226,6 +234,11 @@ const ReviewTeam: React.FC = ({ id }) => {
                       value={rangeValues[option.id] || 0}
                       onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
                     />
+                  </td>
+                  <td>
+                    {statusTeams[option.id] == 1 ?
+                      <span className="badge rounded-pill bg-success">Done</span>
+                      : null}
                   </td>
                   <td className="text-center">
                     <button

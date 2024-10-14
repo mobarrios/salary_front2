@@ -31,9 +31,9 @@ export default function Employees({ searchParams }: Params) {
       //const res = await apiRequest(`${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${search ? `&search=${search}` : ''}`, 'GET');
       //const res = await apiRequest(`${name}/all/?skip=${page}&limit=${limit}`, 'GET');
       const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`);
-    
-      setResults(res.data);
-      setTotalCount(res.count);
+      console.log(res)
+      setResults(res?.data);
+      setTotalCount(res?.count);
     };
 
     load();

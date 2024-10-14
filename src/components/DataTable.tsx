@@ -14,11 +14,11 @@ import { Paginator } from 'primereact/paginator';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
-const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearchChange }) => {
-    const [globalFilter, setGlobalFilter] = useState<string | null>(null);
-    const [first, setFirst] = useState(0);
-    const [rows, setRows] = useState(limit);
-    const dt = useRef(null);
+const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearchChange }) => {
+  const [globalFilter, setGlobalFilter] = useState<string | null>(null);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(limit);
+  const dt = useRef(null);
 
   const handlePageChange = (event) => {
     setFirst(event.first);
@@ -36,7 +36,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
     return (
       <div className="table-header text-end">
         <span className="p-input-icon-left">
-        <InputText
+          <InputText
             type="search"
             onInput={handleSearchChange}
             placeholder="Search..."
@@ -44,7 +44,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
           />
         </span>
         <span className="ms-5">
-         <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
+          <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
         </span>
       </div>
     );
@@ -52,8 +52,8 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
 
   const exportCSV = () => {
     dt.current.exportCSV();
- };
-  
+  };
+
 
   const header = renderHeader();
   const actionBodyTemplate = (item) => (
@@ -63,6 +63,18 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
       <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
     </>
   );
+
+  const teamsTemplate = (item) => (
+ 
+    <>
+      {
+        item.teams.map((item,i) => (
+          <div>{item.name}</div>
+        ))
+      }
+
+    </>
+  )
 
   return (
     <div className="mb-5">
@@ -78,6 +90,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
+        <Column body={teamsTemplate} header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
       <Paginator className="mt-4" first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
