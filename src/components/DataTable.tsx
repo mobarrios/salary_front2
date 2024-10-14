@@ -34,7 +34,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
 
   const renderHeader = () => {
     return (
-      <div className="table-header">
+      <div className="table-header text-end">
         <span className="p-input-icon-left">
         <InputText
             type="search"
@@ -42,6 +42,9 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
             placeholder="Search..."
             style={{ width: "100%" }}
           />
+        </span>
+        <span className="ms-5">
+         <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
         </span>
       </div>
     );
@@ -51,9 +54,6 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
     dt.current.exportCSV();
  };
   
-  const rightToolbarTemplate = () => {
-        return <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />;
-    };
 
   const header = renderHeader();
   const actionBodyTemplate = (item) => (
@@ -66,7 +66,6 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
 
   return (
     <div className="mb-5">
-    <Toolbar className="mb-4" right={rightToolbarTemplate}></Toolbar>
       <DataTable
         ref={dt}
         value={users}
