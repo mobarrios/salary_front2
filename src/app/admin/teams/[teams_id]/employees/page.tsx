@@ -12,11 +12,15 @@ import { getUserRoles } from '@/functions/getRoles'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/server/auth';
 import Link from 'next/link';
-
+import Breadcrumb from "@/components/BreadCrumb";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Paginator } from 'primereact/paginator';
 
 const TeamsEmployees: React.FC = () => {
 
   const { data: session, status } = useSession()
+  const bc = [{ label: 'Teams',url:'/admin/teams'},{ label: 'Employees'}];
 
   const [loading, setLoading] = useState(false)
 
@@ -68,10 +72,27 @@ const TeamsEmployees: React.FC = () => {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12 mt-3'>
-          <table className="table table-hover ">
+
+        <DataTable
+        value={items}
+        paginator
+        rows={10}
+        // header={header}
+        // globalFilter={globalFilter}
+        // emptyMessage="No data found."
+        // totalRecords={totalCount}
+      >
+        <Column field="associate_id" sortable header="ID" />
+        <Column field="name" sortable header="Name" />
+        {/* <Column body={actionBodyTemplate} header="Actions" /> */}
+        </DataTable>
+        {/* <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} /> */}
+
+          {/* <table className="table table-hover ">
             <thead>
               <tr>
                 <th>#</th>
@@ -118,7 +139,7 @@ const TeamsEmployees: React.FC = () => {
                 )
               }
             </tbody>
-          </table>
+          </table> */}
         </div>
         <div className='col mt-5'>
         </div>

@@ -1,6 +1,6 @@
 // components/PrimeDataTable.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -11,11 +11,14 @@ import FormEmployeesTeams from "@/app/admin/employees/teams/page";
 import RemoveItem from "./Core/RemoveItem";
 import { Paginator } from 'primereact/paginator';
 
+import { Toolbar } from 'primereact/toolbar';
+import { Button } from 'primereact/button';
 
 const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearchChange }) => {
-  const [globalFilter, setGlobalFilter] = useState<string | null>(null);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(limit);
+    const [globalFilter, setGlobalFilter] = useState<string | null>(null);
+    const [first, setFirst] = useState(0);
+    const [rows, setRows] = useState(limit);
+    const dt = useRef(null);
 
   const handlePageChange = (event) => {
     setFirst(event.first);
@@ -44,6 +47,14 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
     );
   };
 
+  const exportCSV = () => {
+    dt.current.exportCSV();
+ };
+  
+  const rightToolbarTemplate = () => {
+        return <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />;
+    };
+
   const header = renderHeader();
   const actionBodyTemplate = (item) => (
     <>
@@ -54,8 +65,10 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
   );
 
   return (
-    <>
+    <div className="mb-5">
+    <Toolbar className="mb-4" right={rightToolbarTemplate}></Toolbar>
       <DataTable
+        ref={dt}
         value={users}
         //paginator
         rows={rows}
@@ -68,8 +81,9 @@ const PrimeDataTable = ({ users, totalCount, limit, page , onPageChange, onSearc
         <Column field="name" sortable header="Name" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
-      <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
-    </>
+      <Paginator className="mt-4" first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
+    </div>
+
   );
 };
 

@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Breadcrumb from "@/components/BreadCrumb";
 
 export default async function Employees({ searchParams }: Params) {
-  const bc = [{ label: 'People',url:'/admin/employees'},{ label: 'Teams'}];
+  const bc = [{ label: 'Teams', url:'/admin/teams'},{label:'Employees'}];
 
   const { page, search, limit, skip } = usePaginate(searchParams)
 
