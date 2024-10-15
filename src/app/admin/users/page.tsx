@@ -16,7 +16,7 @@ export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
-  const bc = [{ label: 'Users'}];
+  const bc = [{ label: 'Users' }];
 
   if (!roles.some(role => ['superuser'].includes(role))) {
     redirect('/admin/home');
@@ -34,7 +34,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
-      <Breadcrumb items={bc}/>
+      <Breadcrumb items={bc} />
 
       <Title>Users</Title>
       <div className="row mt-5">
@@ -67,8 +67,10 @@ export default async function Employees({ searchParams }: Params) {
                     <tr className="align-middle" key={rowIndex}>
                       <td>{item.id}</td>
                       {headers.map((header, colIndex) => (
-                        <td key={header.key}>{item[header.key]}</td>
-                      ))}
+
+                        <td key={header.key}>
+                          {header.key === 'active' ? (item.status === 1 ? 'Active' : 'Inactive') : item[header.key]}
+                        </td>))}
                       <td className='text-end'>
                         <ModalButton
                           type={false}

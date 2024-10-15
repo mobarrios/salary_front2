@@ -82,7 +82,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
                         <button
                             type="submit"
                             className="btn btn-primary mt-3">
-                            {isEditing ? 'Edit' : 'Save'}
+                            Save
                         </button>
                     </form>
 
