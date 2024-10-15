@@ -97,7 +97,7 @@ export default async function Employees({ searchParams }: Params) {
                           <ModalButton
                             type={true}
                             itemId={item.id}
-                            name="Edit"
+                            name="Save"
                             FormComponent={FormTeams}
                             title={"Edit : " + item.name}
                           />
