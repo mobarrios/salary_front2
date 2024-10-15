@@ -26,7 +26,6 @@ const NavbarComp = () => {
     }
   }, []);
 
-
   return (
     <div>
       <Navbar expand="lg" className="bg-white shadow-sm navbar-fixed-top">
@@ -55,7 +54,7 @@ const NavbarComp = () => {
               )}
 
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Review Cycle</Nav.Link>
-              {isSuper && (
+              {(isSuper || isAdmin) && (
                 <Nav.Link href="/admin/performance" active={activePath === '/admin/performance'}>Performance</Nav.Link>
               )}
 

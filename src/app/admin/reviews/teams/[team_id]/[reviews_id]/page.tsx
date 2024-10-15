@@ -24,7 +24,7 @@ const FormEmployees: React.FC = () => {
     const { data: session } = useSession()
     const [team, setTeam] = useState();
     const [teamEmployees, setTeamEmployees] = useState();
-    const [reviewTeam, setReviewTeam] = useState();
+    const [reviewTeam, setReviewTeam] = useState({});
     const [ratings, setRatings] = useState();
     const [rangeValues, setRangeValues] = useState({});
     const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState({});
@@ -56,7 +56,7 @@ const FormEmployees: React.FC = () => {
 
     //const [calculatedPrices, setCalculatedPrices] = useState({});
     const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
-    const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager');
+    const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager' || role.name === 'administrator');
     const [errors, setErrors] = useState({});
     useEffect(() => {
         if (session?.user.token) {
@@ -416,6 +416,10 @@ const FormEmployees: React.FC = () => {
             console.log(resp)
             showSuccessAlert("Your work has been saved");
 
+            setReviewTeam(prevState => ({
+                ...prevState,
+                status: 1, // Actualiza el status
+            }));
         } catch (error) {
             showErrorAlert("An error occurred while saving");
             console.error('Error:', error);
@@ -498,6 +502,7 @@ const FormEmployees: React.FC = () => {
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td>
                                             <td>
                                                 <select
+                                                    disabled={!isManager}
                                                     required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
@@ -514,8 +519,7 @@ const FormEmployees: React.FC = () => {
                                                 <input
                                                     required
                                                     min={0}
-                                                    //minLength={`${ratingRanges[item.id]?.min || 0}`}
-                                                    //maxLength={`${ratingRanges[item.id]?.max || 0}`}
+                                                    disabled={!isManager}
                                                     type='number'
                                                     step={1}
                                                     className="form-control"
@@ -523,6 +527,11 @@ const FormEmployees: React.FC = () => {
                                                     value={rangeValues[item.id]}
                                                     placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`} // Usar los rangos
                                                     onChange={(e) => handleInputChange(e, item.id)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSubmit(item.id); // Llama a handleSubmit con el id del empleado
+                                                        }
+                                                    }}
                                                 />
                                             </td>
                                             <td>
@@ -545,7 +554,7 @@ const FormEmployees: React.FC = () => {
                                                 </td>
                                             )}
 
-                                            {isManager && (<td>
+                                            {/* {isManager && (<td>
                                                 <a className={`btn btn-light btn-xs m-1`}
                                                     onClick={(e) => {
                                                         handleSubmit(item.id);
@@ -554,7 +563,7 @@ const FormEmployees: React.FC = () => {
                                                     <i className="bi bi-arrow-clockwise"></i>
                                                 </a>
                                             </td>
-                                            )}
+                                            )} */}
                                         </tr>
                                     ))}
                             </tbody>
@@ -571,9 +580,9 @@ const FormEmployees: React.FC = () => {
                             className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
                             <i className="bi bi-save"></i> Submit
                         </a>
-                        : <span className="badge rounded-pill bg-success float-end p-3" style={{fontSize: '1.0rem' }}>
+                        : <span className="badge rounded-pill bg-success float-end p-3" style={{ fontSize: '1.0rem' }}>
                             <i className="bi bi-check-circle"></i> Done
-                            </span>
+                        </span>
 
                     }
                 </div>
