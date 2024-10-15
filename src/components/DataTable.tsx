@@ -64,12 +64,12 @@ const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearch
     </>
   );
 
-  const teamsTemplate = (item) => (
+  const teamsTemplate = (item:any) => (
  
     <>
       {
-        item.teams.map((item,i) => (
-          <div>{item.name}</div>
+        item.teams.map((it:any ,i:any) => (
+          <div>{it.name}</div>
         ))
       }
 
@@ -90,7 +90,7 @@ const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearch
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
-        <Column body={teamsTemplate} header="Teams" />
+        <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
       <Paginator className="mt-4" first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
