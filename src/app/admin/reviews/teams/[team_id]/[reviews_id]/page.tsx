@@ -455,7 +455,7 @@ const FormEmployees: React.FC = () => {
                                     <th>Total Spend</th>
                                     <th>Total Remaining</th>
                                     <th>Approved </th>
-                                    <th>rejected </th>
+                                    <th>Rejected </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -482,7 +482,7 @@ const FormEmployees: React.FC = () => {
                                     <th style={{ width: '10%' }}>Current Base Annual Salary</th>
                                     <th style={{ width: '10%' }}>Proposed Total Increase %</th>
                                     <th style={{ width: '10%' }}>Proposed Total Increase $</th>
-                                    <th style={{ width: '10%' }}>Proposed New Base Hourly Rate</th>
+                                    {/* <th style={{ width: '10%' }}>Proposed New Base Hourly Rate</th> */}
                                     <th style={{ width: '15%' }}>Ratings</th>
                                     <th>Percent</th>
                                     <th></th>
@@ -505,7 +505,7 @@ const FormEmployees: React.FC = () => {
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 $ {formatPrice(calculatePriceByEmployee(item.id))}
                                             </td>
-                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td>
+                                            {/* <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td> */}
                                             <td>
                                                 <select
                                                     disabled={!isManager}
