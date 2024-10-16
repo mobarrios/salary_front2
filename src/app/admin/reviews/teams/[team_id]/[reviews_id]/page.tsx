@@ -278,10 +278,16 @@ const FormEmployees: React.FC = () => {
             setRatingRanges(prevState => ({
                 ...prevState,
                 [employeeId]: {
-                    min: selectedRating.percent_min, // Asumiendo que tienes estas propiedades
-                    max: selectedRating.percent_max  // Asumiendo que tienes estas propiedades
+                    min: selectedRating.percent_min,
+                    max: selectedRating.percent_max
                 }
             }));
+            /*
+            setRangeValues(prevState => ({
+                ...prevState,
+                [employeeId]: 0
+            }));
+            */
         }
     };
 
@@ -506,8 +512,8 @@ const FormEmployees: React.FC = () => {
                                                     required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
-                                                    value={selectedRatings[item.id] || ''} // Usar el estado específico para este empleado
-                                                    onChange={(e) => handleSelectChange(item.id, e)} // Pasar el ID del empleado
+                                                    value={selectedRatings[item.id] || ''} 
+                                                    onChange={(e) => handleSelectChange(item.id, e)} 
                                                 >
                                                     <option value="" label="Seleccione una opción" />
                                                     {ratings && ratings.map((option) => (
@@ -522,14 +528,16 @@ const FormEmployees: React.FC = () => {
                                                     disabled={!isManager}
                                                     type='number'
                                                     step={1}
-                                                    className="form-control"
+                                                    className={`form-control 
+                                                        ${rangeValues[item.id] > (ratingRanges[item.id]?.max || 0) ? 'text-danger' : ''} 
+                                                        ${rangeValues[item.id] < (ratingRanges[item.id]?.min || 0) ? 'text-danger' : ''}`}
                                                     style={{ width: '150px', margin: '0 5px' }}
                                                     value={rangeValues[item.id]}
-                                                    placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`} // Usar los rangos
+                                                    placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`}
                                                     onChange={(e) => handleInputChange(e, item.id)}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter') {
-                                                            handleSubmit(item.id); // Llama a handleSubmit con el id del empleado
+                                                            handleSubmit(item.id);
                                                         }
                                                     }}
                                                 />

@@ -88,6 +88,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         globalFilter={globalFilter}
         emptyMessage="No data found."
         totalRecords={totalCount}
+        //rowsPerPageOptions={[10, 25, 50]}
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
@@ -100,6 +101,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         rows={rows}
         totalRecords={totalCount}
         onPageChange={handlePageChange}
+        //rowsPerPageOptions={[10, 25, 50]}
       />
     </div>
 
