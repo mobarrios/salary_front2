@@ -14,7 +14,7 @@ import { Paginator } from 'primereact/paginator';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
-const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearchChange }) => {
+const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange, roles }) => {
   const [globalFilter, setGlobalFilter] = useState<string | null>(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(limit);
@@ -53,26 +53,27 @@ const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearch
   const exportCSV = () => {
     dt.current.exportCSV();
   };
-
-
+  //roles.some(role => ['superuser', 'administrator'].includes(role)
   const header = renderHeader();
   const actionBodyTemplate = (item) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">External Data</Link>
-      <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
-      <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
+      {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
+        <>
+          <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
+          <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
+        </>
+      )}
     </>
   );
 
   const teamsTemplate = (item) => (
- 
     <>
       {
-        item.teams.map((item,i) => (
+        item.teams.map((item, i) => (
           <div>{item.name}</div>
         ))
       }
-
     </>
   )
 
@@ -80,20 +81,28 @@ const PrimeDataTable = ({ users, totalCount, limit, page, onPageChange, onSearch
     <div className="mb-5">
       <DataTable
         ref={dt}
-        value={users}
+        value={models}
         //paginator
         rows={rows}
         header={header}
         globalFilter={globalFilter}
         emptyMessage="No data found."
         totalRecords={totalCount}
+        //rowsPerPageOptions={[10, 25, 50]}
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
-        <Column body={teamsTemplate} header="Teams" />
+        <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
-      <Paginator className="mt-4" first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} />
+      <Paginator
+        className="mt-4"
+        first={first}
+        rows={rows}
+        totalRecords={totalCount}
+        onPageChange={handlePageChange}
+        //rowsPerPageOptions={[10, 25, 50]}
+      />
     </div>
 
   );
