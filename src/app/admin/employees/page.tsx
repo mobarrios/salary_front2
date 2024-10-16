@@ -21,15 +21,11 @@ export default function Employees({ searchParams }: Params) {
   const [isAdmin, setIsAdmin] = useState(false);
   const { data: session } = useSession()
   const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
-
+  const roles = session?.user.roles.map(role => role.name)
   const bc = [{ label: 'People'}];
 
   useEffect(() => {
     const load = async () => {
-      //const roles = await getUserRoles();
-      //setIsAdmin(roles.some(role => ['superuser', 'administrator'].includes(role)));
-      //const res = await apiRequest(`${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${search ? `&search=${search}` : ''}`, 'GET');
-      //const res = await apiRequest(`${name}/all/?skip=${page}&limit=${limit}`, 'GET');
       const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`);
       console.log(res)
       setResults(res?.data);
@@ -47,7 +43,7 @@ export default function Employees({ searchParams }: Params) {
     setSearchTerm(value); // Actualiza el término de búsqueda
     setPage(1); // Reinicia a la primera página
   };
-
+  console.log(roles)
   return (
     <div>
       <Breadcrumb items={bc}/>
@@ -70,12 +66,13 @@ export default function Employees({ searchParams }: Params) {
           </p>
         </div>
         <PrimeDataTable
-          users={results}
+          models={results}
           totalCount={totalCount}
           limit={limit} 
           page={page}
           onPageChange={handlePageChange}
           onSearchChange={onSearchChange} // Pasa la función de búsqueda
+          roles={roles}
         />
       </div>
     </div>
