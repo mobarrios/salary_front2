@@ -16,16 +16,24 @@ import Breadcrumb from "@/components/BreadCrumb";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Paginator } from 'primereact/paginator';
+import PrimeDataTable from '@/components/DataTable';
 
-const TeamsEmployees: React.FC = () => {
+export default function TeamsEmployees({ searchParams }: Params) {
+
+  const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
 
   const { data: session, status } = useSession()
-  const bc = [{ label: 'Teams',url:'/admin/teams'},{ label: 'Employees'}];
+  const bc = [{ label: 'Teams', url: '/admin/teams' }, { label: 'Employees' }];
 
   const [loading, setLoading] = useState(false)
+  const [page, setPage] = useState(initialPage);
+  const [results, setResults] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const [items, setItem] = useState([])
+  const [models, setModels] = useState([])
   const { teams_id } = useParams();
+  const [limit] = useState(initialLimit);
+  const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
 
   const roles = session?.user.roles.map(role => role.name)
   const isAdmin = roles?.some(role => ['manager'].includes(role))
@@ -44,12 +52,12 @@ const TeamsEmployees: React.FC = () => {
 
         // Obtener los datos de empleados
         const employeesDataResponse = await fetchData(session?.user.token, 'GET', 'employees/all/?skip=0&limit=100');
-
+      
         // Filtrar employeesData para que solo incluya a los empleados cuyos id están en employeeIds
         const filteredEmployeesData = employeesDataResponse.data.filter(employee => employeeIds.includes(employee.id));
-        console.log(filteredEmployeesData)
-        setItem(filteredEmployeesData)
+        setTotalCount(filteredEmployeesData.length);
 
+        setModels(filteredEmployeesData)
         setLoading(false);
       }
     } catch (error) {
@@ -64,33 +72,43 @@ const TeamsEmployees: React.FC = () => {
       load();
     }
 
-  }, [teams_id, session?.user.token]);
+  }, [page, limit, searchTerm,teams_id, session?.user.token]);
 
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
 
+  const handlePageChange = (newPage) => {
+    setPage(newPage); // Cambia la página
+  };
+  
+  const onSearchChange = (value: string) => {
+    setSearchTerm(value); // Actualiza el término de búsqueda
+    setPage(1); // Reinicia a la primera página
+  };
+  console.log(roles)
   return (
     <div>
-      <Breadcrumb items={bc}/>
+      <Breadcrumb items={bc} />
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12 mt-3'>
 
-        <DataTable
-        value={items}
-        paginator
-        rows={10}
-        // header={header}
-        // globalFilter={globalFilter}
-        // emptyMessage="No data found."
-        // totalRecords={totalCount}
-      >
-        <Column field="associate_id" sortable header="ID" />
-        <Column field="name" sortable header="Name" />
-        {/* <Column body={actionBodyTemplate} header="Actions" /> */}
-        </DataTable>
-        {/* <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} /> */}
+        <PrimeDataTable
+          models={models}
+          totalCount={totalCount}
+          limit={limit} 
+          page={page}
+          onPageChange={handlePageChange}
+          onSearchChange={onSearchChange} // Pasa la función de búsqueda
+          roles={roles}
+        />
+
+          {/* <Column field="associate_id" sortable header="ID" />
+        <Column field="name" sortable header="Name" /> */}
+          {/* <Column body={actionBodyTemplate} header="Actions" /> */}
+          {/* </DataTable> */}
+          {/* <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} /> */}
 
           {/* <table className="table table-hover ">
             <thead>
@@ -147,5 +165,3 @@ const TeamsEmployees: React.FC = () => {
     </div>
   )
 };
-
-export default TeamsEmployees;
