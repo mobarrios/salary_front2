@@ -53,6 +53,8 @@ const FormEmployees: React.FC = () => {
     const [ratingRanges, setRatingRanges] = useState({}); // Estado para almacenar min y max
 
     const [approvedIds, setApprovedIds] = useState([]);
+    const [errorMax, setErrorMax] = useState();
+    const [errorMin, setErrorMin] = useState();
 
     //const [calculatedPrices, setCalculatedPrices] = useState({});
     const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
@@ -81,7 +83,12 @@ const FormEmployees: React.FC = () => {
         }
     }, [reviewTeam, totalSpend]);
 
+    useEffect(() => {
+        console.log(rangeValues, selectedRatings)
+    }, [rangeValues, selectedRatings]);
 
+
+    console.log(rangeValues, selectedRatings)
 
     const updateEmployeesTeams = async (team) => {
 
@@ -210,17 +217,23 @@ const FormEmployees: React.FC = () => {
         // Validar campos requeridos
         const currentRating = selectedRatings[employeesId];
         const currentRangeValue = rangeValues[employeesId];
+
+        console.log('EmployeesId', employeesId)
+        console.log('currentRating', currentRating)
+        console.log('currentRangeValue', currentRangeValue)
+
         const newErrors = {};
         if (!currentRating) {
             newErrors.rating = 'Required.';
         }
-        if (currentRangeValue === undefined || currentRangeValue === '') {
+        if (currentRangeValue === undefined || currentRangeValue === '' || !currentRangeValue) {
             newErrors.range = 'Required.';
         }
 
         if (Object.keys(newErrors).length > 0) {
+            console.log('error')
             setErrors(newErrors);
-            showErrorAlert("required fields error");
+            //showErrorAlert("required fields error");
             return; // Detener el envío si hay errores
         }
 
@@ -228,6 +241,7 @@ const FormEmployees: React.FC = () => {
         let currentSalary = calculatePriceByEmployee(employeesId);
         let ratingId = selectedRatings[employeesId];
         let percent = rangeValues[employeesId];
+
         const payload = {
             reviews_id: reviews_id,
             teams_id: team_id,
@@ -244,6 +258,7 @@ const FormEmployees: React.FC = () => {
 
         try {
             let response;
+
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
                 setRatingsTeamEmployees(prevState =>
@@ -255,10 +270,12 @@ const FormEmployees: React.FC = () => {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
+
         } catch (error) {
             console.error('Error al enviar datos:', error);
         }
-        showSuccessAlert("Your work has been saved");
+        //showSuccessAlert("Your work has been saved");
+        setErrors('')
     };
 
     const handleSelectChange = (employeeId, event) => {
@@ -266,7 +283,7 @@ const FormEmployees: React.FC = () => {
 
         // Encuentra la opción seleccionada en ratings
         const selectedRating = ratings.find(option => option.id == selectedId);
-
+        console.log(selectedRating)
         // Almacena el rating seleccionado
         setSelectedRatings(prevState => ({
             ...prevState,
@@ -282,12 +299,12 @@ const FormEmployees: React.FC = () => {
                     max: selectedRating.percent_max
                 }
             }));
-            /*
+
             setRangeValues(prevState => ({
                 ...prevState,
-                [employeeId]: 0
+                [employeeId]: ''
             }));
-            */
+
         }
     };
 
@@ -346,7 +363,6 @@ const FormEmployees: React.FC = () => {
             return updatedRangeValues; // Devuelve el nuevo estado
         });
     };
-
 
     const changeStatusByRatings = async (employeesId, status) => {
 
@@ -410,10 +426,10 @@ const FormEmployees: React.FC = () => {
         return statusText
     }
 
-    const changeStatusByReview = async () => {
+    const changeStatusByReview = async (status) => {
         console.log(reviewTeam)
         const valuesData = {
-            status: 1,
+            status: status,
         }
 
         try {
@@ -424,7 +440,7 @@ const FormEmployees: React.FC = () => {
 
             setReviewTeam(prevState => ({
                 ...prevState,
-                status: 1, // Actualiza el status
+                status: status, // Actualiza el status
             }));
         } catch (error) {
             showErrorAlert("An error occurred while saving");
@@ -434,7 +450,7 @@ const FormEmployees: React.FC = () => {
         showSuccessAlert("Your work has been saved");
         console.log(team_id, reviews_id)
     }
-
+    console.log(reviewTeam?.status)
     return (
         <div className="row">
             {loading ? (
@@ -512,25 +528,29 @@ const FormEmployees: React.FC = () => {
                                                     required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
-                                                    value={selectedRatings[item.id] || ''} 
-                                                    onChange={(e) => handleSelectChange(item.id, e)} 
+                                                    value={selectedRatings[item.id] || ''}
+                                                    onChange={(e) => handleSelectChange(item.id, e)}
+
                                                 >
                                                     <option value="" label="Seleccione una opción" />
                                                     {ratings && ratings.map((option) => (
                                                         <option key={option.id} value={option.id} label={option.name} />
                                                     ))}
                                                 </select>
+                                                {errors.rating && <div className="text-danger">{errors.rating}</div>}
+
                                             </td>
                                             <td>
                                                 <input
                                                     required
                                                     min={0}
-                                                    disabled={!isManager}
+                                                    disabled={!isManager && selectedRatings[item.id] > 0}
                                                     type='number'
                                                     step={1}
                                                     className={`form-control 
-                                                        ${rangeValues[item.id] > (ratingRanges[item.id]?.max || 0) ? 'text-danger' : ''} 
-                                                        ${rangeValues[item.id] < (ratingRanges[item.id]?.min || 0) ? 'text-danger' : ''}`}
+                                                        ${Number(rangeValues[item.id]) > (ratingRanges[item.id]?.max || 0) ||
+                                                            Number(rangeValues[item.id]) < (ratingRanges[item.id]?.min || 0) ? 'text-danger' : ''}`
+                                                    }
                                                     style={{ width: '150px', margin: '0 5px' }}
                                                     value={rangeValues[item.id]}
                                                     placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`}
@@ -541,6 +561,8 @@ const FormEmployees: React.FC = () => {
                                                         }
                                                     }}
                                                 />
+                                                {errors.range && <div className="text-danger">{errors.range}</div>}
+
                                             </td>
                                             <td>
                                                 {findStatusByRatings(item.id)}
@@ -582,22 +604,39 @@ const FormEmployees: React.FC = () => {
 
             <div className="col-12">
                 <div className="bg-white">
-                    {reviewTeam?.status !== 1 ?
-                        <a
-                            onClick={changeStatusByReview}
-                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}>
-                            <i className="bi bi-save"></i> Submit
-                        </a>
-                        : <span className="badge rounded-pill bg-success float-end p-3" style={{ fontSize: '1.0rem' }}>
-                            <i className="bi bi-check-circle"></i> Done
-                        </span>
+                    {
+                        reviewTeam?.status === null &&
+                        (<a
+                            onClick={() => changeStatusByReview(1)}
+                            className={`btn btn-primary mt-3 float-end`}
+                        //className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
+                        >
+                            <i className="bi bi-save"></i> Pending
+                        </a>)
+                    }
+
+                    {
+                        reviewTeam?.status === 1 && (<a
+                            onClick={() => changeStatusByReview(2)}
+                            className={`btn btn-primary mt-3 float-end`}
+                        //className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
+                        >
+                            <i className="bi bi-save"></i> Pending approver
+                        </a>)
 
                     }
+
+                    {
+                        reviewTeam?.status === 2 && (
+                            <span className="badge rounded-pill bg-success float-end p-3" style={{ fontSize: '1.0rem' }}>
+                                <i className="bi bi-check-circle"></i> Done
+                            </span>
+                        )
+                    }
+
                 </div>
             </div>
         </div>
-
-
     );
 };
 
