@@ -31,7 +31,7 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
-
+  console.log(results)
   return (
     <div>
       <Breadcrumb items={bc} />
@@ -69,7 +69,7 @@ export default async function Employees({ searchParams }: Params) {
                       {headers.map((header, colIndex) => (
 
                         <td key={header.key}>
-                          {header.key === 'active' ? (item.status === 1 ? 'Active' : 'Inactive') : item[header.key]}
+                          {header.key === 'active' ? (item.active === 1 ? 'Active' : 'Inactive') : item[header.key]}
                         </td>))}
                       <td className='text-end'>
                         <ModalButton

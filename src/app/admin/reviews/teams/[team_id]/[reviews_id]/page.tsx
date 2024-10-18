@@ -458,7 +458,7 @@ const FormEmployees: React.FC = () => {
         const ratingId = selectedRatings[itemId];
         const selectedRating = ratings.find(option => option.id == ratingId);
 
-       
+
         const isOutOfRange = Number(value) > (selectedRating?.percent_max || 0) ||
             Number(value) < (selectedRating?.percent_min || 0);
 
@@ -467,7 +467,7 @@ const FormEmployees: React.FC = () => {
     };
 
     console.log(reviewTeam?.status, ratingsTeamEmployees)
-
+    console.log('isManager', isManager)
     return (
         <div className="row">
             {loading ? (
@@ -561,7 +561,7 @@ const FormEmployees: React.FC = () => {
                                                 <input
                                                     required
                                                     min={0}
-                                                    disabled={!isManager && selectedRatings[item.id] > 0}
+                                                    disabled={!isManager}
                                                     type='number'
                                                     step={1}
                                                     className={getInputClassName(item.id)}
@@ -618,7 +618,7 @@ const FormEmployees: React.FC = () => {
             <div className="col-12">
                 <div className="bg-white">
                     {
-                        reviewTeam?.status === 1 &&
+                        isManager && reviewTeam?.status === 1 &&
                         (<a
                             onClick={() => changeStatusByReview(2)}
                             className={`btn btn-primary mt-3 float-end`}
@@ -629,10 +629,9 @@ const FormEmployees: React.FC = () => {
                     }
 
                     {
-                        reviewTeam?.status === 2 && (<a
+                        isValidator && reviewTeam?.status === 2 && (<a
                             onClick={() => changeStatusByReview(3)}
-                            className={`btn btn-primary mt-3 float-end`}
-                        //className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
+                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
                         >
                             <i className="bi bi-save"></i> Approver
                         </a>)
