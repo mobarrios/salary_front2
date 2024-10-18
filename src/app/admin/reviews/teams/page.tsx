@@ -129,7 +129,7 @@ const ReviewTeam: React.FC = ({ id }) => {
 
     if (isChecked) {
       // El checkbox está marcado
-      const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
+      const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId, status: 1 });
       showSuccessAlert("Your work has been saved");
     } else {
 
