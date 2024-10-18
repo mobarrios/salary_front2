@@ -549,7 +549,7 @@ const FormEmployees: React.FC = () => {
                                                     onChange={(e) => handleSelectChange(item.id, e)}
 
                                                 >
-                                                    <option value="" label="Seleccione una opción" />
+                                                    <option value="" label="Select an option" />
                                                     {ratings && ratings.map((option) => (
                                                         <option key={option.id} value={option.id} label={option.name} />
                                                     ))}
