@@ -9,7 +9,7 @@ import { formatDate } from "@/functions/formatDate";
 
 const Home = () => {
   const { data: session, status } = useSession()
-  const isApprover = session?.user.roles.some(role => role.name === 'apprver');
+  const isApprover = session?.user.roles.some(role => role.name === 'approver');
   const [teamUser, setTeamUser] = useState({});
 
   const userData = async () => {
@@ -62,26 +62,28 @@ const Home = () => {
       <div className="row m-2">
         <div className='col-12'>
           {
-            teamUser.length > 0 && teamUser?.map((review, id) => (
-              <div className="row m-2" key={review.id}>
-                <div className="col-3">
-                  {review.teamName}
+            isApprover && (
+              teamUser.length > 0 && teamUser?.map((review, id) => (
+                <div className="row m-2" key={review.id}>
+                  <div className="col-3">
+                    {review.teamName}
+                  </div>
+                  <div className="col-3">
+                    {formatDate(review.created_at)}
+                  </div>
+                  <div className="col-4">
+                    <span className="badge rounded-pill bg-danger">Pending</span>
+                  </div>
+                  <div className="col-2">
+                    <a
+                      href={`/admin/reviews/teams/${review.teams_id}/${review.reviews_id}`}
+                      className="btn btn-success ms-2">
+                      <i className="bi bi-pencil"></i>
+                    </a>
+                  </div>
                 </div>
-                <div className="col-3">
-                  {formatDate(review.created_at)}
-                </div>
-                <div className="col-4">
-                  <span className="badge rounded-pill bg-danger">Pending</span>
-                </div>
-                <div className="col-2">
-                  <a
-                    href={`/admin/reviews/teams/${review.teams_id}/${review.reviews_id}`}
-                    className="btn btn-success ms-2">
-                    <i className="bi bi-pencil"></i>
-                  </a>
-                </div>
-              </div>
-            ))
+              ))
+            )
           }
         </div>
       </div>
