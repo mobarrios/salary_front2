@@ -92,7 +92,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
-        <Column body={teamsTemplate} header="Teams" />
+        <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
       <Paginator
