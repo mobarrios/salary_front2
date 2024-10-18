@@ -29,7 +29,7 @@ export default function RemoveItem({ id, url }: { id: number, url: string }) {
                 "Authorization": `Bearer ${session?.user.token}`
             }
         });
-
+        console.log(resp)
         return resp;
     };
 

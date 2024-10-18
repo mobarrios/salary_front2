@@ -18,9 +18,10 @@ export default async function Employees({ searchParams }: Params) {
   const { page, search, limit, skip } = usePaginate(searchParams)
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  console.log(res)
   const roles = await getUserRoles();
   const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role))
-
+  console.log(roles)
   if (!res?.status) {
     throw new Error('Failed to fetch data');
   }
@@ -97,7 +98,7 @@ export default async function Employees({ searchParams }: Params) {
                           <ModalButton
                             type={true}
                             itemId={item.id}
-                            name="Save"
+                            name="Edit"
                             FormComponent={FormTeams}
                             title={"Edit : " + item.name}
                           />

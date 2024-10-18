@@ -62,6 +62,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         <>
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
+          <RemoveItem id={item.id} url='reviews_teams' />
         </>
       )}
     </>
