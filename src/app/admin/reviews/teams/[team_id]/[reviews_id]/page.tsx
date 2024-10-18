@@ -487,8 +487,8 @@ const FormEmployees: React.FC = () => {
                                     <th>Total percent</th>
                                     <th>Total Spend</th>
                                     <th>Total Remaining</th>
-                                    <th>Approved </th>
-                                    <th>Rejected </th>
+                                    <th>Compliant </th>
+                                    <th>Noncompliant </th>
                                 </tr>
                             </thead>
                             <tbody>
