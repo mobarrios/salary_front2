@@ -30,7 +30,7 @@ const Home = () => {
 
       const filteredReviewTeams = reviewTeamsResponse.data
         .filter(reviewTeam =>
-          teamIds.includes(Number(reviewTeam.teams_id)) && reviewTeam.status === 1 // Filtrar por teamIds y status
+          teamIds.includes(Number(reviewTeam.teams_id)) && reviewTeam.status === 2 // Filtrar por teamIds y status
         )
         .map(reviewTeam => {
           const team = teamUserFilter.find(team => team.id === Number(reviewTeam.teams_id));
