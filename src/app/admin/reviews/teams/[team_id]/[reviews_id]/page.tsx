@@ -57,9 +57,11 @@ const FormEmployees: React.FC = () => {
     const [errorMax, setErrorMax] = useState();
     const [errorMin, setErrorMin] = useState();
 
-    //const [calculatedPrices, setCalculatedPrices] = useState({});
-    const isValidator = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'approver');
-    const isManager = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'manager' || role.name === 'administrator');
+    const isValidator = session?.user.roles.some(role => role.name === 'approver');
+    const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
+    const isManager = session?.user.roles.some(role => role.name === 'manager');
+    const roles = session?.user.roles;
+
     const [errors, setErrors] = useState({});
     useEffect(() => {
         if (session?.user.token) {
@@ -163,13 +165,8 @@ const FormEmployees: React.FC = () => {
             }
         });
 
-
-        //const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
         const { totalPrice } = calculateTotalPrice(updatePriceValues);
         const { totalPercentSum } = calculateTotalsPercentEmployee(updatedPercentValues)
-        //const totalSpend = calculateTotalSpend(updatePriceValues);
-        //console.log(totalSpend)
-        //setTotalSpend(totalSpend.totalSpend);
 
         //total team
         setTotalPercent(totalPercentSum);
@@ -210,10 +207,6 @@ const FormEmployees: React.FC = () => {
         // Validar campos requeridos
         const currentRating = selectedRatings[employeesId];
         const currentRangeValue = rangeValues[employeesId];
-
-        console.log('EmployeesId', employeesId)
-        console.log('currentRating', currentRating)
-        console.log('currentRangeValue', currentRangeValue)
 
         const newErrors = {};
         if (!currentRating) {
@@ -258,13 +251,13 @@ const FormEmployees: React.FC = () => {
         const existingRecord = ratingsTeamEmployees.find(r =>
             r.employees_id === employeesId
         );
-        console.log(existingRecord)
+    
         try {
             let response;
 
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                console.log(response)
+        
                 setRatingsTeamEmployees(prevState =>
                     prevState.map(item =>
                         item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -272,7 +265,7 @@ const FormEmployees: React.FC = () => {
                 );
             } else {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                console.log(response)
+             
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
 
@@ -387,7 +380,6 @@ const FormEmployees: React.FC = () => {
                 const previousStatus = statusValues[employeesId];
 
                 const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                //console.log(response);
 
                 // Actualizar contadores según el nuevo estado
                 if (status === 1) { // Aprobado
@@ -432,7 +424,7 @@ const FormEmployees: React.FC = () => {
     }
 
     const changeStatusByReview = async (status) => {
-        console.log(reviewTeam)
+  
         const valuesData = {
             status: status,
         }
@@ -440,7 +432,6 @@ const FormEmployees: React.FC = () => {
         try {
 
             const resp = await apiRequest(`reviews_teams/edit/${reviewTeam.id}`, 'PUT', valuesData)
-            console.log(resp)
             showSuccessAlert("Your work has been saved");
 
             setReviewTeam(prevState => ({
@@ -453,7 +444,6 @@ const FormEmployees: React.FC = () => {
         }
 
         showSuccessAlert("Your work has been saved");
-        console.log(team_id, reviews_id)
     }
 
     const getInputClassName = (itemId) => {
@@ -469,8 +459,28 @@ const FormEmployees: React.FC = () => {
 
     };
 
-    console.log(reviewTeam?.status, ratingsTeamEmployees)
-    console.log('isManager', isManager)
+    const canSendToApprover = (roles, reviewTeam) => {
+        return roles?.some(role => ['superuser', 'administrator', 'manager'].includes(role.name)) && reviewTeam?.status === 1;
+    };
+
+    const canSendToDone = (roles, reviewTeam) => {
+        return roles?.some(role => ['superuser', 'administrator', 'approver'].includes(role.name)) && reviewTeam?.status === 2;
+    };
+
+    const countValues = Object.keys(rangeValues).length;
+
+    const isInputDisabled = () => {
+        // Si es Admin, nunca debe estar deshabilitado
+        if (isAdmin) {
+            return false;
+        }
+        // Deshabilitar para Validator si el status es 3
+        if (isValidator && reviewTeam.status === 3) {
+            return true;
+        }
+        return isManager; // Deshabilita si es Manager
+    };
+
     return (
         <div className="row">
             {loading ? (
@@ -541,10 +551,13 @@ const FormEmployees: React.FC = () => {
                                             <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 $ {formatPrice(calculatePriceByEmployee(item.id))}
                                             </td>
-                                            {/* <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>$ 0</td> */}
                                             <td>
                                                 <select
-                                                    disabled={!isManager}
+                                                    disabled={
+                                                        isValidator ||
+                                                        (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
+                                                    }
+                                                    //disabled={!isManager || !isAdmin }
                                                     required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
@@ -564,7 +577,10 @@ const FormEmployees: React.FC = () => {
                                                 <input
                                                     required
                                                     min={0}
-                                                    disabled={!isManager}
+                                                    disabled={
+                                                        isValidator ||
+                                                        (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
+                                                    }
                                                     type='number'
                                                     step={1}
                                                     className={getInputClassName(item.id)}
@@ -583,33 +599,22 @@ const FormEmployees: React.FC = () => {
                                             <td>
                                                 {findStatusByRatings(item.id)}
                                             </td>
-                                            {isValidator && (
+                                            {(isValidator || isAdmin) && (
                                                 <td>
                                                     <>
                                                         <a
-                                                            className={`btn btn-light btn-xs m-1`}
+                                                            className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
                                                             onClick={(e) => { changeStatusByRatings(item.id, 1); }}>
                                                             <i className={`bi bi-hand-thumbs-up ${statusValues[item.id] == 1 ? 'text-success' : ''}`}></i>
                                                         </a>
                                                         <a
-                                                            className={`btn btn-light btn-xs m-1`}
+                                                            className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
                                                             onClick={(e) => { changeStatusByRatings(item.id, 2); }}>
                                                             <i className={`bi bi-hand-thumbs-down ${statusValues[item.id] == 2 ? 'text-danger' : ''}`}></i>
                                                         </a>
                                                     </>
                                                 </td>
                                             )}
-
-                                            {/* {isManager && (<td>
-                                                <a className={`btn btn-light btn-xs m-1`}
-                                                    onClick={(e) => {
-                                                        handleSubmit(item.id);
-                                                    }}
-                                                >
-                                                    <i className="bi bi-arrow-clockwise"></i>
-                                                </a>
-                                            </td>
-                                            )} */}
                                         </tr>
                                     ))}
                             </tbody>
@@ -621,18 +626,17 @@ const FormEmployees: React.FC = () => {
             <div className="col-12">
                 <div className="bg-white">
                     {
-                        isManager && reviewTeam?.status === 1 &&
+                        canSendToApprover(roles, reviewTeam) &&
                         (<a
                             onClick={() => changeStatusByReview(2)}
-                            className={`btn btn-primary mt-3 float-end`}
-                        //className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
+                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === countValues ? '' : 'disabled'} `}
                         >
                             <i className="bi bi-save"></i> Send to approver
                         </a>)
                     }
 
                     {
-                        isValidator && reviewTeam?.status === 2 && (<a
+                        canSendToDone(roles, reviewTeam) && (<a
                             onClick={() => changeStatusByReview(3)}
                             className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
                         >
