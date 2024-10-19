@@ -648,7 +648,7 @@ const FormEmployees: React.FC = () => {
                                                     onChange={(e) => handleInputChange(e, item.id)}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter') {
-                                                            handleSubmit(item.id);
+                                                            handleSubmit(item.id); // Llama a handleSubmit con el id del empleado
                                                         }
                                                     }}
                                                 />
