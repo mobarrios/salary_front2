@@ -1,6 +1,5 @@
-// components/PrimeDataTable.tsx
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -10,7 +9,6 @@ import FormEmployees from "@/app/admin/employees/form/page";
 import FormEmployeesTeams from "@/app/admin/employees/teams/page";
 import RemoveItem from "./Core/RemoveItem";
 import { Paginator } from 'primereact/paginator';
-
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
@@ -18,7 +16,13 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   const [globalFilter, setGlobalFilter] = useState<string | null>(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(limit);
+  const [data, setData] = useState(models); // Inicializa el estado con models
   const dt = useRef(null);
+
+  // Efecto para actualizar el estado de data cuando models cambia
+  useEffect(() => {
+    setData(models);
+  }, [models]); // Solo se ejecuta cuando models cambia
 
   const handlePageChange = (event) => {
     setFirst(event.first);
@@ -30,6 +34,18 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
     const value = e.target.value;
     setGlobalFilter(value);
     onSearchChange(value); // Llama a la función para cambiar la búsqueda en el componente padre
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRows(event.rows); // Actualiza el número de filas por página
+    setFirst(0); // Reinicia el paginador a la primera página
+    onPageChange(1); // Reinicia la página actual a la primera
+  };
+
+  const handleDeleteLocal = (id) => {
+    // Elimina el registro del estado local
+    const updatedData = data.filter((item) => item.id !== id);
+    setData(updatedData); // Actualiza el estado para reflejar los cambios en la tabla
   };
 
   const renderHeader = () => {
@@ -53,8 +69,9 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   const exportCSV = () => {
     dt.current.exportCSV();
   };
-  //roles.some(role => ['superuser', 'administrator'].includes(role)
+
   const header = renderHeader();
+  
   const actionBodyTemplate = (item) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">External Data</Link>
@@ -62,7 +79,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         <>
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
-          <RemoveItem id={item.id} url='reviews_teams' />
+          <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
         </>
       )}
     </>
@@ -70,26 +87,23 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const teamsTemplate = (item) => (
     <>
-      {
-        item.teams.map((item, i) => (
-          <div>{item.name}</div>
-        ))
-      }
+      {item.teams.map((team, i) => (
+        <div key={i}>{team.name}</div>
+      ))}
     </>
-  )
+  );
 
   return (
     <div className="mb-5">
       <DataTable
         ref={dt}
-        value={models}
-        //paginator
+        value={data} // Usa el estado data en lugar de models
+        dataKey="id"
         rows={rows}
         header={header}
         globalFilter={globalFilter}
         emptyMessage="No data found."
         totalRecords={totalCount}
-        //rowsPerPageOptions={[10, 25, 50]}
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
@@ -102,10 +116,10 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         rows={rows}
         totalRecords={totalCount}
         onPageChange={handlePageChange}
-        //rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[10, 25, 50]}
+        //onRowsPerPageChange={handleRowsPerPageChange} // Asegúrate de tener esta línea
       />
     </div>
-
   );
 };
 

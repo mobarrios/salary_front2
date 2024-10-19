@@ -223,11 +223,14 @@ const FormEmployees: React.FC = () => {
             newErrors.range = 'Required.';
         }
 
+        setErrors(prevErrors => ({
+            ...prevErrors,
+            [employeesId]: newErrors
+        }));
+
         if (Object.keys(newErrors).length > 0) {
-            console.log('error')
-            setErrors(newErrors);
-            //showErrorAlert("required fields error");
-            return; // Detener el envío si hay errores
+            console.log('error');
+            return;
         }
 
         // Si no hay errores, continuar con el envío
@@ -554,7 +557,7 @@ const FormEmployees: React.FC = () => {
                                                         <option key={option.id} value={option.id} label={option.name} />
                                                     ))}
                                                 </select>
-                                                {errors.rating && <div className="text-danger">{errors.rating}</div>}
+                                                {errors[item.id]?.rating && <div className="text-danger">{errors[item.id].rating}</div>}
 
                                             </td>
                                             <td>
@@ -575,7 +578,7 @@ const FormEmployees: React.FC = () => {
                                                         }
                                                     }}
                                                 />
-                                                {errors.range && <div className="text-danger">{errors.range}</div>}
+                                                {errors[item.id]?.range && <div className="text-danger">{errors[item.id].range}</div>}
                                             </td>
                                             <td>
                                                 {findStatusByRatings(item.id)}

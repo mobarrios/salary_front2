@@ -22,31 +22,42 @@ export default function Employees({ searchParams }: Params) {
   const { data: session } = useSession()
   const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
   const roles = session?.user.roles.map(role => role.name)
-  const bc = [{ label: 'People'}];
+  const bc = [{ label: 'People' }];
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`);
-      console.log(res)
-      setResults(res?.data);
-      setTotalCount(res?.count);
-    };
+      if (session?.user.token) {
+        try {
+          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`);
 
+          // Verifica si la respuesta tiene los datos esperados
+          if (res && res.data) {
+            console.log(res.data)
+            setResults(res.data); // Establece los resultados
+            setTotalCount(res.count); // Establece el total de conteo
+          } else {
+            console.error("No se recibieron datos válidos:", res);
+          }
+        } catch (error) {
+          console.error("Error al cargar los datos:", error);
+        }
+      }
+    };
     load();
   }, [page, limit, searchTerm, session?.user.token]); // Dependencias que activan el efecto
 
   const handlePageChange = (newPage) => {
     setPage(newPage); // Cambia la página
   };
-  
+
   const onSearchChange = (value: string) => {
     setSearchTerm(value); // Actualiza el término de búsqueda
     setPage(1); // Reinicia a la primera página
   };
-  console.log(roles)
+
   return (
     <div>
-      <Breadcrumb items={bc}/>
+      <Breadcrumb items={bc} />
 
       <h1>Employees</h1>
       <div className="row mt-5">
@@ -68,11 +79,13 @@ export default function Employees({ searchParams }: Params) {
         <PrimeDataTable
           models={results}
           totalCount={totalCount}
-          limit={limit} 
+          limit={limit}
           page={page}
           onPageChange={handlePageChange}
           onSearchChange={onSearchChange} // Pasa la función de búsqueda
           roles={roles}
+
+
         />
       </div>
     </div>

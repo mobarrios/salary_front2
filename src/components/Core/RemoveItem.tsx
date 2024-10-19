@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"
 import Swal from 'sweetalert2'
 
-export default function RemoveItem({ id, url }: { id: number, url: string }) {
+export default function RemoveItem({ id, url,onDelete }: { id: number, url: string, onDelete: any }) {
     const router = useRouter();
     const { data: session } = useSession()
 
@@ -42,6 +42,7 @@ export default function RemoveItem({ id, url }: { id: number, url: string }) {
                 router.refresh();
 
                 if (resp.ok) {
+                    onDelete()
                     Swal.fire({
                         title: "Delete!",
                         icon: "success"
