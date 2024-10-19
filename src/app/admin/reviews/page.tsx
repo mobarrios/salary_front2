@@ -18,7 +18,7 @@ export default async function Employees({ searchParams }: Params) {
   const { page, search, limit, skip } = usePaginate(searchParams)
   const bc = [{ label: 'Review Cycle'}];
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=100`, 'GET');
   const session = await getServerSession(authOptions)
 
   if (!res?.status) {
@@ -105,9 +105,9 @@ export default async function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <Pagination page={page} totalPages={totalPages} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

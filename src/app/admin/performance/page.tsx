@@ -21,7 +21,7 @@ export default async function Employees({ searchParams }: Params) {
     redirect('/admin/home');
   }
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=100`, 'GET');
 
   if (!res?.status) {
     throw new Error('Failed to fetch data');
@@ -92,9 +92,9 @@ export default async function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <Pagination page={page} totalPages={totalPages} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

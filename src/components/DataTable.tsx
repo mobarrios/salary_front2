@@ -60,9 +60,9 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
             style={{ width: "100%" }}
           />
         </span>
-        <span className="ms-5">
+        {/* <span className="ms-5">
           <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
-        </span>
+        </span> */}
       </div>
     );
   };
@@ -87,12 +87,11 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
     </>
   );
 
-  const teamsTemplate = (item:any) => (
- 
+  const teamsTemplate = (item) => (
     <>
       {
-        item.teams.map((it:any ,i:any) => (
-          <div>{it.name}</div>
+        item.teams.map((item, i) => (
+          <div>{item.name}</div>
         ))
       }
     </>
