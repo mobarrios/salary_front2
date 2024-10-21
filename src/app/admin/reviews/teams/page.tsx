@@ -68,7 +68,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-      console.log(teamUserFilter)
+     
       setOptions(teamUserFilter)
       setTotalAssigned(1)
 
@@ -83,7 +83,6 @@ const ReviewTeam: React.FC = ({ id }) => {
       filteredEmployees.forEach(item => {
         updatedPercentValues[`${item.teams_id}`] = item.status; // Guarda el estado
       });
-
 
       setStatusTeams(updatedPercentValues);
       setUserTeams(filteredEmployees)
@@ -124,7 +123,8 @@ const ReviewTeam: React.FC = ({ id }) => {
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
-  console.log(statusTeams)
+  console.log('statusTeams', statusTeams)
+
   const handleCheckboxChange = async (teamId, isChecked) => {
 
     if (isChecked) {
@@ -236,7 +236,7 @@ const ReviewTeam: React.FC = ({ id }) => {
                     />
                   </td>
                   <td>
-                    {statusTeams[option.id] == 1 ?
+                    {statusTeams[option.id] == 3 ?
                       <span className="badge rounded-pill bg-success">Done</span>
                       : null}
                   </td>
