@@ -16,6 +16,7 @@ import { Title } from "@/components/Title";
 import { formatPrice } from '@/functions/formatDate';
 import Breadcrumb from "@/components/BreadCrumb";
 import { item } from "@/types/item";
+import { Checkbox } from 'primereact/checkbox';
 
 const FormEmployees: React.FC = () => {
     // params
@@ -56,6 +57,7 @@ const FormEmployees: React.FC = () => {
     const [approvedIds, setApprovedIds] = useState([]);
     const [errorMax, setErrorMax] = useState();
     const [errorMin, setErrorMin] = useState();
+    const [checked, setChecked] = useState();
 
     const isValidator = session?.user.roles.some(role => role.name === 'approver');
     const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
@@ -251,13 +253,13 @@ const FormEmployees: React.FC = () => {
         const existingRecord = ratingsTeamEmployees.find(r =>
             r.employees_id === employeesId
         );
-    
+
         try {
             let response;
 
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-        
+
                 setRatingsTeamEmployees(prevState =>
                     prevState.map(item =>
                         item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -265,7 +267,7 @@ const FormEmployees: React.FC = () => {
                 );
             } else {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-             
+
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
 
@@ -424,7 +426,7 @@ const FormEmployees: React.FC = () => {
     }
 
     const changeStatusByReview = async (status) => {
-  
+
         const valuesData = {
             status: status,
         }
@@ -481,6 +483,42 @@ const FormEmployees: React.FC = () => {
         return isManager; // Deshabilita si es Manager
     };
 
+    const checkAll = async (e) => {
+        console.log(e);
+        setChecked(e.checked);
+
+        let newTotalApproved = 0;
+        let newStatusValues = {};
+
+        // Recorre el array de empleados y cuenta los status
+        await Promise.all(ratingsTeamEmployees.map(async item => {
+            let employeesId = item.employees_id;
+            let status = 1; // Aprobado
+            const previousStatus = statusValues[employeesId];
+
+            if (item.status !== 1) {
+                const response = await apiRequest(`reviews_teams_employees/edit/${item.id}`, 'PUT', { status: 1 });
+                console.log(response)
+            }
+            //console.log(previousStatus);
+
+            if (status === 1) { // Aprobado
+                newTotalApproved += 1;
+            }
+
+            newStatusValues[employeesId] = status;
+        }));
+
+        // Actualiza el estado global una vez completadas todas las operaciones
+        setStatusValues(prevState => ({
+            ...prevState,
+            ...newStatusValues
+        }));
+        setTotalApprovede(newTotalApproved); // Actualiza el total de aprobados
+        setTotalRejected(0);  // Actualiza el total de rechazados
+    };
+
+
     return (
         <div className="row">
             {loading ? (
@@ -532,7 +570,8 @@ const FormEmployees: React.FC = () => {
                                     <th style={{ width: '15%' }}>Ratings</th>
                                     <th>Percent</th>
                                     <th></th>
-                                    <th></th>
+                                    <th>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -625,6 +664,19 @@ const FormEmployees: React.FC = () => {
 
             <div className="col-12">
                 <div className="bg-white">
+                    {
+                        isValidator && (
+                            <>
+                                <Checkbox
+                                    onChange={e => checkAll(e)}
+                                    checked={(teamEmployees?.length === totalApproved || reviewTeam?.status === 3) ? true : checked}
+                                    disabled={teamEmployees?.length === totalApproved || reviewTeam?.status === 3}
+                                />
+                                <span> Aprover all</span>
+                            </>
+                        )
+                    }
+
                     {
                         canSendToApprover(roles, reviewTeam) &&
                         (<a
