@@ -12,7 +12,7 @@ import { Paginator } from 'primereact/paginator';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
-const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange, roles }) => {
+const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange,onLimitChange, roles }) => {
   const [globalFilter, setGlobalFilter] = useState<string | null>(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(limit);
@@ -27,6 +27,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   const handlePageChange = (event) => {
     setFirst(event.first);
     setRows(event.rows);
+    onLimitChange(event.rows);
     onPageChange(event.first / event.rows + 1); // Calcula la nueva página y llama a la función onPageChange
   };
 
@@ -71,7 +72,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   };
 
   const header = renderHeader();
-  
+
   const actionBodyTemplate = (item) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">External Data</Link>
@@ -116,9 +117,11 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         rows={rows}
         totalRecords={totalCount}
         onPageChange={handlePageChange}
-        rowsPerPageOptions={[10, 25, 50]}
-        //onRowsPerPageChange={handleRowsPerPageChange} // Asegúrate de tener esta línea
+        rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
+        onRowsPerPageChange={handleRowsPerPageChange} // Llama a la función handleRowsPerPageChange
+
       />
+
     </div>
   );
 };
