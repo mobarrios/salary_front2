@@ -29,10 +29,9 @@ export default function TeamsEmployees({ searchParams }: Params) {
   const [page, setPage] = useState(initialPage);
   const [results, setResults] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
-
   const [models, setModels] = useState([])
   const { teams_id } = useParams();
-  const [limit] = useState(initialLimit);
+  const [limit, setLimit] = useState(initialLimit); // Cambia a estado
   const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
 
   const roles = session?.user.roles.map(role => role.name)
@@ -86,6 +85,13 @@ export default function TeamsEmployees({ searchParams }: Params) {
     setSearchTerm(value); // Actualiza el término de búsqueda
     setPage(1); // Reinicia a la primera página
   };
+
+  const onLimitChange = (newLimit) => {
+    console.log('llega',newLimit)
+    setLimit(newLimit); // Actualiza el límite
+    setPage(1); // Reinicia a la primera página si cambias el límite
+  };
+
   console.log(roles)
   return (
     <div>
@@ -93,71 +99,16 @@ export default function TeamsEmployees({ searchParams }: Params) {
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12 mt-3'>
-
-        <PrimeDataTable
-          models={models}
-          totalCount={totalCount}
-          limit={limit} 
-          page={page}
-          onPageChange={handlePageChange}
-          onSearchChange={onSearchChange} // Pasa la función de búsqueda
-          roles={roles}
-        />
-
-          {/* <Column field="associate_id" sortable header="ID" />
-        <Column field="name" sortable header="Name" /> */}
-          {/* <Column body={actionBodyTemplate} header="Actions" /> */}
-          {/* </DataTable> */}
-          {/* <Paginator first={first} rows={rows} totalRecords={totalCount} onPageChange={handlePageChange} /> */}
-
-          {/* <table className="table table-hover ">
-            <thead>
-              <tr>
-                <th>#</th>
-                {headers.map((header, key) => (
-                  <th key={key}>{header.name}</th>
-                ))}
-                <th>Team</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                items ? (
-                  items.map((item, rowIndex) => (
-                    <tr key={rowIndex}>
-                      <td>{item.id}</td>
-                      {headers.map((header, colIndex) => (
-                        <td key={header.key}>{item[header.key]}</td>
-                      ))}
-                      <td>
-                        {item.teams.map((team, i) => (
-                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
-                        ))}
-                      </td>
-                      <td className="text-end" >
-                        <Link
-                          href={'/admin/employees/external_data/' + item.id}
-                          className='btn btn-primary'
-                        >External data </Link>
-                        {isAdmin && (<ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Edit"
-                          FormComponent={FormEmployees}
-                          title={item.associate_id}
-                        />)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={headers.length + 2}>No data available</td>
-                  </tr>
-                )
-              }
-            </tbody>
-          </table> */}
+          <PrimeDataTable
+            models={models}
+            totalCount={totalCount}
+            limit={limit} 
+            page={page}
+            onPageChange={handlePageChange}
+            onSearchChange={onSearchChange} // Pasa la función de búsqueda
+            onLimitChange={onLimitChange}
+            roles={roles}
+          />
         </div>
         <div className='col mt-5'>
         </div>
