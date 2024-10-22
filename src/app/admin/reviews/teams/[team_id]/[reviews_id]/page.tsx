@@ -483,6 +483,20 @@ const FormEmployees: React.FC = () => {
         return isManager; // Deshabilita si es Manager
     };
 
+    const isDisabled = (employeeId) => {
+        console.log(statusValues[employeeId], isManager)
+
+        if (isAdmin) {
+            return false;
+        }
+        if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
+            return false;
+        }
+
+        return true;
+  
+    };
+
     const checkAll = async (e) => {
         console.log(e);
         setChecked(e.checked);
@@ -593,10 +607,8 @@ const FormEmployees: React.FC = () => {
                                             <td>
                                                 <select
                                                     disabled={
-                                                        isValidator ||
-                                                        (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
+                                                        isDisabled(item.id)
                                                     }
-                                                    //disabled={!isManager || !isAdmin }
                                                     required
                                                     className="form-control"
                                                     style={{ width: '100%' }}
@@ -616,10 +628,11 @@ const FormEmployees: React.FC = () => {
                                                 <input
                                                     required
                                                     min={0}
-                                                    disabled={
-                                                        isValidator ||
-                                                        (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
-                                                    }
+                                                    disabled={isDisabled(item.id)}
+                                                    // disabled={
+                                                    //     isValidator ||
+                                                    //     (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
+                                                    // }
                                                     type='number'
                                                     step={1}
                                                     className={getInputClassName(item.id)}

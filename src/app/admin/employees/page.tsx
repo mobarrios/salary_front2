@@ -15,7 +15,7 @@ import Breadcrumb from "@/components/BreadCrumb";
 export default function Employees({ searchParams }: Params) {
   const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
   const [page, setPage] = useState(initialPage);
-  const [limit] = useState(initialLimit); // Mantener el límite constante
+  const [limit, setLimit] = useState(initialLimit); // Cambia a estado
   const [results, setResults] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -55,6 +55,12 @@ export default function Employees({ searchParams }: Params) {
     setPage(1); // Reinicia a la primera página
   };
 
+  const onLimitChange = (newLimit) => {
+    console.log('llega',newLimit)
+    setLimit(newLimit); // Actualiza el límite
+    setPage(1); // Reinicia a la primera página si cambias el límite
+  };
+
   return (
     <div>
       <Breadcrumb items={bc} />
@@ -83,6 +89,7 @@ export default function Employees({ searchParams }: Params) {
           page={page}
           onPageChange={handlePageChange}
           onSearchChange={onSearchChange} // Pasa la función de búsqueda
+          onLimitChange={onLimitChange}
           roles={roles}
 
 
