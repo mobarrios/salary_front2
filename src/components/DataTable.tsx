@@ -81,6 +81,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
           <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
+
         </>
       )}
     </>
@@ -119,8 +120,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         onPageChange={handlePageChange}
         rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
         onRowsPerPageChange={handleRowsPerPageChange} // Llama a la función handleRowsPerPageChange
-
-      />
+        />
 
     </div>
   );
