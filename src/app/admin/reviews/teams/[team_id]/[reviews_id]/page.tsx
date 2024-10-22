@@ -486,9 +486,15 @@ const FormEmployees: React.FC = () => {
     const isDisabled = (employeeId) => {
         console.log(statusValues[employeeId], isManager)
 
+        if(isValidator){
+            return true
+        }
+
         if (isAdmin) {
             return false;
         }
+
+
         if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
             return false;
         }
