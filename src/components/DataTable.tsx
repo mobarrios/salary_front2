@@ -87,11 +87,14 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
     </>
   );
 
-  const teamsTemplate = (item) => (
+  const teamsTemplate = (item:any) => (
+ 
     <>
-      {item.teams.map((team, i) => (
-        <div key={i}>{team.name}</div>
-      ))}
+      {
+        item.teams.map((it:any ,i:any) => (
+          <div>{it.name}</div>
+        ))
+      }
     </>
   );
 
