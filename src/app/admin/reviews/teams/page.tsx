@@ -168,7 +168,7 @@ const ReviewTeam: React.FC = ({ id }) => {
     <>
       <div className='row p-3'>
         <div className="col-12">
-          <table className="table ">
+          <table className="table table-bordered ">
             <thead>
               <tr className="text-center">
                 <td colSpan={3}>Summary</td></tr>
@@ -190,7 +190,7 @@ const ReviewTeam: React.FC = ({ id }) => {
           </table>
         </div>
         <div className='col-12 mt-3'>
-          <table className='table table-hover '>
+          <table className='table table-striped table-bordered'>
             <thead>
               <tr>
                 <th>Active</th>
@@ -246,17 +246,17 @@ const ReviewTeam: React.FC = ({ id }) => {
                         (userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) && isAdmin)
                           ? false
                           : true
-                      } className='btn btn-light btn-xs'
+                      } className='btn btn-sm btn-primary '
                       onClick={(e) => handleSubmit(e, option.id)}>
-                      <i className="bi bi-arrow-clockwise"></i>
+                      Save
                     </button>
                     {
                       userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
                         ?
                         <a
                           href={`/admin/reviews/teams/${option.id}/${id}`}
-                          className="btn btn-success ms-2">
-                          <i className="bi bi-pencil"></i>
+                          className="btn btn-sm btn-success ms-2">
+                          Reviews
                         </a>
                         : ''
                     }
