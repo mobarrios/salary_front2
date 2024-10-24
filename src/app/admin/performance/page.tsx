@@ -15,7 +15,7 @@ export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
-  const bc = [{ label: 'Users'}];
+  const bc = [{ label: 'Performance'}];
 
   if (!roles.some(role => ['superuser', 'administrator'].includes(role))) {
     redirect('/admin/home');
@@ -34,7 +34,7 @@ export default async function Employees({ searchParams }: Params) {
   return (
     <div>
       <Breadcrumb items={bc}/>
-      <Title>Performances</Title>
+      <Title>Performance</Title>
 
       <div className="row mt-5">
         <div className='col-12'>

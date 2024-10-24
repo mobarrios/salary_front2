@@ -60,7 +60,7 @@ const FormEmployees: React.FC = () => {
         <h5>Last updated data : </h5> <small>{actual['created_at']}</small>
         <div className='row mt-3'>
            <div className="col-3">
-              <label className="form-label">Anual Salary</label>
+              <label className="form-label">Annual Salary</label>
               <input type="text" className="form-control"name="associate_id" value={actual['annual_salary']}/>
             </div>
           </div>

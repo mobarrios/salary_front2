@@ -415,7 +415,7 @@ const FormEmployees: React.FC = () => {
         const status = statusValues[employeeId];
         let statusText = '';
         if (status === 1) {
-            statusText = <span className="badge rounded-pill bg-success">aproved</span>;
+            statusText = <span className="badge rounded-pill bg-success">approved</span>;
         } else if (status === 2) {
             statusText = <span className="badge rounded-pill bg-danger">rejected</span>;
         } else if (status === 0) {
@@ -691,7 +691,7 @@ const FormEmployees: React.FC = () => {
                                     checked={(teamEmployees?.length === totalApproved || reviewTeam?.status === 3) ? true : checked}
                                     disabled={teamEmployees?.length === totalApproved || reviewTeam?.status === 3}
                                 />
-                                <span> Aprover all</span>
+                                <span> Approve all</span>
                             </>
                         )
                     }
