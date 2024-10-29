@@ -1,5 +1,4 @@
 'use client';
-
 import { useParams } from 'next/navigation';
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
@@ -11,24 +10,22 @@ import Breadcrumb from "@/components/BreadCrumb";
 import { Title } from '@/components/Title';
 
 const FormEmployees: React.FC = () => {
-
   const bc = [{ label: 'People', url: '/admin/employees' }, { label: 'External data' }];
-
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   const [options, setOptions] = useState([]);
-  const [actual, setActual] = useState();
-
-  const [userTeams, setUserTeams] = useState();
+  const [actual, setActual] = useState({});
+  const [formData, setFormData] = useState({}); // Estado para los datos del formulario
   const { id } = useParams();
-  const router = useRouter()
+  const router = useRouter();
   const isValidator = session?.user.roles.some(role => role.name === 'approver');
-
 
   const load = async () => {
     try {
       const jsonData = await fetchData(session?.user.token, 'GET', `employees/${id}`);
-      setOptions(jsonData.external_data)
-      setActual(jsonData.actual_external_data)
+      console.log(jsonData)
+      setOptions(jsonData.external_data);
+      setActual(jsonData.actual_external_data);
+      setFormData(jsonData.actual_external_data); // Inicializa el formulario con los datos actuales
     } catch (error) {
       console.error('Error fetching data:', error);
       return null;
@@ -37,59 +34,70 @@ const FormEmployees: React.FC = () => {
 
   useEffect(() => {
     if (session?.user.token) {
-
       load();
-
     }
-
   }, [id, session?.user.token]);
 
   if (status === 'loading' || !options || !actual) {
     return <p>Loading...</p>;
   }
 
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+    console.log(formData)
+    try {
+      //await apiRequest(`external_data/`, 'POST', formData);
+      router.refresh();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
   return (
-    <div >
+    <div>
       <Breadcrumb items={bc} />
-
       <div className='col-12'>
-        <Title>External Data</Title>
+        <Title>Detalles Data</Title>
       </div>
       <div className='col-12 mt-4'>
-        <Form>
+        <Form onSubmit={handleSubmit}> {/* Añadir el manejador onSubmit */}
           <h5>Last updated data : </h5> <small>{actual['created_at']}</small>
           <div className='row mt-3'>
             <div className="col-3">
               <label className="form-label">Anual Salary</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['annual_salary']} />
+              <input type="text" className="form-control" name="annual_salary" value={formData['annual_salary'] || ''} onChange={handleChange} />
             </div>
           </div>
-
           <div className='row mt-3'>
             <div className="col-3">
               <label className="form-label">Associate Id</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['associate_id']} />
+              <input type="text" className="form-control" name="associate_id" value={formData['associate_id'] || ''} onChange={handleChange} />
             </div>
             <div className="col-3">
               <label className="form-label">Hire date</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['hire_data']} />
+              <input type="text" className="form-control" name="hire_date" value={formData['hire_date'] || ''} onChange={handleChange} />
             </div>
           </div>
           <div className='row mt-3'>
             <div className="col-3">
               <label className="form-label">Job title description</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['job_title_description']} />
+              <input type="text" className="form-control" name="job_title_description" value={formData['job_title_description'] || ''} onChange={handleChange} />
             </div>
-
             <div className="col-3">
               <label className="form-label">Job class description</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['job_title_description']} />
+              <input type="text" className="form-control" name="job_class_description" value={formData['job_class_description'] || ''} onChange={handleChange} />
             </div>
-
             <div className="col-3">
               <label className="form-label">Job Function description</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['job_function_description']} />
+              <input type="text" className="form-control" name="job_function_description" value={formData['job_function_description'] || ''} onChange={handleChange} />
             </div>
           </div>
           <div>
@@ -105,41 +113,40 @@ const FormEmployees: React.FC = () => {
             <thead>
               <tr>
                 <th className='text-uppercase'>Date</th>
-                <th className='text-uppercase' >Asscociate ID</th>
-                <th className='text-uppercase' >Name</th>
-                <th className='text-uppercase'>hire_date</th>
-                <th className='text-uppercase'>rehire_date</th>
-                <th className='text-uppercase'>status</th>
-                <th className='text-uppercase'>type</th>
-                <th className='text-uppercase'>job_title_description</th>
-                <th className='text-uppercase'>job_class_description</th>
-                <th className='text-uppercase'>job_function_description</th>
-                <th className='text-uppercase'>pay_grade_code</th>
-                <th className='text-uppercase'>flsa_description</th>
-                <th className='text-uppercase'>position_id</th>
-                <th className='text-uppercase'>reports_to_legal_name</th>
-                <th className='text-uppercase'>company_code</th>
-                <th className='text-uppercase'>business_unit_code</th>
-                <th className='text-uppercase'>location_description</th>
-                <th className='text-uppercase'>department</th>
-                <th className='text-uppercase'>home_department_description</th>
-                <th className='text-uppercase'>pay_frequency</th>
-                <th className='text-uppercase'>rate</th>
-                <th className='text-uppercase'>regular_pay_effective_date</th>
-                <th className='text-uppercase'>annual_salary</th>
-                <th className='text-uppercase'>basis_of_pay</th>
-                <th className='text-uppercase'>compensation_change_reason_description</th>
-                <th className='text-uppercase'>basis_of_pay</th>
+                <th className='text-uppercase'>Associate ID</th>
+                <th className='text-uppercase'>Name</th>
+                <th className='text-uppercase'>Hire Date</th>
+                <th className='text-uppercase'>Rehire Date</th>
+                <th className='text-uppercase'>Status</th>
+                <th className='text-uppercase'>Type</th>
+                <th className='text-uppercase'>Job Title Description</th>
+                <th className='text-uppercase'>Job Class Description</th>
+                <th className='text-uppercase'>Job Function Description</th>
+                <th className='text-uppercase'>Pay Grade Code</th>
+                <th className='text-uppercase'>FLSA Description</th>
+                <th className='text-uppercase'>Position ID</th>
+                <th className='text-uppercase'>Reports To Legal Name</th>
+                <th className='text-uppercase'>Company Code</th>
+                <th className='text-uppercase'>Business Unit Code</th>
+                <th className='text-uppercase'>Location Description</th>
+                <th className='text-uppercase'>Department</th>
+                <th className='text-uppercase'>Home Department Description</th>
+                <th className='text-uppercase'>Pay Frequency</th>
+                <th className='text-uppercase'>Rate</th>
+                <th className='text-uppercase'>Regular Pay Effective Date</th>
+                <th className='text-uppercase'>Annual Salary</th>
+                <th className='text-uppercase'>Basis of Pay</th>
+                <th className='text-uppercase'>Compensation Change Reason Description</th>
               </tr>
             </thead>
             <tbody>
               {options && options.map((option: any) => (
-                <tr>
+                <tr key={option.associate_id}>
                   <td>{option.created_at}</td>
                   <td>{option.associate_id}</td>
                   <td>{option.name}</td>
-                  <td>{option.hire_data}</td>
-                  <td>{option.rehire_data}</td>
+                  <td>{option.hire_date}</td>
+                  <td>{option.rehire_date}</td>
                   <td>{option.status}</td>
                   <td>{option.type}</td>
                   <td>{option.job_title_description}</td>
@@ -166,10 +173,8 @@ const FormEmployees: React.FC = () => {
             </tbody>
           </Table>
         </div>
-
       </div>
     </div>
-
   );
 };
 
