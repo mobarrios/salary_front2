@@ -166,9 +166,9 @@ export default function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <Pagination page={page} totalPages={totalPages} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

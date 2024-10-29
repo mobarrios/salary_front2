@@ -58,12 +58,13 @@ const Home = () => {
     <div>
       <Breadcrumb />
       <Title>Welcome  {session?.user.name} ! </Title>
-
+      { isApprover ? <h5>Below you will find all your pending tasks: </h5> : '' }
       <div className="row m-2">
         <div className='col-12'>
           {
             isApprover && (
               teamUser.length > 0 && teamUser?.map((review, id) => (
+                <>
                 <div className="row m-2" key={review.id}>
                   <div className="col-3">
                     {review.teamName}
@@ -82,6 +83,7 @@ const Home = () => {
                     </a>
                   </div>
                 </div>
+                </>
               ))
             )
           }

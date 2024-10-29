@@ -18,7 +18,7 @@ const RatingRow = ({ key, option, item, isManager, isValidator, values, setField
     const status = values[`${option.id}-${item.id}-status`];
     let statusText = '';
     if (status === 1) {
-        statusText = <span className="badge rounded-pill bg-success">aproved</span>;
+        statusText = <span className="badge rounded-pill bg-success">approved</span>;
     } else if (status === 2) {
         statusText = <span className="badge rounded-pill bg-danger">rejected</span>;
     } else if (status === 0) {
