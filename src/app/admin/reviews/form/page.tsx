@@ -111,7 +111,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
                             isEditing={type} // Cambiar a true si se está editando
                             fields={fields}
                         />
-                        : <div>cargando...</div>
+                        : <div>loading...</div>
                 }
             </div>
         </div>
