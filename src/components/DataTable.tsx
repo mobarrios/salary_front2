@@ -12,7 +12,7 @@ import { Paginator } from 'primereact/paginator';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
-const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange,onLimitChange, roles }) => {
+const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange, onLimitChange, roles }) => {
   const [globalFilter, setGlobalFilter] = useState<string | null>(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(limit);
@@ -75,11 +75,16 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const actionBodyTemplate = (item) => (
     <>
-      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">External Data</Link>
+      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
       {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
         <>
-          <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
+        </>
+      )}
+
+      {roles.some(role => ['superuser', 'administrator'].includes(role)) && (
+        <>
+          <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
 
         </>
