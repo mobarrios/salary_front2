@@ -65,7 +65,7 @@ const FormEmployees: React.FC = () => {
     <div>
       <Breadcrumb items={bc} />
       <div className='col-12'>
-        <Title>Detalles Data</Title>
+        <Title>Details</Title>
       </div>
       <div className='col-12 mt-4'>
       <Form>

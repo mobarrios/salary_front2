@@ -75,7 +75,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const actionBodyTemplate = (item) => (
     <>
-      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Detalles</Link>
+      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
       {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
         <>
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
