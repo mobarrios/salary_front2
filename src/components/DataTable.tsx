@@ -99,6 +99,12 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
     </>
   );
 
+  const externalData = (item) => (
+    <>
+      <div>{item.actual_external_data?.home_department_description}</div>
+    </>
+  );
+
   return (
     <div className="mb-5">
       <DataTable
@@ -113,6 +119,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
+        <Column body={externalData} sortable header="Departament" />
         <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
@@ -123,7 +130,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         totalRecords={totalCount}
         onPageChange={handlePageChange}
         rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
-        onRowsPerPageChange={handleRowsPerPageChange} // Llama a la función handleRowsPerPageChange
+      //onRowsPerPageChange={handleRowsPerPageChange} // Llama a la función handleRowsPerPageChange
 
       />
 
