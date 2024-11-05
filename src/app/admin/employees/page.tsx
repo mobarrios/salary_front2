@@ -36,10 +36,10 @@ export default function Employees({ searchParams }: Params) {
             setResults(res.data); // Establece los resultados
             setTotalCount(res.count); // Establece el total de conteo
           } else {
-            console.error("No se recibieron datos válidos:", res);
+            console.error("Invalid data:", res);
           }
         } catch (error) {
-          console.error("Error al cargar los datos:", error);
+          console.error("Error data:", error);
         }
       }
     };

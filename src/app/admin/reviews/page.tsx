@@ -41,14 +41,19 @@ export default function Employees({ searchParams }: Params) {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload =  async() => {
     // Filtrar los datos para asegurarse de que no haya elementos vacíos
     const filteredData = results.filter(item => item.id && item.name);
+    // const res = await fetchData(session?.user.token, 'POST', `download/`);
+    const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/download', {
+         method: 'POST',
+         body: filteredData,
+      });
 
-    const ws = XLSX.utils.json_to_sheet(filteredData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
-    XLSX.writeFile(wb, "checkbox_seleccionados.xlsx");
+    // const ws = XLSX.utils.json_to_sheet(filteredData);
+    // const wb = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
+    // XLSX.writeFile(wb, "checkbox_seleccionados.xlsx");
   };
 
   useEffect(() => {
@@ -130,9 +135,9 @@ export default function Employees({ searchParams }: Params) {
                         <ModalButton
                           type={true}
                           itemId={item.id}
-                          name="Budgets"
+                          name="Merits"
                           FormComponent={ReviewTeam}
-                          title={"Budgets for  " + item.name}
+                          title={"Merits for  " + item.name}
                         />
                         {isAdmin && (<>
                           <ModalButton
@@ -166,9 +171,9 @@ export default function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <Pagination page={page} totalPages={totalPages} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

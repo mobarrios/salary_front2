@@ -14,7 +14,7 @@ const CustomField = ({ field, formik }) => {
                     onBlur={formik.handleBlur}
                     value={formik.values[field.key]}
                 >
-                    <option value="" label="Select an option" />
+                    <option value="" label="Select option" />
                     {field.options && field.options.length > 0 ? (
                         field.options.map((option, index) => (
                             <option key={index} value={option.value}>{option.label}</option>

@@ -60,9 +60,9 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
             style={{ width: "100%" }}
           />
         </span>
-        <span className="ms-5">
+        {/* <span className="ms-5">
           <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
-        </span>
+        </span> */}
       </div>
     );
   };
@@ -75,7 +75,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const actionBodyTemplate = (item) => (
     <>
-      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Detalles</Link>
+      <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
       {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
         <>
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
@@ -86,6 +86,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         <>
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
+
         </>
       )}
     </>
@@ -93,9 +94,11 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const teamsTemplate = (item) => (
     <>
-      {item.teams.map((team, i) => (
-        <div key={i}>{team.name}</div>
-      ))}
+      {
+        item.teams.map((item, i) => (
+          <div>{item.name}</div>
+        ))
+      }
     </>
   );
 
@@ -104,6 +107,12 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
       <div>{item.actual_external_data?.home_department_description}</div>
     </>
   );
+
+  const businessData = (item) => (
+    <>
+      <div>{item.actual_external_data?.business_unit_code}</div>
+    </>
+  )
 
   return (
     <div className="mb-5">
@@ -119,6 +128,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
+        <Column body={businessData} field="Business unit code" header="Business unit code" />
         <Column body={externalData} sortable header="Departament" />
         <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
@@ -130,9 +140,8 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         totalRecords={totalCount}
         onPageChange={handlePageChange}
         rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
-      //onRowsPerPageChange={handleRowsPerPageChange} // Llama a la función handleRowsPerPageChange
-
       />
+
 
     </div>
   );

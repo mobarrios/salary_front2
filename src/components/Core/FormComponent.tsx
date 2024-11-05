@@ -17,20 +17,20 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
     const validationRules = fields.reduce((rules, field) => {
         if (field.key === 'email') {
             rules[field.key] = Yup.string()
-                .email('Formato de correo electrónico no válido')
-                .required('Requerido');
+                .email('invalid format')
+                .required('Required');
         } else if (field.key === 'percent_min' || field.key === 'percent_max') {
             rules[field.key] = Yup.number()
-                .required('Requerido')
-                .min(Yup.ref('percent_min'), 'percent_max debe ser mayor o igual que percent_min');
+                .required('Required')
+                .min(Yup.ref('percent_min'), 'percent_max > percent_min');
         } else if (field.key === 'daterange') {
             rules[field.key] = Yup.object().shape({
                 form: Yup.date()
-                    .required('La fecha de inicio es requerida')
-                    .typeError('Debe ser una fecha válida'),
+                    .required('required')
+                    .typeError('invalid format'),
                 to: Yup.date()
-                    .required('La fecha de fin es requerida')
-                    .typeError('Debe ser una fecha válida')
+                    .required('required')
+                    .typeError('invalid format')
             });
         }
         /*
@@ -54,7 +54,7 @@ const FormComponent = ({ initialValues, onSubmit, isEditing, fields }) => {
         }
         */
         else {
-            rules[field.key] = Yup.string().required('Requerido');
+            rules[field.key] = Yup.string().required('Required');
         }
         return rules;
     }, {});
