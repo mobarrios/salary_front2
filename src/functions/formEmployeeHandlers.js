@@ -11,12 +11,13 @@ export const calculateTotalRemaining = (totalPrice, totalSpend) => {
 export const formatSalary = (salary) => {
 
     //let salary = employeesSalary.actual_external_data.annual_salary;
-    const montoSinFormato = salary.replace(/\$|,/g, '');
+    console.log(salary)
+    const montoSinFormato = salary ? salary.replace(/\$|,/g, '') : 0;
     const montoNumero = parseFloat(montoSinFormato);
     if (isNaN(montoNumero)) {
         return;
     }
-    
+
     return montoNumero;
 
 }
