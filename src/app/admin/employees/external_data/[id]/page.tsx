@@ -8,6 +8,7 @@ import { fetchData } from '@/server/services/core/fetchData'
 import { Button, Form, Table } from 'react-bootstrap';
 import Breadcrumb from "@/components/BreadCrumb";
 import { Title } from '@/components/Title';
+import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
 const FormEmployees: React.FC = () => {
   const bc = [{ label: 'People', url: '/admin/employees' }, { label: 'External data' }];
@@ -44,10 +45,12 @@ const FormEmployees: React.FC = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-    console.log(formData)
+    //console.log(formData, actual)
     try {
-      //await apiRequest(`external_data/`, 'POST', formData);
+      const response = await apiRequest(`external_data/edit/${actual.id}`, 'PUT', formData);
+      console.log(response)
       router.refresh();
+      showSuccessAlert("Your work has been saved");
     } catch (error) {
       console.error('Error:', error);
     }
@@ -73,7 +76,7 @@ const FormEmployees: React.FC = () => {
           <div className='row mt-3'>
             <div className="col-3">
               <label className="form-label">Annual Salary</label>
-              <input type="text" className="form-control" name="associate_id" value={actual['annual_salary']} />
+              <input type="text" className="form-control" name="annual_salary" value={formData['annual_salary'] || ''} onChange={handleChange} />
             </div>
           </div>
           <div className='row mt-3'>
@@ -102,7 +105,7 @@ const FormEmployees: React.FC = () => {
           </div>
           <div>
             {!isValidator &&
-              <Button className="mt-3" type='submit'>Update</Button>
+              <Button className="mt-3" type='submit' onClick={handleSubmit}>Update</Button>
             }
           </div>
         </Form>
