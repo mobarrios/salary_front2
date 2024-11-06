@@ -486,7 +486,7 @@ const FormEmployees: React.FC = () => {
     const isDisabled = (employeeId) => {
         console.log(statusValues[employeeId], isManager)
 
-        if(isValidator){
+        if (isValidator) {
             return true
         }
 
@@ -500,7 +500,7 @@ const FormEmployees: React.FC = () => {
         }
 
         return true;
-  
+
     };
 
     const checkAll = async (e) => {
@@ -711,7 +711,7 @@ const FormEmployees: React.FC = () => {
                             onClick={() => changeStatusByReview(3)}
                             className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
                         >
-                            <i className="bi bi-save"></i> Approver
+                            <i className="bi bi-save"></i> Submit
                         </a>)
 
                     }

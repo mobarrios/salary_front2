@@ -1,5 +1,5 @@
 import React from 'react';
-import DateRange  from './DateRange';
+import DateRange from './DateRange';
 
 const CustomField = ({ field, formik }) => {
     return (

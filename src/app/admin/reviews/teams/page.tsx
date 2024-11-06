@@ -68,7 +68,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-     
+
       setOptions(teamUserFilter)
       setTotalAssigned(1)
 
@@ -164,6 +164,8 @@ const ReviewTeam: React.FC = ({ id }) => {
 
   }
 
+  console.log(statusTeams)
+
   return (
     <>
       <div className='row p-3'>
@@ -236,9 +238,15 @@ const ReviewTeam: React.FC = ({ id }) => {
                     />
                   </td>
                   <td>
-                    {statusTeams[option.id] == 3 ?
+                    {statusTeams[option.id] === 3 ? (
                       <span className="badge rounded-pill bg-success">Done</span>
-                      : null}
+                    ) : statusTeams[option.id] === 2 ? (
+                      <span className="badge rounded-pill bg-dark">In Progress</span>
+                    ) : statusTeams[option.id] === 1 ? (
+                      <span className="badge rounded-pill bg-dark">In Progress</span>
+                    ) : (
+                      <span className="badge rounded-pill bg-danger">Not started</span>
+                    )}
                   </td>
                   <td className="text-center">
                     <button

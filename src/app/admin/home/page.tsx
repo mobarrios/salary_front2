@@ -40,7 +40,11 @@ const Home = () => {
           };
         });
 
-      setTeamUser(filteredReviewTeams)
+      const sortedReviewTeams = filteredReviewTeams.sort((a, b) => {
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+
+      setTeamUser(sortedReviewTeams)
 
     } catch (error) {
       console.error('Error fetching data:', error);
