@@ -21,9 +21,9 @@ import * as XLSX from 'xlsx';
 
 export default function Employees({ searchParams }: Params) {
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
+  const { page, search, skip } = usePaginate(searchParams)
   const bc = [{ label: 'Review Cycle' }];
-
+  const limit = 100
   const { data: session } = useSession()
   const [results, setResults] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -40,7 +40,6 @@ export default function Employees({ searchParams }: Params) {
       setSelectedData(prevData => prevData.filter(item => item.id !== data.id));
     }
   };
-
   const handleDownload =  async() => {
     
     const idList = selectedData.map(item => item.id);
@@ -70,17 +69,17 @@ export default function Employees({ searchParams }: Params) {
     } catch (error) {
       console.error('Error fetching CSV:', error);
     }
-
-
   };
 
   useEffect(() => {
     const load = async () => {
       if (session?.user.token) {
         try {
-          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
-          console.log(res)
+          //const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
+          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=0&limit=100`);
+          
           if (res && res.data) {
+            console.log(res.data)
             setResults(res.data); // Establece los resultados
             setTotalCount(res.count); // Establece el total de conteo
             // 
