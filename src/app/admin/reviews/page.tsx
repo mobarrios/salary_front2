@@ -42,18 +42,36 @@ export default function Employees({ searchParams }: Params) {
   };
 
   const handleDownload =  async() => {
-    // Filtrar los datos para asegurarse de que no haya elementos vacíos
-    const filteredData = results.filter(item => item.id && item.name);
-    // const res = await fetchData(session?.user.token, 'POST', `download/`);
-    const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/download', {
-         method: 'POST',
-         body: filteredData,
+    
+    const idList = selectedData.map(item => item.id);
+    
+    try {
+     const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/download',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(idList), // Enviar la lista de IDs como JSON
       });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'data.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } else {
+        console.error('Failed to download CSV');
+      }
+    } catch (error) {
+      console.error('Error fetching CSV:', error);
+    }
 
-    // const ws = XLSX.utils.json_to_sheet(filteredData);
-    // const wb = XLSX.utils.book_new();
-    // XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
-    // XLSX.writeFile(wb, "checkbox_seleccionados.xlsx");
+
   };
 
   useEffect(() => {
