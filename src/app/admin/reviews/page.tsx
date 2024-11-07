@@ -21,9 +21,9 @@ import * as XLSX from 'xlsx';
 
 export default function Employees({ searchParams }: Params) {
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
+  const { page, search, skip } = usePaginate(searchParams)
   const bc = [{ label: 'Review Cycle' }];
-
+  const limit = 100
   const { data: session } = useSession()
   const [results, setResults] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -41,14 +41,14 @@ export default function Employees({ searchParams }: Params) {
     }
   };
 
-  const handleDownload =  async() => {
+  const handleDownload = async () => {
     // Filtrar los datos para asegurarse de que no haya elementos vacíos
     const filteredData = results.filter(item => item.id && item.name);
     // const res = await fetchData(session?.user.token, 'POST', `download/`);
-    const response = await fetch(process.env.NEXT_PUBLIC_SALARY+'/download', {
-         method: 'POST',
-         body: filteredData,
-      });
+    const response = await fetch(process.env.NEXT_PUBLIC_SALARY + '/download', {
+      method: 'POST',
+      body: filteredData,
+    });
 
     // const ws = XLSX.utils.json_to_sheet(filteredData);
     // const wb = XLSX.utils.book_new();
@@ -60,9 +60,11 @@ export default function Employees({ searchParams }: Params) {
     const load = async () => {
       if (session?.user.token) {
         try {
-          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
-          console.log(res)
+          //const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
+          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=0&limit=100`);
+          
           if (res && res.data) {
+            console.log(res.data)
             setResults(res.data); // Establece los resultados
             setTotalCount(res.count); // Establece el total de conteo
             // 
