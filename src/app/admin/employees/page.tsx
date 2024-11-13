@@ -91,9 +91,7 @@ export default function Employees({ searchParams }: Params) {
           onSearchChange={onSearchChange} // Pasa la función de búsqueda
           onLimitChange={onLimitChange}
           roles={roles}
-
-
-        />
+          />
       </div>
     </div>
   );
