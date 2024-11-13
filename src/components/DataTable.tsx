@@ -94,17 +94,21 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const teamsTemplate = (item) => (
     <>
-      {
+          <div>{item.teams?.name}</div>
+
+      {/* {
         item.teams.map((item, i) => (
           <div>{item.name}</div>
         ))
-      }
+      } */}
     </>
   );
 
   const externalData = (item) => (
     <>
       <div>{item.actual_external_data?.home_department_description}</div>
+      <div>{item.actual_external_data?.job_title_description}</div>
+
     </>
   );
 
