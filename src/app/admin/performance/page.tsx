@@ -8,17 +8,20 @@ import FormRatings from './form/page';
 import RemoveItem from '@/components/Core/RemoveItem';
 import { redirect } from 'next/navigation'
 import { getUserRoles } from '@/functions/getRoles'
+import Breadcrumb from "@/components/BreadCrumb";
+import { Title } from '@/components/Title';
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
+  const bc = [{ label: 'Performance'}];
 
   if (!roles.some(role => ['superuser', 'administrator'].includes(role))) {
     redirect('/admin/home');
   }
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=100`, 'GET');
 
   if (!res?.status) {
     throw new Error('Failed to fetch data');
@@ -30,6 +33,9 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
+      <Title>Performance</Title>
+
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
@@ -86,9 +92,9 @@ export default async function Employees({ searchParams }: Params) {
             </tbody>
           </table>
         </div>
-        <div className='col-12 mt-3'>
+        {/* <div className='col-12 mt-3'>
           <Pagination page={page} totalPages={totalPages} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -454,7 +454,7 @@ const FormEmployees: React.FC = () => {
                                                     value={selectedRatings[item.id] || ''} // Usar el estado específico para este empleado
                                                     onChange={(e) => handleSelectChange(item.id, e)} // Pasar el ID del empleado
                                                 >
-                                                    <option value="" label="Seleccione una opción" />
+                                                    <option value="" label="Select option" />
                                                     {ratings && ratings.map((option) => (
                                                         <option key={option.id} value={option.id} label={option.name} />
                                                     ))}

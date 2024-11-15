@@ -26,7 +26,6 @@ const NavbarComp = () => {
     }
   }, []);
 
-
   return (
     <div>
       <Navbar expand="lg" className="bg-white shadow-sm navbar-fixed-top">
@@ -46,7 +45,7 @@ const NavbarComp = () => {
             <Nav className="me-auto" defaultActiveKey="/admin/home" >
             <Nav.Link href="/admin/home" active={activePath === '/admin/home'}>Home</Nav.Link>
 
-              <Nav.Link href="/admin/analytics" active={activePath === '/admin/analytics'}>Analytics</Nav.Link>
+              {/* <Nav.Link href="/admin/analytics" active={activePath === '/admin/analytics'}>Analytics</Nav.Link> */}
 
               {(isSuper || isAdmin) ? (
                 <Nav.Link href="/admin/employees" active={activePath === '/admin/employees'}>People</Nav.Link>
@@ -55,7 +54,7 @@ const NavbarComp = () => {
               )}
 
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Review Cycle</Nav.Link>
-              {isSuper && (
+              {(isSuper || isAdmin) && (
                 <Nav.Link href="/admin/performance" active={activePath === '/admin/performance'}>Performance</Nav.Link>
               )}
 

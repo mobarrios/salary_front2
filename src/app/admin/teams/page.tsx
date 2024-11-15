@@ -10,15 +10,18 @@ import UserTeams from './user/page';
 import { Title } from '@/components/Title';
 import { getUserRoles, getUserId } from '@/functions/getRoles'
 import Link from 'next/link';
+import Breadcrumb from "@/components/BreadCrumb";
 
 export default async function Employees({ searchParams }: Params) {
+  const bc = [{ label: 'Teams', url:'/admin/teams'},{label:'Employees'}];
 
   const { page, search, limit, skip } = usePaginate(searchParams)
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+  console.log(res)
   const roles = await getUserRoles();
   const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role))
-
+  console.log(roles)
   if (!res?.status) {
     throw new Error('Failed to fetch data');
   }
@@ -45,6 +48,7 @@ export default async function Employees({ searchParams }: Params) {
 
   return (
     <div>
+      <Breadcrumb items={bc}/>
       <Title>Teams</Title>
       <div className="row mt-5">
         <div className='col-12'>
@@ -94,7 +98,7 @@ export default async function Employees({ searchParams }: Params) {
                           <ModalButton
                             type={true}
                             itemId={item.id}
-                            name="Edit"
+                            name="Save"
                             FormComponent={FormTeams}
                             title={"Edit : " + item.name}
                           />

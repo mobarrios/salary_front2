@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Title } from '@/components/Title';
 import { Modal, Button } from 'react-bootstrap';
 import { showErrorAlert, showSuccessAlert } from '@/hooks/alerts';
+import Breadcrumb from "@/components/BreadCrumb";
 
 
 export default function Upload() {
@@ -14,7 +15,8 @@ export default function Upload() {
   const [file, setFile] = useState(null);
   const [ status , setStatus ] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const bc = [{ label: 'People',url:'/admin/employees'},{ label: 'Import data'}];
+
 useEffect(() => {
 
   }, [status]);
@@ -58,6 +60,8 @@ useEffect(() => {
 
   return (
   <div>
+    <Breadcrumb items={bc}/>
+
     <Title>Import data</Title>
 
     <div className="row pt-3">

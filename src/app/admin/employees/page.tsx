@@ -1,127 +1,106 @@
+'use client'
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { usePaginate } from "@/hooks/usePagination"
 import { Params } from '@/types/params';
-import Pagination from '@/components/Pagination/Pagination';
 import { headers, name } from './model';
 import Link from 'next/link';
 import ModalButton from '@/components/Modal/NewFormModal';
 import FormEmployees from './form/page';
-import RemoveItem from '@/components/Core/RemoveItem';
-import FormEmployeesTeams from './teams/page';
-import { Title } from '@/components/Title';
-import { getUserRoles } from '@/functions/getRoles'
-import SearchBar from '@/components/Search/Search';
+import PrimeDataTable from '@/components/DataTable';
+import { getUserRoles } from '@/functions/getRoles';
+import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { fetchData } from '@/server/services/core/fetchData'
+import Breadcrumb from "@/components/BreadCrumb";
 
-export default async function Employees({ searchParams }: Params) {
+export default function Employees({ searchParams }: Params) {
+  const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
+  const [page, setPage] = useState(initialPage);
+  const [limit, setLimit] = useState(initialLimit); // Cambia a estado
+  const [results, setResults] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { data: session } = useSession()
+  const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
+  const roles = session?.user.roles.map(role => role.name)
+  const bc = [{ label: 'People' }];
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
+  const load = useCallback(async () => {
+    if (session?.user.token) {
+      try {
 
-  const roles = await getUserRoles();
-  const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role));
+        setResults([]); // Limpiar resultados anteriores
+        setTotalCount(0)
+        const res = await fetchData(
+          session?.user.token,
+          'GET',
+          `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`
+        );
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
+        if (res && res.data) {
+          setResults(res.data);
+          setTotalCount(res.count);
+        } else {
+          console.error("Invalid data:", res);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  }, [page, limit, searchTerm, session?.user.token]);
 
-  if (!res?.status) {
-    throw new Error('Failed to fetch data');
-  }
 
-  const data = await res.json();
-  const results = data.data
-  console.log(results)
-  const totalPages = Math.ceil(data.count / limit);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage); // Cambia la página
+  };
+
+  const onSearchChange = (value: string) => {
+    setSearchTerm(value); // Actualiza el término de búsqueda
+    setPage(1); // Reinicia a la primera página
+  };
+
+  const onLimitChange = (newLimit) => {
+    setLimit(newLimit); // Actualiza el límite
+    setPage(1); // Reinicia a la primera página si cambias el límite
+  };
 
   return (
     <div>
-      <Title>Employees</Title>
+      <Breadcrumb items={bc} />
+
+      <h1>Employees</h1>
       <div className="row mt-5">
         <div className='col-12'>
           <p className='float-start'>
-            {
-              isAdmin && (
-                <ModalButton
-                  type={false}
-                  itemId={1}
-                  name="New Employee"
-                  FormComponent={FormEmployees}
-                  title="New Employee"
-                />
-              )}
-            <Link href={`/admin/teams`} className="btn btn-primary  ms-3" >Teams </Link>
-            <Link href={'/admin/employees/upload'} className="btn btn-light  ms-3" > Import data</Link>
-
+            {isAdmin && (
+              <ModalButton
+                type={false}
+                itemId={1}
+                name="New Employee"
+                FormComponent={FormEmployees}
+                title="New Employee"
+              />
+            )}
+            <Link href={`/admin/teams`} className="btn btn-primary ms-3">Teams</Link>
+            <Link href={'/admin/employees/upload'} className="btn btn-light ms-3">Import data</Link>
           </p>
+        </div>
+        <PrimeDataTable
+          models={results}
+          totalCount={totalCount}
+          limit={limit}
+          page={page}
+          onPageChange={handlePageChange}
+          onSearchChange={onSearchChange} // Pasa la función de búsqueda
+          onLimitChange={onLimitChange}
+          roles={roles}
+        />
 
-  
-        
-        </div>
-        
-       
-        <div className='col-12 mt-3'>
-          <table className="table table-hover ">
-            <thead>
-              <tr>
-                <th>#</th>
-                {headers.map((header, key) => (
-                  <th key={key}>{header.name}</th>
-                ))}
-                <th>Team</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                results ? (
-                  results.map((item, rowIndex) => (
-                    <tr key={rowIndex}>
-                      <td>{item.id}</td>
-                      {headers.map((header, colIndex) => (
-                        <td key={header.key}>{item[header.key]}</td>
-                      ))}
-                      <td>
-                        {item.teams.map((team, i) => (
-                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
-                        ))}
-                      </td>
-                      <td className="text-end" >
-                        <Link
-                          href={'/admin/employees/external_data/' + item.id}
-                          className='btn btn-primary'
-                        >External data </Link>
-
-                        <ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Teams"
-                          FormComponent={FormEmployeesTeams}
-                          title={item.associate_id + " Teams"}
-                        />
-                        <ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Edit"
-                          FormComponent={FormEmployees}
-                          title={item.associate_id}
-                        />
-                        <RemoveItem
-                          url={name}
-                          id={item.id}
-                        />
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={headers.length + 2}>No data available</td>
-                  </tr>
-                )
-              }
-            </tbody>
-          </table>
-        </div>
-        <div className='col mt-5'>
-          <Pagination page={page} totalPages={totalPages} totalData={data.count} />
-        </div>
       </div>
     </div>
-  )
-};
+  );
+}

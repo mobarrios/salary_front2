@@ -10,12 +10,14 @@ import FormRol from './rol/page';
 import { Title } from '@/components/Title';
 import { redirect } from 'next/navigation'
 import { getUserRoles } from '@/functions/getRoles'
+import Breadcrumb from "@/components/BreadCrumb";
 
 export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
-  
+  const bc = [{ label: 'Users'}];
+
   if (!roles.some(role => ['superuser'].includes(role))) {
     redirect('/admin/home');
   }
@@ -29,9 +31,11 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
-
+  console.log(results)
   return (
     <div>
+      <Breadcrumb items={bc}/>
+
       <Title>Users</Title>
       <div className="row mt-5">
         <div className='col-12'>

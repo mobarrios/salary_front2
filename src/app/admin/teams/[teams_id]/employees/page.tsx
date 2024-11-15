@@ -12,16 +12,27 @@ import { getUserRoles } from '@/functions/getRoles'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/server/auth';
 import Link from 'next/link';
+import Breadcrumb from "@/components/BreadCrumb";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Paginator } from 'primereact/paginator';
+import PrimeDataTable from '@/components/DataTable';
 
+export default function TeamsEmployees({ searchParams }: Params) {
 
-const TeamsEmployees: React.FC = () => {
+  const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
 
   const { data: session, status } = useSession()
+  const bc = [{ label: 'Teams', url: '/admin/teams' }, { label: 'Employees' }];
 
   const [loading, setLoading] = useState(false)
-
-  const [items, setItem] = useState([])
+  const [page, setPage] = useState(initialPage);
+  const [results, setResults] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [models, setModels] = useState([])
   const { teams_id } = useParams();
+  const [limit, setLimit] = useState(initialLimit); // Cambia a estado
+  const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
 
   const roles = session?.user.roles.map(role => role.name)
   const isAdmin = roles?.some(role => ['manager'].includes(role))
@@ -40,12 +51,12 @@ const TeamsEmployees: React.FC = () => {
 
         // Obtener los datos de empleados
         const employeesDataResponse = await fetchData(session?.user.token, 'GET', 'employees/all/?skip=0&limit=100');
-
+      
         // Filtrar employeesData para que solo incluya a los empleados cuyos id están en employeeIds
         const filteredEmployeesData = employeesDataResponse.data.filter(employee => employeeIds.includes(employee.id));
-        console.log(filteredEmployeesData)
-        setItem(filteredEmployeesData)
+        setTotalCount(filteredEmployeesData.length);
 
+        setModels(filteredEmployeesData)
         setLoading(false);
       }
     } catch (error) {
@@ -60,65 +71,44 @@ const TeamsEmployees: React.FC = () => {
       load();
     }
 
-  }, [teams_id, session?.user.token]);
+  }, [page, limit, searchTerm,teams_id, session?.user.token]);
 
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
 
+  const handlePageChange = (newPage) => {
+    setPage(newPage); // Cambia la página
+  };
+  
+  const onSearchChange = (value: string) => {
+    setSearchTerm(value); // Actualiza el término de búsqueda
+    setPage(1); // Reinicia a la primera página
+  };
+
+  const onLimitChange = (newLimit) => {
+    console.log('llega',newLimit)
+    setLimit(newLimit); // Actualiza el límite
+    setPage(1); // Reinicia a la primera página si cambias el límite
+  };
+
+  console.log(roles)
   return (
     <div>
+      <Breadcrumb items={bc} />
       <Title>Employees</Title>
       <div className="row mt-5">
         <div className='col-12 mt-3'>
-          <table className="table table-hover ">
-            <thead>
-              <tr>
-                <th>#</th>
-                {headers.map((header, key) => (
-                  <th key={key}>{header.name}</th>
-                ))}
-                <th>Team</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                items ? (
-                  items.map((item, rowIndex) => (
-                    <tr key={rowIndex}>
-                      <td>{item.id}</td>
-                      {headers.map((header, colIndex) => (
-                        <td key={header.key}>{item[header.key]}</td>
-                      ))}
-                      <td>
-                        {item.teams.map((team, i) => (
-                          <div key={i}>{team.name}</div> // Asegúrate de usar un key único
-                        ))}
-                      </td>
-                      <td className="text-end" >
-                        <Link
-                          href={'/admin/employees/external_data/' + item.id}
-                          className='btn btn-primary'
-                        >External data </Link>
-                        {isAdmin && (<ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Edit"
-                          FormComponent={FormEmployees}
-                          title={item.associate_id}
-                        />)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={headers.length + 2}>No data available</td>
-                  </tr>
-                )
-              }
-            </tbody>
-          </table>
+          <PrimeDataTable
+            models={models}
+            totalCount={totalCount}
+            limit={limit} 
+            page={page}
+            onPageChange={handlePageChange}
+            onSearchChange={onSearchChange} // Pasa la función de búsqueda
+            onLimitChange={onLimitChange}
+            roles={roles}
+          />
         </div>
         <div className='col mt-5'>
         </div>
@@ -126,5 +116,3 @@ const TeamsEmployees: React.FC = () => {
     </div>
   )
 };
-
-export default TeamsEmployees;

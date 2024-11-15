@@ -4,12 +4,13 @@ import Navbar from "@/components/NavBar";
 
 export default async function Dashboard({ children }) {
 
+  const bc = [];
+
   return (
     <>
       <Navbar/>
-      <main className="container mt-5 bg-white  ">
-      {/* <Breadcrumb /> */}
      
+      <main className="container mt-5 bg-white  ">     
       {children}
       </main>
 

@@ -21,6 +21,7 @@ const ReviewTeam: React.FC = ({ id }) => {
 
   const router = useRouter();
   const [rangeValues, setRangeValues] = useState({});
+  const [statusTeams, setStatusTeams] = useState({});
   const [reviewTeam, setReviewTeam] = useState({});
 
   const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
@@ -67,7 +68,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-     
+
       setOptions(teamUserFilter)
       setTotalAssigned(1)
 
@@ -77,11 +78,16 @@ const ReviewTeam: React.FC = ({ id }) => {
       //console.log(teamIds)
       // Filtrar employeesWithIdOne según los team_ids
       const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.teams_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
-      console.log(filteredEmployees, employeesWithIdOne)
+      const updatedPercentValues = {}; // Inicializa el objeto
+      console.log(filteredEmployees)
+      filteredEmployees.forEach(item => {
+        updatedPercentValues[`${item.teams_id}`] = item.status; // Guarda el estado
+      });
 
+      setStatusTeams(updatedPercentValues);
       setUserTeams(filteredEmployees)
       setReviewTeam(employeesWithIdOne)
-     
+
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -103,7 +109,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       });
 
       setRangeValues(initialRangeValues);
-      console.log('userTeams',userTeams)
+
       //filtrar por employees
       const total = userTeams.reduce((accumulator, item) => accumulator + item.price, 0);
       setTotalTeams(total)
@@ -117,12 +123,13 @@ const ReviewTeam: React.FC = ({ id }) => {
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
+  console.log('statusTeams', statusTeams)
 
   const handleCheckboxChange = async (teamId, isChecked) => {
 
     if (isChecked) {
       // El checkbox está marcado
-      const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId });
+      const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId, status: 1 });
       showSuccessAlert("Your work has been saved");
     } else {
 
@@ -157,11 +164,13 @@ const ReviewTeam: React.FC = ({ id }) => {
 
   }
 
+  console.log(statusTeams)
+
   return (
     <>
       <div className='row p-3'>
         <div className="col-12">
-          <table className="table ">
+          <table className="table table-bordered ">
             <thead>
               <tr className="text-center">
                 <td colSpan={3}>Summary</td></tr>
@@ -183,12 +192,13 @@ const ReviewTeam: React.FC = ({ id }) => {
           </table>
         </div>
         <div className='col-12 mt-3'>
-          <table className='table table-hover '>
+          <table className='table table-striped table-bordered'>
             <thead>
               <tr>
                 <th>Active</th>
                 <th>Team</th>
                 <th>Amount</th>
+                <th>Status</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
@@ -227,23 +237,34 @@ const ReviewTeam: React.FC = ({ id }) => {
                       onChange={(e) => handleRangeChange(option.id, parseInt(e.target.value))}
                     />
                   </td>
+                  <td>
+                    {statusTeams[option.id] === 3 ? (
+                      <span className="badge rounded-pill bg-success">Done</span>
+                    ) : statusTeams[option.id] === 2 ? (
+                      <span className="badge rounded-pill bg-dark">In Progress</span>
+                    ) : statusTeams[option.id] === 1 ? (
+                      <span className="badge rounded-pill bg-dark">In Progress</span>
+                    ) : (
+                      <span className="badge rounded-pill bg-danger">Not started</span>
+                    )}
+                  </td>
                   <td className="text-center">
                     <button
                       disabled={
                         (userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id) && isAdmin)
                           ? false
                           : true
-                      } className='btn btn-light btn-xs'
+                      } className='btn btn-sm btn-primary '
                       onClick={(e) => handleSubmit(e, option.id)}>
-                      <i className="bi bi-arrow-clockwise"></i>
+                      Save
                     </button>
                     {
                       userTeams && userTeams.length > 0 && userTeams.some(item => item.teams_id === option.id)
                         ?
                         <a
                           href={`/admin/reviews/teams/${option.id}/${id}`}
-                          className="btn btn-success ms-2">
-                          <i className="bi bi-pencil"></i>
+                          className="btn btn-sm btn-success ms-2">
+                          Reviews
                         </a>
                         : ''
                     }
