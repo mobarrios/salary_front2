@@ -16,7 +16,7 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   const [globalFilter, setGlobalFilter] = useState<string | null>(null);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(limit);
-  const [data, setData] = useState(models); // Inicializa el estado con models
+  const [data, setData] = useState([]); // Inicializa el estado con models
   const dt = useRef(null);
 
   // Efecto para actualizar el estado de data cuando models cambia
@@ -34,7 +34,13 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setGlobalFilter(value);
-    onSearchChange(value); // Llama a la función para cambiar la búsqueda en el componente padre
+
+    // Usar un debounce para evitar demasiadas llamadas al padre
+    const delayDebounceFn = setTimeout(() => {
+      onSearchChange(value); // Llama a la función para cambiar la búsqueda en el componente padre
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
   };
 
   const handleRowsPerPageChange = (event) => {
@@ -72,7 +78,6 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
   };
 
   const header = renderHeader();
-
   const actionBodyTemplate = (item) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
@@ -94,35 +99,46 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
 
   const teamsTemplate = (item) => (
     <>
-          <div>{item.teams?.name}</div>
-
-      {/* {
-        item.teams.map((item, i) => (
-          <div>{item.name}</div>
-        ))
+      <div key={`home_name_${item.id}`}>{item.teams?.name}</div>
+      {/* { 
+        item.teams.map((item, i) => ( 
+          <div>{item.name}</div> 
+        )) 
       } */}
     </>
   );
 
   const externalData = (item) => (
     <>
-      <div>{item.actual_external_data?.home_department_description}</div>
-      <div>{item.actual_external_data?.job_title_description}</div>
-
+      <div key={`home_department_${item.id}`}>{item.actual_external_data?.home_department_description}</div>
+      <div key={`job_title_${item.id}`}>{item.actual_external_data?.job_title_description}</div>
     </>
   );
 
   const businessData = (item) => (
     <>
-      <div>{item.actual_external_data?.business_unit_code}</div>
+      <div key={`business_unit_${item.id}`}>{item.actual_external_data?.business_unit_code}</div>
     </>
-  )
+  );
+
+  const filteredData = data.filter(item => {
+    const teamName = item.teams?.name?.toLowerCase() || '';
+    return (
+      item.name.toLowerCase().includes(globalFilter?.toLowerCase() || '') ||
+      item.associate_id.toLowerCase().includes(globalFilter?.toLowerCase() || '') ||
+      teamName.includes(globalFilter?.toLowerCase() || '')
+    );
+  });
+
+  useEffect(() => {
+    dt.current?.reset(); // Resetea el DataTable para forzar un re-render
+  }, [filteredData]);
 
   return (
     <div className="mb-5">
       <DataTable
         ref={dt}
-        value={data} // Usa el estado data en lugar de models
+        value={[...filteredData]}
         dataKey="id"
         rows={rows}
         header={header}
@@ -145,8 +161,6 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         onPageChange={handlePageChange}
         rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
       />
-
-
     </div>
   );
 };
