@@ -31,7 +31,7 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
-  console.log(results)
+  
   return (
     <div>
       <Breadcrumb items={bc}/>

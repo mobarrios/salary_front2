@@ -71,7 +71,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
  
 
     const handleSubmit = async values => {
-        console.log(values)
+       
         const valuesData = {
             status: values.status,
             price: values.price,
@@ -81,7 +81,6 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
             form: values.daterange.form,
             to:values.daterange.to,
         }
-        console.log(valuesData)
 
         try {
             if (type) {

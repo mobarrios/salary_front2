@@ -19,7 +19,7 @@ type PageProps = {
 
 
 export default function SignIn({ searchParams }: PageProps) {
-  console.log(searchParams)
+  
   const [inputs, setInputs] = useState<LoginInput>({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
 

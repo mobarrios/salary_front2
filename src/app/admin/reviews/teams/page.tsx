@@ -61,7 +61,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       setTotalReview(reviewData.price)
 
       // all teams
-      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
+      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
       const userIdToFilter = session?.user.id;
 
       // todos los teams que tienen al usuario logeado
@@ -79,7 +79,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       // Filtrar employeesWithIdOne según los team_ids
       const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.teams_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
       const updatedPercentValues = {}; // Inicializa el objeto
-      console.log(filteredEmployees)
+      
       filteredEmployees.forEach(item => {
         updatedPercentValues[`${item.teams_id}`] = item.status; // Guarda el estado
       });
@@ -123,7 +123,6 @@ const ReviewTeam: React.FC = ({ id }) => {
   if (status === 'loading') {
     return <p>Loading...</p>;
   }
-  console.log('statusTeams', statusTeams)
 
   const handleCheckboxChange = async (teamId, isChecked) => {
 
@@ -163,8 +162,6 @@ const ReviewTeam: React.FC = ({ id }) => {
     }
 
   }
-
-  console.log(statusTeams)
 
   return (
     <>

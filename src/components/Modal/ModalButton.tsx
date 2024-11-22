@@ -64,7 +64,6 @@ const ModalButton = ({ itemId, name }) => {
   };
 
   const closeModal = () => {
-    console.log("Cerrando modal");
     setModalId(null);
   };
 

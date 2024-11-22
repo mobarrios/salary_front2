@@ -76,10 +76,10 @@ export default function Employees({ searchParams }: Params) {
       if (session?.user.token) {
         try {
           //const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
-          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=0&limit=100`);
+          const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=0&limit=1000`);
           
           if (res && res.data) {
-            console.log(res.data)
+          
             setResults(res.data); // Establece los resultados
             setTotalCount(res.count); // Establece el total de conteo
             // 

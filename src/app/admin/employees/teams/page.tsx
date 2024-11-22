@@ -17,9 +17,8 @@ const FormEmployeesTeams: React.FC = ({id}) => {
 
   const userData = async () => {
     try {
-      console.log(id)
-      const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=100`);
-      console.log(jsonData)
+      
+      const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
       const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 
@@ -32,7 +31,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
   const load = async () => {
     try {
       setLoading(true)
-      const jsonData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=10`);
+      const jsonData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
       setOptions(jsonData.data)
 
     } catch (error) {
@@ -65,13 +64,12 @@ const FormEmployeesTeams: React.FC = ({id}) => {
       const response = await apiRequest(`teams_employees/`, 'POST', { employees_id: id, teams_id: teamId });
       showSuccessAlert("Your work has been saved");
 
-      console.log('El checkbox está marcado', response);
    
     } else {
       // El checkbox está desmarcado
       const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);
       showSuccessAlert("Your work has been deleted");
-      console.log('El checkbox está desmarcado', jsonData);
+
     }
     router.refresh();
   };

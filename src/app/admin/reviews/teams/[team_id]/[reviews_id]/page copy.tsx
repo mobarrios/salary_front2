@@ -107,7 +107,7 @@ const FormEmployees: React.FC = () => {
             setRatings(ratingsResponse.data);
 
             //all review teams employees
-            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
+            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
 
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
@@ -139,7 +139,7 @@ const FormEmployees: React.FC = () => {
         const { totalByEmployees } = calculateTotalsByEmployee(updatedPercentValues);
         const { totalPrice } = calculateTotalPrice(updatePriceValues);
         const { totalPercentSum } = calculateTotalsPercentEmployee(updatedPercentValues)
-        console.log(updateStatus)
+       
         //total team
         setTotalPercent(totalPercentSum);
         setTotalSpend(totalPrice)
@@ -170,7 +170,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const handleSubmit = async (values, item) => {
-        console.log(values)
+        
         const items = Object.keys(values).reduce((acc, key) => {
             const [ratingsId, employeesId, field] = key.split('-');
             const ratingsIdInt = parseInt(ratingsId, 10);
@@ -187,7 +187,7 @@ const FormEmployees: React.FC = () => {
             }
             return acc;
         }, []);
-        console.log(items)
+        
         const checkedItems = items.filter(item => item.checked && item.percent !== null && item.percent !== "");
         const uncheckedItems = items.filter(item => !item.checked);
 
@@ -200,7 +200,7 @@ const FormEmployees: React.FC = () => {
                 try {
                     // Realiza la solicitud DELETE
                     await apiRequest(`reviews_teams_employees/delete/${existingRecord.id}`, 'DELETE');
-                    console.log('Eliminando...', existingRecord.id);
+         
                 } catch (error) {
                     console.error('Error al eliminar datos:', error);
                 }
@@ -229,11 +229,11 @@ const FormEmployees: React.FC = () => {
                 if (existingRecord) {
                     // Si existe, realiza un PUT
                     const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                    console.log('Actualizando...', payload, response);
+                    
                 } else {
                     // Si no existe, realiza un POST
                     const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                    console.log('Guardando...', payload, response);
+                   
                 }
             } catch (error) {
                 console.error('Error al enviar datos:', error);
@@ -272,7 +272,7 @@ const FormEmployees: React.FC = () => {
                 // Si existe, realiza un PUT
                 //await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
                 showSuccessAlert("Your work has been saved");
-                console.log('Actualizando...', payload);
+                
 
             }
         } catch (error) {
@@ -364,7 +364,7 @@ const FormEmployees: React.FC = () => {
 
         // Encuentra la opción seleccionada en ratings
         const selectedRating = ratings.find(option => option.id == selectedId);
-        console.log(selectedRating)
+
         // Almacena el rating seleccionado
         setSelectedRatings(prevState => ({
             ...prevState,
