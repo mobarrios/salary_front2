@@ -17,6 +17,7 @@ import { formatPrice } from '@/functions/formatDate';
 import Breadcrumb from "@/components/BreadCrumb";
 import { item } from "@/types/item";
 import { Checkbox } from 'primereact/checkbox';
+import Swal from 'sweetalert2'
 
 const FormEmployees: React.FC = () => {
     // params
@@ -339,6 +340,7 @@ const FormEmployees: React.FC = () => {
         return result
     };
 
+
     const handleInputChange = (e, id) => {
         const newValue = e.target.value; // Obtén el nuevo valor del input
         const numericValue = newValue === '' ? 0 : Number(newValue); // Convierte a número o deja en 0 si está vacío
@@ -364,12 +366,15 @@ const FormEmployees: React.FC = () => {
         });
     };
 
-    const changeStatusByRatings = async (employeesId, status) => {
+    const changeStatusByRatings = async (employeesId, status, isDeleted = false) => {
 
         let ratingId = selectedRatings[employeesId]
 
         const payload = {
             status: status,
+            percent: status === 3 ? null : undefined, // Enviar percent como 0 solo si status es 3, de lo contrario, undefined
+            price: status === 3 ? null : undefined // Enviar percent como 0 solo si status es 3, de lo contrario, undefined
+
         };
 
         // Verificar si el registro ya existe
@@ -382,7 +387,7 @@ const FormEmployees: React.FC = () => {
                 const previousStatus = statusValues[employeesId];
 
                 const response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-
+                //console.log(response)
                 // Actualizar contadores según el nuevo estado
                 if (status === 1) { // Aprobado
                     if (previousStatus === 2) { // Cambiando de rechazado a aprobado
@@ -404,7 +409,51 @@ const FormEmployees: React.FC = () => {
                     ...prevState,
                     [employeesId]: status
                 }));
+            } else {
+                if (isDeleted) {
+                   
+                    const payload = {
+                        reviews_id: reviews_id,
+                        teams_id: team_id,
+                        ratings_id: ratingId,
+                        employees_id: employeesId,
+                        price: 0,
+                        percent: 0,
+                        status: 3
+                    };
+
+                    const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+                    console.log(response)
+                    setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
+                    setStatusValues(prevState => ({
+                        ...prevState,
+                        [employeesId]: status
+                    }));
+
+                }
             }
+
+            if (status === 3) {
+                setRangeValues(prevState => {
+                    const updatedRangeValues = {
+                        ...prevState,
+                        [employeesId]: 0 // Actualiza el valor específico del empleado
+                    };
+
+                    // Calcula el total de gastos usando el nuevo estado
+                    const totalSpend = calculateTotalSpend(updatedRangeValues);
+
+                    // Actualiza el porcentaje total
+                    const { totalPrice } = calculateTotalPrice(updatedRangeValues);
+                    setTotalPercent(totalPrice); // Actualiza el porcentaje total
+
+                    // Establece el nuevo total de gastos
+                    setTotalSpend(totalSpend.totalSpend);
+
+                    return updatedRangeValues; // Devuelve el nuevo estado
+                });
+            }
+
         } catch (error) {
             console.error('Error al enviar datos:', error);
         }
@@ -484,7 +533,6 @@ const FormEmployees: React.FC = () => {
     };
 
     const isDisabled = (employeeId) => {
-        console.log(statusValues[employeeId], isManager)
 
         if (isValidator) {
             return true
@@ -504,7 +552,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const checkAll = async (e) => {
-        console.log(e);
+
         setChecked(e.checked);
 
         let newTotalApproved = 0;
@@ -538,6 +586,42 @@ const FormEmployees: React.FC = () => {
         setTotalRejected(0);  // Actualiza el total de rechazados
     };
 
+    const changeStatus = (item, status) => {
+        console.log(item, status)
+    }
+
+    const confirmDelete = async () => {
+        const message = await Swal.fire({
+            title: "Are you sure to delete this record?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+        });
+        return message.isConfirmed;
+    };
+
+    const handleDelete = async (itemId, status, isDeleted) => { // Cambia aquí para usar nombres de parámetros
+        try {
+            const confirmed = await confirmDelete();
+            if (confirmed) {
+                const resp = await changeStatusByRatings(itemId, status, isDeleted); // Asegúrate de definir deleteRecord
+                if (resp.ok) {
+                    // onDelete(); // Si tienes una función para manejar la eliminación, descomenta esto
+                    Swal.fire({
+                        title: "Delete!",
+                        icon: "success"
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("error ===> ", error);
+        }
+    };
+
+    const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
+    console.log('countNotStatusThree', countNotStatusThree)
 
     return (
         <div className="row">
@@ -590,91 +674,95 @@ const FormEmployees: React.FC = () => {
                                     <th style={{ width: '15%' }}>Ratings</th>
                                     <th>Percent</th>
                                     <th></th>
-                                    <th>
-                                    </th>
+                                    <th></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {
-                                    teamEmployees && teamEmployees.map((item) => (
-                                        <tr key={item.id}>
-                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
-                                                {item.name} {item.last_name}
-                                            </td>
-                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
-                                                {item.actual_external_data.annual_salary || 0}
-                                            </td>
-                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {rangeValues[item.id] || 0} %
-                                            </td>
-                                            <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                $ {formatPrice(calculatePriceByEmployee(item.id))}
-                                            </td>
-                                            <td>
-                                                <select
-                                                    disabled={
-                                                        isDisabled(item.id)
-                                                    }
-                                                    required
-                                                    className="form-control"
-                                                    style={{ width: '100%' }}
-                                                    value={selectedRatings[item.id] || ''}
-                                                    onChange={(e) => handleSelectChange(item.id, e)}
-
-                                                >
-                                                    <option value="" label="Select an option" />
-                                                    {ratings && ratings.map((option) => (
-                                                        <option key={option.id} value={option.id} label={option.name} />
-                                                    ))}
-                                                </select>
-                                                {errors[item.id]?.rating && <div className="text-danger">{errors[item.id].rating}</div>}
-
-                                            </td>
-                                            <td>
-                                                <input
-                                                    required
-                                                    min={0}
-                                                    disabled={isDisabled(item.id)}
-                                                    // disabled={
-                                                    //     isValidator ||
-                                                    //     (isAdmin ? false : (isManager && reviewTeam.status === 1 ? false : true))
-                                                    // }
-                                                    type='number'
-                                                    step={1}
-                                                    className={getInputClassName(item.id)}
-                                                    style={{ width: '150px', margin: '0 5px' }}
-                                                    value={rangeValues[item.id]}
-                                                    placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`}
-                                                    onChange={(e) => handleInputChange(e, item.id)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleSubmit(item.id); // Llama a handleSubmit con el id del empleado
-                                                        }
-                                                    }}
-                                                />
-                                                {errors[item.id]?.range && <div className="text-danger">{errors[item.id].range}</div>}
-                                            </td>
-                                            <td>
-                                                {findStatusByRatings(item.id)}
-                                            </td>
-                                            {(isValidator || isAdmin) && (
-                                                <td>
-                                                    <>
-                                                        <a
-                                                            className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
-                                                            onClick={(e) => { changeStatusByRatings(item.id, 1); }}>
-                                                            <i className={`bi bi-hand-thumbs-up ${statusValues[item.id] == 1 ? 'text-success' : ''}`}></i>
-                                                        </a>
-                                                        <a
-                                                            className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
-                                                            onClick={(e) => { changeStatusByRatings(item.id, 2); }}>
-                                                            <i className={`bi bi-hand-thumbs-down ${statusValues[item.id] == 2 ? 'text-danger' : ''}`}></i>
-                                                        </a>
-                                                    </>
+                                    teamEmployees && teamEmployees
+                                        .filter(item => statusValues[item.id] !== 3) // Filtrar empleados
+                                        .map((item) => (
+                                            <tr key={item.id}>
+                                                <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
+                                                    {item.name} {item.last_name}
                                                 </td>
-                                            )}
-                                        </tr>
-                                    ))}
+                                                <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
+                                                    {item.actual_external_data.annual_salary || 0}
+                                                </td>
+                                                <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {rangeValues[item.id] || 0} %
+                                                </td>
+                                                <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    $ {formatPrice(calculatePriceByEmployee(item.id))}
+                                                </td>
+                                                <td>
+                                                    <select
+                                                        disabled={isDisabled(item.id)}
+                                                        required
+                                                        className="form-control"
+                                                        style={{ width: '100%' }}
+                                                        value={selectedRatings[item.id] || ''}
+                                                        onChange={(e) => handleSelectChange(item.id, e)}
+                                                    >
+                                                        <option value="" label="Select an option" />
+                                                        {ratings && ratings.map((option) => (
+                                                            <option key={option.id} value={option.id} label={option.name} />
+                                                        ))}
+                                                    </select>
+                                                    {errors[item.id]?.rating && <div className="text-danger">{errors[item.id].rating}</div>}
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        required
+                                                        min={0}
+                                                        disabled={isDisabled(item.id)}
+                                                        type='number'
+                                                        step={1}
+                                                        className={getInputClassName(item.id)}
+                                                        style={{ width: '150px', margin: '0 5px' }}
+                                                        value={rangeValues[item.id]}
+                                                        placeholder={`min ${ratingRanges[item.id]?.min || 0} - max ${ratingRanges[item.id]?.max || 0}`}
+                                                        onChange={(e) => handleInputChange(e, item.id)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleSubmit(item.id); // Llama a handleSubmit con el id del empleado
+                                                            }
+                                                        }}
+                                                    />
+                                                    {errors[item.id]?.range && <div className="text-danger">{errors[item.id].range}</div>}
+                                                </td>
+                                                <td>
+                                                    {findStatusByRatings(item.id)}
+                                                </td>
+                                                {(isValidator || isAdmin) && (
+                                                    <td>
+                                                        <>
+                                                            <a
+                                                                className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
+                                                                onClick={(e) => { changeStatusByRatings(item.id, 1); }}>
+                                                                <i className={`bi bi-hand-thumbs-up ${statusValues[item.id] == 1 ? 'text-success' : ''}`}></i>
+                                                            </a>
+                                                            <a
+                                                                className={`btn btn-light btn-xs m-1 ${isInputDisabled() ? 'disabled' : ''}`}
+                                                                onClick={(e) => { changeStatusByRatings(item.id, 2); }}>
+                                                                <i className={`bi bi-hand-thumbs-down ${statusValues[item.id] == 2 ? 'text-danger' : ''}`}></i>
+                                                            </a>
+                                                        </>
+                                                    </td>
+                                                )}
+
+                                                {(isAdmin) && (
+                                                    <td>
+                                                        <a
+                                                            className="btn btn-light btn-xs m-1"
+                                                            onClick={() => handleDelete(item.id, 3, true)}>
+                                                            <i className={`bi bi-x-circle text-danger`}></i>
+                                                        </a>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        ))}
                             </tbody>
                         </table>
                     </div>
@@ -688,8 +776,8 @@ const FormEmployees: React.FC = () => {
                             <>
                                 <Checkbox
                                     onChange={e => checkAll(e)}
-                                    checked={(teamEmployees?.length === totalApproved || reviewTeam?.status === 3) ? true : checked}
-                                    disabled={teamEmployees?.length === totalApproved || reviewTeam?.status === 3}
+                                    checked={(countNotStatusThree === totalApproved || reviewTeam?.status === 3) ? true : checked}
+                                    disabled={countNotStatusThree === totalApproved || reviewTeam?.status === 3}
                                 />
                                 <span> Approve all</span>
                             </>
@@ -700,7 +788,7 @@ const FormEmployees: React.FC = () => {
                         canSendToApprover(roles, reviewTeam) &&
                         (<a
                             onClick={() => changeStatusByReview(2)}
-                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === countValues ? '' : 'disabled'} `}
+                            className={`btn btn-primary mt-3 float-end ${countNotStatusThree === countValues ? '' : 'disabled'} `}
                         >
                             <i className="bi bi-save"></i> Send to approver
                         </a>)
@@ -709,7 +797,7 @@ const FormEmployees: React.FC = () => {
                     {
                         canSendToDone(roles, reviewTeam) && (<a
                             onClick={() => changeStatusByReview(3)}
-                            className={`btn btn-primary mt-3 float-end ${teamEmployees?.length === totalApproved ? '' : 'disabled'}  `}
+                            className={`btn btn-primary mt-3 float-end ${countNotStatusThree === totalApproved ? '' : 'disabled'}  `}
                         >
                             <i className="bi bi-save"></i> Submit
                         </a>)
