@@ -18,7 +18,7 @@ const FormRol: React.FC = ({id}) => {
 
     const load = async () => {
         try {
-            const rolesData = await fetchData(session?.user.token, 'GET', `roles/all/?skip=0&limit=10`);
+            const rolesData = await fetchData(session?.user.token, 'GET', `roles/all/?skip=0&limit=100`);
             setOptions(rolesData.data)
 
             const usersData = await fetchData(session?.user.token, 'GET', `users/${id}`);

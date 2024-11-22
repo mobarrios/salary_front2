@@ -11,7 +11,7 @@ export const calculateTotalRemaining = (totalPrice, totalSpend) => {
 export const formatSalary = (salary) => {
 
     //let salary = employeesSalary.actual_external_data.annual_salary;
-    console.log(salary)
+   
     const montoSinFormato = salary ? salary.replace(/\$|,/g, '') : 0;
     const montoNumero = parseFloat(montoSinFormato);
     if (isNaN(montoNumero)) {
@@ -42,7 +42,7 @@ export const calculatePorcent = (teamEmployees, value, key) => {
     }
     */
     const result = (montoNumero * value) / 100;
-    console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
+    //console.log(`Calculando porcentaje para ${key}:`, result); // Agrega este log
 
     //const result = (10000 * value) / 100;
     return result;

@@ -43,7 +43,6 @@ useEffect(() => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      console.log('File uploaded successfully. ', data);
       // setStatus(data.message)
       showSuccessAlert(data.message)
     } catch (error) {

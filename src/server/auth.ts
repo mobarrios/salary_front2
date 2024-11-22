@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           const data = await res.json();
-          console.log('data', data)
+          
           if (res.ok && data) {
             const user = {
               token: data.access_token,
@@ -76,7 +76,6 @@ export const authOptions: NextAuthOptions = {
               id: data.user_data.id,
               roles: data.user_roles
             }
-            console.log('User login', user)
 
             return user;
           } else {

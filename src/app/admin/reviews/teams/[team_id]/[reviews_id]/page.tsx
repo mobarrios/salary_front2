@@ -129,7 +129,7 @@ const FormEmployees: React.FC = () => {
             setRatings(ratingsResponse.data);
 
             //all review teams employees
-            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=100`);
+            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
 
@@ -260,7 +260,7 @@ const FormEmployees: React.FC = () => {
 
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-
+                
                 setRatingsTeamEmployees(prevState =>
                     prevState.map(item =>
                         item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -268,7 +268,7 @@ const FormEmployees: React.FC = () => {
                 );
             } else {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-
+                
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
 
@@ -323,7 +323,7 @@ const FormEmployees: React.FC = () => {
     const calculatePrice = (employeeId, percent) => {
         const salary = salaryValues[employeeId];
         const numericPercent = percent === '' ? 0 : parseFloat(percent);
-
+        
         if (isNaN(salary) || isNaN(numericPercent)) {
             console.error(`Invalid salary or percent for employeeId ${employeeId}: salary=${salary}, percent=${numericPercent}`);
             return 0; // O maneja el error de otra manera
@@ -423,7 +423,7 @@ const FormEmployees: React.FC = () => {
                     };
 
                     const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                    console.log(response)
+                  
                     setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
                     setStatusValues(prevState => ({
                         ...prevState,
@@ -566,7 +566,7 @@ const FormEmployees: React.FC = () => {
 
             if (item.status !== 1) {
                 const response = await apiRequest(`reviews_teams_employees/edit/${item.id}`, 'PUT', { status: 1 });
-                console.log(response)
+               
             }
             //console.log(previousStatus);
 
@@ -619,10 +619,9 @@ const FormEmployees: React.FC = () => {
             console.log("error ===> ", error);
         }
     };
-
+   
     const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
-    console.log('countNotStatusThree', countNotStatusThree)
-
+   
     return (
         <div className="row">
             {loading ? (

@@ -51,7 +51,7 @@ const UserTeams: React.FC = ({ id }) => {
     useEffect(() => {
         const fetchDataAndUpdateItem = async () => {
             setLoading(true);
-            const jsonData = await fetchData(session?.user.token, 'GET', `users/all/?skip=0&limit=100`);
+            const jsonData = await fetchData(session?.user.token, 'GET', `users/all/?skip=0&limit=1000`);
             const data = jsonData.data;
             const selectOptions = data.map(user => ({
                 value: user.id,
@@ -59,7 +59,7 @@ const UserTeams: React.FC = ({ id }) => {
             }));
             setOptions(selectOptions);
 
-            const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=100`);
+            const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=1000`);
             const usersTeams = usersTeamsResponse.data.filter(item => item.teams_id === parseInt(id));
             setUsersTeams(usersTeams);
             const initialUserIds = usersTeams.map(userTeam => userTeam.users_id);

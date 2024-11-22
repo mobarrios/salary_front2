@@ -36,12 +36,12 @@ export default function TeamsEmployees({ searchParams }: Params) {
 
   const roles = session?.user.roles.map(role => role.name)
   const isAdmin = roles?.some(role => ['manager'].includes(role))
-  console.log(isAdmin)
+ 
 
   const load = async () => {
     try {
       setLoading(true)
-      const teamsEmployeesData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=100`);
+      const teamsEmployeesData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
       if (teamsEmployeesData) {
         // Filtrar los equipos de empleados por teams_id
         const filteredTeamsEmployees = teamsEmployeesData.data.filter(team => team.teams_id == teams_id);
@@ -50,7 +50,7 @@ export default function TeamsEmployees({ searchParams }: Params) {
         const employeeIds = filteredTeamsEmployees.map(team => team.employees_id);
 
         // Obtener los datos de empleados
-        const employeesDataResponse = await fetchData(session?.user.token, 'GET', 'employees/all/?skip=0&limit=100');
+        const employeesDataResponse = await fetchData(session?.user.token, 'GET', 'employees/all/?skip=0&limit=1000');
       
         // Filtrar employeesData para que solo incluya a los empleados cuyos id están en employeeIds
         const filteredEmployeesData = employeesDataResponse.data.filter(employee => employeeIds.includes(employee.id));
@@ -87,12 +87,11 @@ export default function TeamsEmployees({ searchParams }: Params) {
   };
 
   const onLimitChange = (newLimit) => {
-    console.log('llega',newLimit)
+   
     setLimit(newLimit); // Actualiza el límite
     setPage(1); // Reinicia a la primera página si cambias el límite
   };
 
-  console.log(roles)
   return (
     <div>
       <Breadcrumb items={bc} />

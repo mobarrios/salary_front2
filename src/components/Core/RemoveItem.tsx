@@ -29,7 +29,7 @@ export default function RemoveItem({ id, url,onDelete }: { id: number, url: stri
                 "Authorization": `Bearer ${session?.user.token}`
             }
         });
-        console.log(resp)
+        //console.log(resp)
         return resp;
     };
 

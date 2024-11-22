@@ -18,10 +18,10 @@ export default async function Employees({ searchParams }: Params) {
   const { page, search, limit, skip } = usePaginate(searchParams)
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
-  console.log(res)
+
   const roles = await getUserRoles();
   const isAdmin = roles.some(role => ['superuser', 'administrator'].includes(role))
-  console.log(roles)
+  
   if (!res?.status) {
     throw new Error('Failed to fetch data');
   }
@@ -32,14 +32,12 @@ export default async function Employees({ searchParams }: Params) {
 
   if (!isAdmin) {
     const loggedInUserId = await getUserId();
-    console.log('loggedInUserId', loggedInUserId);
 
     const teamsUsers = await apiRequest(`teams_users/all/?skip=${skip}&limit=${limit}`, 'GET');
     const teamsData = await teamsUsers.json();
 
     const filteredTeams = teamsData.data.filter(team => team.users_id === loggedInUserId);
-    console.log('filteredTeams', filteredTeams);
-
+  
     // Filtrar los resultados según los equipos que tiene el usuario logueado
     results = results.filter(result =>
       filteredTeams.some(team => team.teams_id === result.id)

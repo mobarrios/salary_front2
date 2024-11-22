@@ -23,7 +23,7 @@ const FormEmployees: React.FC = () => {
   const load = async () => {
     try {
       const jsonData = await fetchData(session?.user.token, 'GET', `employees/${id}`);
-      console.log(jsonData)
+    
       setOptions(jsonData.external_data);
       setActual(jsonData.actual_external_data);
       setFormData(jsonData.actual_external_data); // Inicializa el formulario con los datos actuales
@@ -48,7 +48,7 @@ const FormEmployees: React.FC = () => {
     //console.log(formData, actual)
     try {
       const response = await apiRequest(`external_data/edit/${actual.id}`, 'PUT', formData);
-      console.log(response)
+     
       router.refresh();
       showSuccessAlert("Your work has been saved");
     } catch (error) {

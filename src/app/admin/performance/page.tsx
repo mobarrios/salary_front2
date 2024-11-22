@@ -21,7 +21,7 @@ export default async function Employees({ searchParams }: Params) {
     redirect('/admin/home');
   }
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=100`, 'GET');
+  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=1000`, 'GET');
 
   if (!res?.status) {
     throw new Error('Failed to fetch data');

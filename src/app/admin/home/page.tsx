@@ -16,16 +16,14 @@ const Home = () => {
     try {
 
       // all teams
-      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
+      const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
       const userIdToFilter = session?.user.id;
 
       // todos los teams que tienen al usuario logeado
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.id === userIdToFilter)
       );
-      console.log(teamUserFilter)
       const teamIds = teamUserFilter.map(team => team.id);
-      console.log(teamIds)
       const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
       const filteredReviewTeams = reviewTeamsResponse.data
@@ -57,7 +55,7 @@ const Home = () => {
       userData();
     }
   }, [session?.user.token]);
-  console.log(teamUser)
+ 
   return (
     <div>
       <Breadcrumb />
