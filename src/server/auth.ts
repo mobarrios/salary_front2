@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
         formData.append('password', password);
 
         try {
-          const res = await fetch(process.env.NEXT_PUBLIC_SALARY + "/token", {
+          const res = await fetch(process.env.API_SALARY + "/token", {
             method: "POST",
             body: formData,
           });
