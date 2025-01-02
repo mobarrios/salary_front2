@@ -122,7 +122,9 @@ export default function SignIn({ searchParams }: PageProps) {
               <div>or continue with</div>
               <div>
                 <button className="m-2 btn btn-danger btn-md"><i className="bi bi-google"></i></button>
-                <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button>
+                {/* <button className="m-2 btn btn-success btn-md"><i className="bi bi-microsoft"></i></button> */}
+                <button className="m-2 btn btn-success btn-md"  onClick={() => signIn("azure-ad")}>Iniciar sesión con Microsoft</button>
+
               </div>
             </div>
             {searchParams.error && (
