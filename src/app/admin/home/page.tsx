@@ -9,7 +9,10 @@ import { formatDate } from "@/functions/formatDate";
 
 const Home = () => {
   const { data: session, status } = useSession()
-  const isApprover = session?.user.roles.some(role => role.name === 'approver');
+  const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
+  const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
+  const isDefault = session?.user?.roles?.some(role => role.name === 'default');
+
   const [teamUser, setTeamUser] = useState({});
 
   const userData = async () => {
@@ -59,7 +62,7 @@ const Home = () => {
   return (
     <div>
       <Breadcrumb />
-      <Title>Welcome  {session?.user.name} ! </Title>
+      <Title>Welcome  {session?.user.email} ! </Title>
       { isApprover ? <h5>Below you will find all your pending tasks: </h5> : '' }
       <div className="row m-2">
         <div className='col-12'>

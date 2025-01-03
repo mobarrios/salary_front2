@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { withAuth } from "next-auth/middleware";
+
+export default withAuth({
+  pages: {
+    signIn: "/auth/signin", // Página a la que redirigir cuando la sesión no sea válida
+  },
+});
+
 
 // export async function middleware(req: NextRequest) {
 //     const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -33,57 +41,57 @@ import { getToken } from 'next-auth/jwt';
 //     }
 // }
 
-export async function middleware(req: NextRequest) {
-    // Obtiene la sesión actual del usuario
-    const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+// export async function middleware(req: NextRequest) {
+//     // Obtiene la sesión actual del usuario
+//     const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!session) {
-        // Redirige al usuario a la página de inicio de sesión si no está autenticado
-        const url = req.nextUrl.clone();
-        url.pathname = '/auth/signin';
-        return NextResponse.redirect(url);
+//     if (!session) {
+//         // Redirige al usuario a la página de inicio de sesión si no está autenticado
+//         const url = req.nextUrl.clone();
+//         url.pathname = '/auth/signin';
+//         return NextResponse.redirect(url);
 
-    } else {
-        try {
-            // Opciones para la solicitud al backend
-            const requestOptions = {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session.accessToken}`, // Token obtenido de Azure
-                },
-            };
+//     } else {
+//         try {
+//             // Opciones para la solicitud al backend
+//             const requestOptions = {
+//                 method: 'GET',
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     "Authorization": `Bearer ${session.accessToken}`, // Token obtenido de Azure
+//                 },
+//             };
 
-            // Validar el token con el backend
-            const response = await fetch(`${process.env.API_SALARY}/token/validate`, requestOptions);
+//             // Validar el token con el backend
+//             const response = await fetch(`${process.env.API_SALARY}/token/validate`, requestOptions);
 
-            if (response.status === 401) {
-                // Si el token no es válido, redirige al inicio de sesión
-                const url = req.nextUrl.clone();
-                url.pathname = '/auth/signin';
-                return NextResponse.redirect(url);
-            }
+//             if (response.status === 401) {
+//                 // Si el token no es válido, redirige al inicio de sesión
+//                 const url = req.nextUrl.clone();
+//                 url.pathname = '/auth/signin';
+//                 return NextResponse.redirect(url);
+//             }
 
-            if (!response.ok) {
-                // Manejo de errores si el backend falla
-                console.error('Error validando el token en el backend:', await response.text());
-                const url = req.nextUrl.clone();
-                url.pathname = '/error';
-                return NextResponse.redirect(url);
-            }
+//             if (!response.ok) {
+//                 // Manejo de errores si el backend falla
+//                 console.error('Error validando el token en el backend:', await response.text());
+//                 const url = req.nextUrl.clone();
+//                 url.pathname = '/error';
+//                 return NextResponse.redirect(url);
+//             }
 
-            // Si el token es válido, permite continuar
-            return NextResponse.next();
+//             // Si el token es válido, permite continuar
+//             return NextResponse.next();
 
-        } catch (error) {
-            console.error('Error durante la validación del token:', error);
-            // Redirige a una página de error en caso de fallo inesperado
-            const url = req.nextUrl.clone();
-            url.pathname = '/error';
-            return NextResponse.redirect(url);
-        }
-    }
-}
+//         } catch (error) {
+//             console.error('Error durante la validación del token:', error);
+//             // Redirige a una página de error en caso de fallo inesperado
+//             const url = req.nextUrl.clone();
+//             url.pathname = '/error';
+//             return NextResponse.redirect(url);
+//         }
+//     }
+// }
 
 
 // export async function middleware(req: NextRequest) {
