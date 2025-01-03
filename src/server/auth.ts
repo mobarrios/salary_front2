@@ -181,13 +181,13 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.AZURE_AD_CLIENT_ID,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
       tenantId: process.env.AZURE_AD_TENANT_ID,
-      authorization: {
-        params: {
-          // // Esta URI debe coincidir con la registrada en Azure Portal
-          // redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/azure-ad`,
-        redirect_uri: `${process.env.AZURE_AD_REDIRECT_URI}`,
-        },
-      },
+      // authorization: {
+      //   params: {
+      //     // // Esta URI debe coincidir con la registrada en Azure Portal
+      //     // redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/azure-ad`,
+      //   redirect_uri: `${process.env.AZURE_AD_REDIRECT_URI}`,
+      //   },
+      // },
 
     }),
   ],
