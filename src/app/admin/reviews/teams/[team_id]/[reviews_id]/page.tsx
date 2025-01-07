@@ -279,7 +279,7 @@ const FormEmployees: React.FC = () => {
         setErrors('')
     };
 
-    const handleSelectChange = (employeeId, event) => {
+    const handleSelectChange = async (employeeId, event) => {
         const selectedId = event.target.value;
 
         // Encuentra la opción seleccionada en ratings
@@ -307,6 +307,51 @@ const FormEmployees: React.FC = () => {
             }));
 
         }
+
+        const payload = {
+            reviews_id: reviews_id,
+            teams_id: team_id,
+            ratings_id: selectedId,
+            employees_id: employeeId,
+            price: 0,
+            percent: 0,
+        };
+
+        // Verificar si el registro ya existe
+        /*
+        const existingRecord = ratingsTeamEmployees.find(r =>
+            r.ratings_id === ratingId && r.employees_id === employeesId
+        );
+        */
+
+        // solo validar el employees
+        const existingRecord = ratingsTeamEmployees.find(r =>
+            r.employees_id === employeeId
+        );
+
+        try {
+            let response;
+
+            if (existingRecord) {
+                response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+                
+                setRatingsTeamEmployees(prevState =>
+                    prevState.map(item =>
+                        item.id === existingRecord.id ? { ...item, ...payload } : item
+                    )
+                );
+            } else {
+                response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+                
+                setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
+            }
+
+        } catch (error) {
+            console.error('Error al enviar datos:', error);
+        }
+        showSuccessAlert("Your work has been saved");
+
+        
     };
 
     const calculateTotalSpend = (updatedRangeValues) => {
@@ -525,15 +570,46 @@ const FormEmployees: React.FC = () => {
         if (isAdmin) {
             return false;
         }
-        // Deshabilitar para Validator si el status es 3
-        if (isValidator && reviewTeam.status === 3) {
+
+        // si es true se deshabilita
+        if(isManager){
             return true;
         }
-        return isManager; // Deshabilita si es Manager
+
+        // Deshabilitar para Validator si el status es 3
+        if (isValidator && reviewTeam?.status === 2) {
+            return false;
+        }
+
+        return true;
     };
+
+    const isDisabledAdmin = (employeeId) => {
+       
+        // si es true se deshabilita
+        if(isValidator){
+            return true
+        }
+
+        if (isManager) {
+            return true
+        }
+
+        if (isAdmin) {
+            return false;
+        }
+
+        if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
+            return false;
+        }
+
+        return true;
+
+    }
 
     const isDisabled = (employeeId) => {
 
+        // si es true se deshabilita
         if (isValidator) {
             return true
         }
@@ -551,6 +627,19 @@ const FormEmployees: React.FC = () => {
 
     };
 
+    const checkAllValidation = () => {
+       
+        if (countNotStatusThree === totalApproved) {
+            return true
+        }
+
+        if(reviewTeam?.status === 3){
+            return true
+        }
+
+
+    }
+
     const checkAll = async (e) => {
 
         setChecked(e.checked);
@@ -565,7 +654,7 @@ const FormEmployees: React.FC = () => {
             const previousStatus = statusValues[employeesId];
 
             if (item.status !== 1) {
-                const response = await apiRequest(`reviews_teams_employees/edit/${item.id}`, 'PUT', { status: 1 });
+                await apiRequest(`reviews_teams_employees/edit/${item.id}`, 'PUT', { status: 1 });
                
             }
             //console.log(previousStatus);
@@ -697,7 +786,7 @@ const FormEmployees: React.FC = () => {
                                                 </td>
                                                 <td>
                                                     <select
-                                                        disabled={isDisabled(item.id)}
+                                                        disabled={isDisabledAdmin(item.id)}
                                                         required
                                                         className="form-control"
                                                         style={{ width: '100%' }}
@@ -771,12 +860,12 @@ const FormEmployees: React.FC = () => {
             <div className="col-12">
                 <div className="bg-white">
                     {
-                        isValidator && (
+                        isValidator && reviewTeam?.status === 2 && (
                             <>
                                 <Checkbox
                                     onChange={e => checkAll(e)}
-                                    checked={(countNotStatusThree === totalApproved || reviewTeam?.status === 3) ? true : checked}
-                                    disabled={countNotStatusThree === totalApproved || reviewTeam?.status === 3}
+                                    checked={countNotStatusThree === totalApproved ? true : checked}
+                                    disabled={checkAllValidation()}
                                 />
                                 <span> Approve all</span>
                             </>
