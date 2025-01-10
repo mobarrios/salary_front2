@@ -99,7 +99,7 @@ export const authOptions: NextAuthOptions = {
           {
               const email = profile?.email;
           
-              if(email == null ){
+              if(email == 'undefined' ){
                 const email = profile?.preferred_username;
               }
               
