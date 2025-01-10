@@ -38,54 +38,99 @@ export const authOptions: NextAuthOptions = {
     // },
 
 
-    async jwt({ token, user, account , profile}) {
-      // user && (token.user = user);
-      // return token;
-      if (account) {
-        // console.log("account", account);
-      // Si el usuario se autentica con Azure
-          if (account.provider === "azure-ad") {
-                // Obtener el email desde el perfil de Azure
-                const email = profile?.email;
+    // async jwt({ token, user, account , profile}) {
+    //   console.log('profile'+profile)
+    //   // user && (token.user = user);
+    //   // return token;
+    //   if (account) {
+    //     // console.log("account", account);
+    //   // Si el usuario se autentica con Azure
+    //       if (account.provider === "azure-ad") {
+    //             // Obtener el email desde el perfil de Azure
+    //             const email = profile?.email;
                 
-                if (!email) {
-                    console.error("El usuario no tiene un email válido.");
-                    return false;
-                }
-                  // Registrar el usuario en el backend si no existe
-                  try {    
-                    const res = await fetch( process.env.API_SALARY +"/users/register",{
-                      method: "POST",
-                      headers: { "Content-Type": "application/json"},
-                      body: JSON.stringify({ email : email }),
-                  });
+    //             if (!email) {
+    //                 console.error("El usuario no tiene un email válido.");
+    //                 return false;
+    //             }
+    //               // Registrar el usuario en el backend si no existe
+    //               try {    
+    //                 const res = await fetch( process.env.API_SALARY +"/users/register",{
+    //                   method: "POST",
+    //                   headers: { "Content-Type": "application/json"},
+    //                   body: JSON.stringify({ email : email }),
+    //               });
 
-                  } catch (error) {
-                    console.error("Error registrando el usuario en el backend:", error);
-                    return false;
-                }
+    //               } catch (error) {
+    //                 console.error("Error registrando el usuario en el backend:", error);
+    //                 return false;
+    //             }
   
-            token.accessToken = account.access_token;
-            token.id = account.id_token; // Si necesitas el ID token  
-            token.user = profile;
+    //         token.accessToken = account.access_token;
+    //         token.id = account.id_token; // Si necesitas el ID token  
+    //         token.user = profile;
+    //       }
+
+    //       if (account.provider === "credentials") {
+    //             token.user = user;
+    //             token.accessToken = user.token;
+    //       } 
+    //   }
+
+    //   // Si el usuario se autentica con Credentials
+    //   // if (user) {
+    //   //   console.log("user", user);
+    //   //   token.user = user;
+    //   //   token.accessToken = user.token;
+    //   // }
+
+    // return token;
+
+    // },
+
+    async jwt({ token, user, account, profile }) {
+      if (account) {
+        if (account.provider === "azure-ad") {
+          const email = profile?.email;
+
+          if (!email) {
+            console.error("El usuario no tiene un email válido.");
+            return token; // Retorna el token existente
           }
 
-          if (account.provider === "credentials") {
-                token.user = user;
-                token.accessToken = user.token;
-          } 
+          try {
+            const res = await fetch(process.env.API_SALARY + "/users/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+
+            if (!res.ok) {
+              console.error("Error al registrar el usuario en el backend:", await res.text());
+            }
+          } catch (error) {
+            console.error("Error registrando el usuario en el backend:", error);
+          }
+
+          token.accessToken = account.access_token;
+          token.id = account.id_token; // Si necesitas el ID token
+          token.user = { email }; // Asegúrate de usar un objeto válido
+        }
+
+        if (account.provider === "credentials") {
+          token.user = user;
+          token.accessToken = user.token;
+        }
       }
 
-      // Si el usuario se autentica con Credentials
-      // if (user) {
-      //   console.log("user", user);
-      //   token.user = user;
-      //   token.accessToken = user.token;
-      // }
-
-    return token;
-
+      return {
+        ...token,
+        user: token.user || {},
+        accessToken: token.accessToken || null,
+        id: token.id || null,
+      };
     },
+
     async session({ session, token, user }) {
 
     if (token) {
@@ -181,13 +226,13 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.AZURE_AD_CLIENT_ID,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
       tenantId: process.env.AZURE_AD_TENANT_ID,
-      // authorization: {
-      //   params: {
-      //     // // Esta URI debe coincidir con la registrada en Azure Portal
-      //     // redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/azure-ad`,
-      //   redirect_uri: `${process.env.AZURE_AD_REDIRECT_URI}`,
-      //   },
-      // },
+      authorization: {
+        params: {
+          // // Esta URI debe coincidir con la registrada en Azure Portal
+          // redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/azure-ad`,
+        redirect_uri: `${process.env.AZURE_AD_REDIRECT_URI}`,
+        },
+      },
 
     }),
   ],
