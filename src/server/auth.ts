@@ -228,6 +228,7 @@ export const authOptions: NextAuthOptions = {
       tenantId: process.env.AZURE_AD_TENANT_ID,
       authorization: {
         params: {
+          scope: "openid profile email offline_access Users.Read" ,
           // // Esta URI debe coincidir con la registrada en Azure Portal
           // redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/azure-ad`,
         redirect_uri: `${process.env.AZURE_AD_REDIRECT_URI}`,
