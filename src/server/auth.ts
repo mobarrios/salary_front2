@@ -150,6 +150,7 @@ export const authOptions: NextAuthOptions = {
           id: token.user?.id ,
           roles: token.user?.roles ,
           token: token.accessToken , // Token de Credentials (si existe)
+          email: token.user?.email
       };
       } 
 
