@@ -97,12 +97,8 @@ export const authOptions: NextAuthOptions = {
        
           if (account.provider === "azure-ad") 
           {
-              const email = profile?.email;
-          
-              if(email == 'undefined' ){
-                const email = profile?.preferred_username;
-              }
-              
+            const email = profile?.preferred_username;
+        
             if (!email) {
               console.error("El usuario no tiene un email válido.");
               return token; // Retorna el token existente
