@@ -17,8 +17,9 @@ const NavbarComp = () => {
     await signOut({ callbackUrl: '/' });
   }
 
-  const isSuper = session?.user.roles.some(role => role.name === 'superuser');
-  const isAdmin = session?.user.roles.some(role => role.name === 'administrator');
+  const isSuper = session?.user?.roles?.some(role => role.name === 'superuser');
+  const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
+  const isDefault = session?.user?.roles?.some(role => role.name === 'default');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -52,7 +53,7 @@ const NavbarComp = () => {
               ) : (
                 <Nav.Link href="/admin/teams" active={activePath === '/admin/teams'}>People</Nav.Link>
               )}
-
+              
               <Nav.Link href="/admin/reviews" active={activePath === '/admin/reviews'}>Review Cycle</Nav.Link>
               {(isSuper || isAdmin) && (
                 <Nav.Link href="/admin/performance" active={activePath === '/admin/performance'}>Performance</Nav.Link>

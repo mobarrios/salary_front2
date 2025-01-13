@@ -16,6 +16,9 @@ export default async function Employees({ searchParams }: Params) {
   const session = await getServerSession(authOptions)
 
   const isSuper = session?.user.roles.some(role => role.name === 'superuser');
+  const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
+  const isDefault = session?.user?.roles?.some(role => role.name === 'default');
+  
   if(!isSuper){
     redirect('/admin/home')
   }

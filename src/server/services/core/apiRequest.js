@@ -4,7 +4,8 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 
 export const apiRequest = async (url, method, data) => {
-   
+    console.log("apiRequest");
+
     const session = await getServerSession(authOptions)
     const jwt = session.user.token;
 
