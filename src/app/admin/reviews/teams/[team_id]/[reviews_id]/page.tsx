@@ -3,19 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from 'next/navigation';
 import { useSession } from "next-auth/react";
-import { useRouter } from 'next/navigation';
 import { fetchData } from '@/server/services/core/fetchData'
 import { apiRequest } from "@/server/services/core/apiRequest";
-import RatingRow from "@/components/Rating/RatingRow";
 import { calculateTotalRemaining, calculatePorcent, calculateTotalPrice, calculateTotalsByEmployee, calculateTotalsPercentEmployee, formatSalary } from '@/functions/formEmployeeHandlers';
-import { Formik, Form } from 'formik';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
-import Modal from 'react-bootstrap/Modal';
-import { Button } from "react-bootstrap";
 import { Title } from "@/components/Title";
 import { formatPrice } from '@/functions/formatDate';
 import Breadcrumb from "@/components/BreadCrumb";
-import { item } from "@/types/item";
 import { Checkbox } from 'primereact/checkbox';
 import Swal from 'sweetalert2'
 
@@ -47,17 +41,11 @@ const FormEmployees: React.FC = () => {
     const [totalApproved, setTotalApprovede] = useState(0);
     const [totalRejected, setTotalRejected] = useState(0);
 
-    //const employees-ratings
-    //const [totalPriceByEmployee, setTotalPriceByEmployee] = useState({});
-    //const [totalPercentByEmployee, setTotalPercentByEmployee] = useState({});
-
     // ratings
     const [selectedRatings, setSelectedRatings] = useState({});
     const [ratingRanges, setRatingRanges] = useState({}); // Estado para almacenar min y max
 
     const [approvedIds, setApprovedIds] = useState([]);
-    const [errorMax, setErrorMax] = useState();
-    const [errorMin, setErrorMin] = useState();
     const [checked, setChecked] = useState();
 
     const isValidator = session?.user.roles.some(role => role.name === 'approver');
@@ -243,13 +231,6 @@ const FormEmployees: React.FC = () => {
             percent: percent,
         };
 
-        // Verificar si el registro ya existe
-        /*
-        const existingRecord = ratingsTeamEmployees.find(r =>
-            r.ratings_id === ratingId && r.employees_id === employeesId
-        );
-        */
-
         // solo validar el employees
         const existingRecord = ratingsTeamEmployees.find(r =>
             r.employees_id === employeesId
@@ -260,7 +241,7 @@ const FormEmployees: React.FC = () => {
 
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                
+
                 setRatingsTeamEmployees(prevState =>
                     prevState.map(item =>
                         item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -268,7 +249,7 @@ const FormEmployees: React.FC = () => {
                 );
             } else {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                
+
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
 
@@ -279,7 +260,8 @@ const FormEmployees: React.FC = () => {
         setErrors('')
     };
 
-    const handleSelectChange = async (employeeId, event) => {
+    const changeValueSelect = async (employeeId, event) => {
+        
         const selectedId = event.target.value;
 
         // Encuentra la opción seleccionada en ratings
@@ -308,6 +290,13 @@ const FormEmployees: React.FC = () => {
 
         }
 
+    }
+
+
+    const handleSelectChange = async (employeeId, event) => {
+        
+        const selectedId = selectedRatings[employeeId]
+
         const payload = {
             reviews_id: reviews_id,
             teams_id: team_id,
@@ -316,13 +305,6 @@ const FormEmployees: React.FC = () => {
             price: 0,
             percent: 0,
         };
-
-        // Verificar si el registro ya existe
-        /*
-        const existingRecord = ratingsTeamEmployees.find(r =>
-            r.ratings_id === ratingId && r.employees_id === employeesId
-        );
-        */
 
         // solo validar el employees
         const existingRecord = ratingsTeamEmployees.find(r =>
@@ -334,7 +316,7 @@ const FormEmployees: React.FC = () => {
 
             if (existingRecord) {
                 response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-                
+
                 setRatingsTeamEmployees(prevState =>
                     prevState.map(item =>
                         item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -342,7 +324,7 @@ const FormEmployees: React.FC = () => {
                 );
             } else {
                 response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                
+
                 setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
             }
 
@@ -351,7 +333,6 @@ const FormEmployees: React.FC = () => {
         }
         showSuccessAlert("Your work has been saved");
 
-        
     };
 
     const calculateTotalSpend = (updatedRangeValues) => {
@@ -368,7 +349,7 @@ const FormEmployees: React.FC = () => {
     const calculatePrice = (employeeId, percent) => {
         const salary = salaryValues[employeeId];
         const numericPercent = percent === '' ? 0 : parseFloat(percent);
-        
+
         if (isNaN(salary) || isNaN(numericPercent)) {
             console.error(`Invalid salary or percent for employeeId ${employeeId}: salary=${salary}, percent=${numericPercent}`);
             return 0; // O maneja el error de otra manera
@@ -456,7 +437,7 @@ const FormEmployees: React.FC = () => {
                 }));
             } else {
                 if (isDeleted) {
-                   
+
                     const payload = {
                         reviews_id: reviews_id,
                         teams_id: team_id,
@@ -468,7 +449,7 @@ const FormEmployees: React.FC = () => {
                     };
 
                     const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-                  
+
                     setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
                     setStatusValues(prevState => ({
                         ...prevState,
@@ -572,7 +553,7 @@ const FormEmployees: React.FC = () => {
         }
 
         // si es true se deshabilita
-        if(isManager){
+        if (isManager) {
             return true;
         }
 
@@ -585,9 +566,9 @@ const FormEmployees: React.FC = () => {
     };
 
     const isDisabledAdmin = (employeeId) => {
-       
+
         // si es true se deshabilita
-        if(isValidator){
+        if (isValidator) {
             return true
         }
 
@@ -628,12 +609,12 @@ const FormEmployees: React.FC = () => {
     };
 
     const checkAllValidation = () => {
-       
+
         if (countNotStatusThree === totalApproved) {
             return true
         }
 
-        if(reviewTeam?.status === 3){
+        if (reviewTeam?.status === 3) {
             return true
         }
 
@@ -655,7 +636,7 @@ const FormEmployees: React.FC = () => {
 
             if (item.status !== 1) {
                 await apiRequest(`reviews_teams_employees/edit/${item.id}`, 'PUT', { status: 1 });
-               
+
             }
             //console.log(previousStatus);
 
@@ -708,9 +689,9 @@ const FormEmployees: React.FC = () => {
             console.log("error ===> ", error);
         }
     };
-   
+
     const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
-   
+
     return (
         <div className="row">
             {loading ? (
@@ -791,7 +772,13 @@ const FormEmployees: React.FC = () => {
                                                         className="form-control"
                                                         style={{ width: '100%' }}
                                                         value={selectedRatings[item.id] || ''}
-                                                        onChange={(e) => handleSelectChange(item.id, e)}
+                                                        onChange={(e) => changeValueSelect(item.id, e)} // Descomentado
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                console.log('OK');
+                                                                handleSelectChange(item.id, e);
+                                                            }
+                                                        }}
                                                     >
                                                         <option value="" label="Select an option" />
                                                         {ratings && ratings.map((option) => (
