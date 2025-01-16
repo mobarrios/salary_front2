@@ -140,20 +140,22 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token, user }) {
     
-      console.log("Session Callback:");
-      console.log("Session:", session);
-      console.log("Token:", token);
+     
     if (token) {
       session.accessToken = token.accessToken; // Token de Azure o Credentials
       session.user = {
           ...session.user,
-          id: token.user?.id ,
+          id: token.id,
           roles: token.user?.roles ,
           token: token.accessToken , // Token de Credentials (si existe)
           email: token.user?.email
       };
       } 
 
+      console.log("Session Callback:");
+      console.log("Session:", session);
+      console.log("Token:", token);
+      
     // console.log("session", session);
 
       // Llamar al backend para obtener roles y datos adicionales
@@ -216,12 +218,13 @@ export const authOptions: NextAuthOptions = {
             body: formData,
           });
           const data = await res.json();
-          
           if (res.ok && data) {
+           
             const user = {
               token: data.access_token,
               name: data.user_data.user_name,
               id: data.user_data.id,
+              email: data.user_data.email,
               roles: data.user_roles
             }
             return user;

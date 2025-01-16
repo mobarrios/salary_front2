@@ -44,10 +44,6 @@ const ReviewTeam: React.FC = ({ id }) => {
     const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
     const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
 
-    //const teamIds = teamsData.data.map(team => team.id); // Asegúrate de que `team.id` sea el campo correcto
-    // Filtrar employeesWithIdOne según los team_ids
-    //const filteredEmployees = employeesWithIdOne.filter(employee => teamIds.includes(employee.team_id)); // Asegúrate de que `employee.team_id` sea el campo correcto
-
     //console.log(filteredEmployees)
     setUserTeams(employeesWithIdOne)
     setReviewTeam(employeesWithIdOne)
@@ -62,11 +58,12 @@ const ReviewTeam: React.FC = ({ id }) => {
 
       // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
-      const userIdToFilter = session?.user.id;
-
+     
+      const userIdToFilter = session?.user.email;
+     
       // todos los teams que tienen al usuario logeado
       const teamUserFilter = teamsData.data.filter(grupo =>
-        grupo.users.some(user => user.id === userIdToFilter)
+        grupo.users.some(user => user.email === userIdToFilter)
       );
 
       setOptions(teamUserFilter)

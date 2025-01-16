@@ -10,8 +10,6 @@ import { formatDate } from "@/functions/formatDate";
 const Home = () => {
   const { data: session, status } = useSession()
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
-  const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
-  const isDefault = session?.user?.roles?.some(role => role.name === 'default');
 
   const [teamUser, setTeamUser] = useState({});
 
@@ -20,11 +18,11 @@ const Home = () => {
 
       // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
-      const userIdToFilter = session?.user.id;
-
+      const userIdToFilter = session?.user.email;
+      
       // todos los teams que tienen al usuario logeado
       const teamUserFilter = teamsData.data.filter(grupo =>
-        grupo.users.some(user => user.id === userIdToFilter)
+        grupo.users.some(user => user.email === userIdToFilter)
       );
       const teamIds = teamUserFilter.map(team => team.id);
       const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
