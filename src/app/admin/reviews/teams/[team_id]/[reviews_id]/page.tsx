@@ -51,6 +51,8 @@ const FormEmployees: React.FC = () => {
     const isValidator = session?.user.roles.some(role => role.name === 'approver');
     const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
     const isManager = session?.user.roles.some(role => role.name === 'manager');
+    const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' || role.name === 'manager');
+
     const roles = session?.user.roles;
 
     const [errors, setErrors] = useState({});
@@ -198,12 +200,12 @@ const FormEmployees: React.FC = () => {
         // Validar campos requeridos
         const currentRating = selectedRatings[employeesId];
         const currentRangeValue = rangeValues[employeesId];
-
+       
         const newErrors = {};
         if (!currentRating) {
             newErrors.rating = 'Required.';
         }
-        if (currentRangeValue === undefined || currentRangeValue === '' || !currentRangeValue) {
+        if (currentRangeValue === undefined || currentRangeValue === '') {
             newErrors.range = 'Required.';
         }
 
@@ -544,28 +546,49 @@ const FormEmployees: React.FC = () => {
         return roles?.some(role => ['superuser', 'administrator', 'approver'].includes(role.name)) && reviewTeam?.status === 2;
     };
 
+    const canChangeStatus = roles?.some(role => ['superuser', 'approver', 'administrador'].includes(role.name));
+    const canChangePercent = roles?.some(role => ['superuser', 'administrador'].includes(role.name));
+    
     const countValues = Object.keys(rangeValues).length;
 
     const isInputDisabled = () => {
-        // Si es Admin, nunca debe estar deshabilitado
+
+        // bloqueo si el status es 2
+
+        //habilito si es admin
+        
         if (isAdmin) {
             return false;
         }
 
-        // si es true se deshabilita
-        if (isManager) {
-            return true;
-        }
-
-        // Deshabilitar para Validator si el status es 3
-        if (isValidator && reviewTeam?.status === 2) {
+        if ((isValidator || validatorAndManager) && reviewTeam?.status === 2) {
             return false;
         }
 
-        return true;
+        return true
+        // Si es Admin, nunca debe estar deshabilitado
+        // if (isAdmin) {
+        //     return false;
+        // }
+
+        // // si es true se deshabilita
+        // if (isManager) {
+        //     return true;
+        // }
+
+        // if(validatorAndManager){
+        //     return false
+        // }
+
+        // // Deshabilitar para Validator si el status es 3
+        // if (isValidator && reviewTeam?.status === 2) {
+        //     return false;
+        // }
+
+        // return true;
     };
 
-    const isDisabledAdmin = (employeeId) => {
+    const enableRatings = (employeeId) => {
 
         // si es true se deshabilita
         if (isValidator) {
@@ -574,6 +597,10 @@ const FormEmployees: React.FC = () => {
 
         if (isManager) {
             return true
+        }
+
+        if(validatorAndManager){
+            return false
         }
 
         if (isAdmin) {
@@ -588,18 +615,29 @@ const FormEmployees: React.FC = () => {
 
     }
 
-    const isDisabled = (employeeId) => {
+    //habilitar porcentaje segun rol
+    const enablePercent = (employeeId) => {
 
         // si es true se deshabilita
-        if (isValidator) {
-            return true
-        }
+        // if (isValidator) {
+        //     return true
+        // }
 
-        if (isAdmin) {
+        // if (isAdmin) {
+        //     return false;
+        // }
+
+        // if(validatorAndManager){
+        //     return false
+        // }
+
+        // approved == 1
+        // rejected  == 2
+
+        if(canChangePercent){
             return false;
         }
-
-
+        
         if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
             return false;
         }
@@ -656,10 +694,7 @@ const FormEmployees: React.FC = () => {
         setTotalRejected(0);  // Actualiza el total de rechazados
     };
 
-    const changeStatus = (item, status) => {
-        console.log(item, status)
-    }
-
+ 
     const confirmDelete = async () => {
         const message = await Swal.fire({
             title: "Are you sure to delete this record?",
@@ -691,7 +726,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
-
+   
     return (
         <div className="row">
             {loading ? (
@@ -767,7 +802,7 @@ const FormEmployees: React.FC = () => {
                                                 </td>
                                                 <td>
                                                     <select
-                                                        disabled={isDisabledAdmin(item.id)}
+                                                        disabled={enableRatings(item.id)}
                                                         required
                                                         className="form-control"
                                                         style={{ width: '100%' }}
@@ -791,7 +826,7 @@ const FormEmployees: React.FC = () => {
                                                     <input
                                                         required
                                                         min={0}
-                                                        disabled={isDisabled(item.id)}
+                                                        disabled={enablePercent(item.id)}
                                                         type='number'
                                                         step={1}
                                                         className={getInputClassName(item.id)}
@@ -810,7 +845,8 @@ const FormEmployees: React.FC = () => {
                                                 <td>
                                                     {findStatusByRatings(item.id)}
                                                 </td>
-                                                {(isValidator || isAdmin) && (
+
+                                                {canChangeStatus && (
                                                     <td>
                                                         <>
                                                             <a

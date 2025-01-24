@@ -52,7 +52,6 @@ export default async function Employees({ searchParams }: Params) {
           <table className="table table-hover">
             <thead>
               <tr>
-                <th>#</th>
                 {headers.map((header, key) => (
                   <th scope="col" key={key}>{header.name}</th>
                 ))}
@@ -64,7 +63,6 @@ export default async function Employees({ searchParams }: Params) {
                 results ? (
                   results.map((item, rowIndex) => (
                     <tr className="align-middle" key={rowIndex}>
-                      <td>{item.id}</td>
                       {headers.map((header, colIndex) => (
                         <td key={header.key}>{item[header.key]}</td>
                       ))}

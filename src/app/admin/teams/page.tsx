@@ -32,10 +32,12 @@ export default async function Employees({ searchParams }: Params) {
 
   if (!isAdmin) {
     const loggedInUserId = await getUserId();
-
     const teamsUsers = await apiRequest(`teams_users/all/?skip=${skip}&limit=${limit}`, 'GET');
-    const teamsData = await teamsUsers.json();
 
+    console.log('teamsUsers', teamsUsers)
+    console.log('loggedInUserId', loggedInUserId)
+
+    const teamsData = await teamsUsers.json();
     const filteredTeams = teamsData.data.filter(team => team.users_id === loggedInUserId);
   
     // Filtrar los resultados según los equipos que tiene el usuario logueado

@@ -57,6 +57,7 @@ const UserTeams: React.FC = ({ id }) => {
                 value: user.id,
                 label: user.user_name
             }));
+            console.log(selectOptions)
             setOptions(selectOptions);
 
             const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=1000`);

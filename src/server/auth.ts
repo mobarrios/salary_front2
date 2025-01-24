@@ -111,6 +111,8 @@ export const authOptions: NextAuthOptions = {
                     body: JSON.stringify({ email }),
                   });
 
+                  console.log('Response Back',res)
+
                   if (!res.ok) {
                     console.error("Error al registrar el usuario en el backend:", await res.text());
                   }

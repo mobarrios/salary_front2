@@ -10,7 +10,9 @@ import { formatDate } from "@/functions/formatDate";
 const Home = () => {
   const { data: session, status } = useSession()
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
+  const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' && role.name === 'manager');
 
+  console.log(isApprover, validatorAndManager)
   const [teamUser, setTeamUser] = useState({});
 
   const userData = async () => {
@@ -61,11 +63,11 @@ const Home = () => {
     <div>
       <Breadcrumb />
       <Title>Welcome  {session?.user.email} ! </Title>
-      { isApprover ? <h5>Below you will find all your pending tasks: </h5> : '' }
+      { isApprover || validatorAndManager ? <h5>Below you will find all your pending tasks: </h5> : '' }
       <div className="row m-2">
         <div className='col-12'>
           {
-            isApprover && (
+            isApprover || validatorAndManager && (
               teamUser.length > 0 && teamUser?.map((review, id) => (
                 <>
                 <div className="row m-2" key={review.id}>

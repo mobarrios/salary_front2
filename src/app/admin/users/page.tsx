@@ -16,14 +16,14 @@ export default async function Employees({ searchParams }: Params) {
 
   const { page, search, limit, skip } = usePaginate(searchParams)
   const roles = await getUserRoles();
-  const bc = [{ label: 'Users'}];
+  const bc = [{ label: 'Users' }];
 
   if (!roles.some(role => ['superuser'].includes(role))) {
     redirect('/admin/home');
   }
 
   const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
-
+  
   if (!res?.status) {
     throw new Error('Failed to fetch data');
   }
@@ -31,10 +31,10 @@ export default async function Employees({ searchParams }: Params) {
   const data = await res.json();
   const results = data.data;
   const totalPages = Math.ceil(data.count / limit);
-  
+  console.log('usuarios', results)
   return (
     <div>
-      <Breadcrumb items={bc}/>
+      <Breadcrumb items={bc} />
 
       <Title>Users</Title>
       <div className="row mt-5">

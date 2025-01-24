@@ -127,6 +127,10 @@ const ReviewTeam: React.FC = ({ id }) => {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId, status: 1 });
       showSuccessAlert("Your work has been saved");
+      setStatusTeams(prevStatus => ({
+        ...prevStatus,
+        [teamId]: 1 
+      }));
     } else {
 
       let reviewTeamId = reviewTeam.find(item => item.teams_id === parseInt(teamId));
@@ -134,6 +138,10 @@ const ReviewTeam: React.FC = ({ id }) => {
       if (reviewTeamId) {
         const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);
         showSuccessAlert("Your work has been saved");
+        setStatusTeams(prevStatus => ({
+          ...prevStatus,
+          [teamId]: 0
+        }));
       }
     }
 
@@ -237,7 +245,7 @@ const ReviewTeam: React.FC = ({ id }) => {
                     ) : statusTeams[option.id] === 2 ? (
                       <span className="badge rounded-pill bg-dark">In Progress</span>
                     ) : statusTeams[option.id] === 1 ? (
-                      <span className="badge rounded-pill bg-dark">In Progress</span>
+                      <span className="badge rounded-pill bg-dark">Started</span>
                     ) : (
                       <span className="badge rounded-pill bg-danger">Not started</span>
                     )}
