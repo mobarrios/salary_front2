@@ -11,8 +11,6 @@ const Home = () => {
   const { data: session, status } = useSession()
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
   const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' && role.name === 'manager');
-
-  console.log(isApprover, validatorAndManager)
   const [teamUser, setTeamUser] = useState({});
 
   const userData = async () => {
@@ -26,6 +24,7 @@ const Home = () => {
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.email === userIdToFilter)
       );
+     
       const teamIds = teamUserFilter.map(team => team.id);
       const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
@@ -67,7 +66,7 @@ const Home = () => {
       <div className="row m-2">
         <div className='col-12'>
           {
-            isApprover || validatorAndManager && (
+            (isApprover || validatorAndManager) && (
               teamUser.length > 0 && teamUser?.map((review, id) => (
                 <>
                 <div className="row m-2" key={review.id}>
