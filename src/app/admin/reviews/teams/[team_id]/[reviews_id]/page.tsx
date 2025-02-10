@@ -28,7 +28,7 @@ const FormEmployees: React.FC = () => {
     const [commnetsValues, setCommnetsValues] = useState({});
     const [statusValues, setStatusValues] = useState({});
     const [salaryValues, setSalaryValues] = useState({});
-
+    const [meritValues, setMeritValues] = useState({});
 
     const [color, setColor] = useState('trasparent');
     const [errorRemaining, setErrorRemaining] = useState(false)
@@ -54,8 +54,8 @@ const FormEmployees: React.FC = () => {
     const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' || role.name === 'manager');
 
     const roles = session?.user.roles;
-
     const [errors, setErrors] = useState({});
+
     useEffect(() => {
         if (session?.user.token) {
             load();
@@ -79,6 +79,37 @@ const FormEmployees: React.FC = () => {
         }
     }, [reviewTeam, totalSpend]);
 
+    useEffect(() => {
+
+       
+        
+        if (Array.isArray(ratings)) {
+           
+            teamEmployees?.forEach(employee => {
+                let merit = employee.actual_external_data.compensation_change_reason_description
+                let rating = ratings.find(item => item.name == merit);
+                
+                if(rating){
+                    setRatingRanges(prevState => ({
+                        ...prevState,
+                        [employee.id]: {
+                            min: rating.percent_min,
+                            max: rating.percent_max
+                        }
+                    }));
+
+                    setSelectedRatings(prevState => ({
+                        ...prevState,
+                        [employee.id]: rating.id
+                    }));
+                }
+            });
+        } else {
+            console.warn('ratings no está definido o no es un array');
+        }
+    }, [ratings, session?.user.token]);
+    
+
     const updateEmployeesTeams = async (team) => {
 
         const promises = team.employees.map(item =>
@@ -89,12 +120,15 @@ const FormEmployees: React.FC = () => {
         setTeamEmployees(teamResponses)
 
         const newSalaryValues = {};
-
+        const newMeritValues = {};
         // Iterar sobre las respuestas y guardar el id y el salary
         teamResponses.forEach(employee => {
-            newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary); // Asegúrate de que 'salary' sea el campo correcto
+            let merit = employee.actual_external_data.compensation_change_reason_description 
+            newMeritValues[employee.id] = merit
+            newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary); 
         });
         setSalaryValues(newSalaryValues)
+        setMeritValues(newMeritValues)
     }
 
     const load = async () => {
@@ -124,7 +158,13 @@ const FormEmployees: React.FC = () => {
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
 
             setRatingsTeamEmployees(filterRatingEmployees);
+            
+
             updateRatingsEmployees(filterRatingEmployees)
+
+
+            
+
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -200,7 +240,7 @@ const FormEmployees: React.FC = () => {
         // Validar campos requeridos
         const currentRating = selectedRatings[employeesId];
         const currentRangeValue = rangeValues[employeesId];
-       
+
         const newErrors = {};
         if (!currentRating) {
             newErrors.rating = 'Required.';
@@ -263,7 +303,7 @@ const FormEmployees: React.FC = () => {
     };
 
     const changeValueSelect = async (employeeId, event) => {
-        
+
         const selectedId = event.target.value;
 
         // Encuentra la opción seleccionada en ratings
@@ -294,9 +334,8 @@ const FormEmployees: React.FC = () => {
 
     }
 
-
     const handleSelectChange = async (employeeId, event) => {
-        
+
         const selectedId = selectedRatings[employeeId]
 
         const payload = {
@@ -367,7 +406,6 @@ const FormEmployees: React.FC = () => {
         const result = (salary * percent) / 100;
         return result
     };
-
 
     const handleInputChange = (e, id) => {
         const newValue = e.target.value; // Obtén el nuevo valor del input
@@ -530,7 +568,6 @@ const FormEmployees: React.FC = () => {
         const ratingId = selectedRatings[itemId];
         const selectedRating = ratings.find(option => option.id == ratingId);
 
-
         const isOutOfRange = Number(value) > (selectedRating?.percent_max || 0) ||
             Number(value) < (selectedRating?.percent_min || 0);
 
@@ -548,7 +585,7 @@ const FormEmployees: React.FC = () => {
 
     const canChangeStatus = roles?.some(role => ['superuser', 'approver', 'administrador'].includes(role.name));
     const canChangePercent = roles?.some(role => ['superuser', 'administrador'].includes(role.name));
-    
+
     const countValues = Object.keys(rangeValues).length;
 
     const isInputDisabled = () => {
@@ -556,7 +593,7 @@ const FormEmployees: React.FC = () => {
         // bloqueo si el status es 2
 
         //habilito si es admin
-        
+
         if (isAdmin) {
             return false;
         }
@@ -599,7 +636,7 @@ const FormEmployees: React.FC = () => {
             return true
         }
 
-        if(validatorAndManager){
+        if (validatorAndManager) {
             return false
         }
 
@@ -634,10 +671,10 @@ const FormEmployees: React.FC = () => {
         // approved == 1
         // rejected  == 2
 
-        if(canChangePercent){
+        if (canChangePercent) {
             return false;
         }
-        
+
         if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
             return false;
         }
@@ -694,7 +731,6 @@ const FormEmployees: React.FC = () => {
         setTotalRejected(0);  // Actualiza el total de rechazados
     };
 
- 
     const confirmDelete = async () => {
         const message = await Swal.fire({
             title: "Are you sure to delete this record?",
@@ -725,8 +761,27 @@ const FormEmployees: React.FC = () => {
         }
     };
 
+    const meritChecked = (employeeId) => {
+
+        let ratingSelected;
+
+        if (selectedRatings[employeeId]) {
+            ratingSelected = selectedRatings[employeeId]
+        } else if (meritValues[employeeId]) {
+
+            let rating = ratings.find(item => item.name === meritValues[employeeId]);
+            let ratingsId = rating ? rating.id : null; // Devuelve el ID o null si no se encuentra
+
+            ratingSelected = ratingsId
+        } else {
+            ratingSelected = ''
+        }
+
+        return ratingSelected;
+    }
+
     const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
-   
+
     return (
         <div className="row">
             {loading ? (
@@ -738,7 +793,7 @@ const FormEmployees: React.FC = () => {
                     <Title>Reviews - {team?.name}</Title>
 
                     <div className='col-12 mt-5'>
-                        {/* <h3 className='text-primary mb-5'></h3> */}
+
                         <table className="table">
                             <thead>
                                 <tr>
@@ -806,7 +861,7 @@ const FormEmployees: React.FC = () => {
                                                         required
                                                         className="form-control"
                                                         style={{ width: '100%' }}
-                                                        value={selectedRatings[item.id] || ''}
+                                                        value={meritChecked(item.id)}
                                                         onChange={(e) => changeValueSelect(item.id, e)} // Descomentado
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter') {
@@ -887,7 +942,7 @@ const FormEmployees: React.FC = () => {
                             <>
                                 <Checkbox
                                     onChange={e => checkAll(e)}
-                                    checked={countNotStatusThree === totalApproved ? true : checked}
+                                    checked={countNotStatusThree === totalApproved ? checked : false}
                                     disabled={checkAllValidation()}
                                 />
                                 <span> Approve all</span>

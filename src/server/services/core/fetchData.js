@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 export const fetchData = async (session,method, url) => {
 
   try {
-    console.log("FETCHING DATA");
     const response = await fetch(process.env.NEXT_PUBLIC_SALARY + `/${url}`, {
       method: method,
       headers: {

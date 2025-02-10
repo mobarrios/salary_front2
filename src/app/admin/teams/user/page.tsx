@@ -57,7 +57,7 @@ const UserTeams: React.FC = ({ id }) => {
                 value: user.id,
                 label: user.user_name
             }));
-            console.log(selectOptions)
+          
             setOptions(selectOptions);
 
             const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=1000`);
@@ -74,7 +74,7 @@ const UserTeams: React.FC = ({ id }) => {
         // Lógica para expandir el modal si es necesario
         // Por ejemplo, puedes cambiar el estado que controla el tamaño del modal
         // o aplicar clases CSS para expandir el modal
-        console.log("Select opened, expand modal");
+  
     };
 
     return (
