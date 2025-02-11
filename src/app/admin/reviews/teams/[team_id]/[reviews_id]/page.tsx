@@ -80,13 +80,12 @@ const FormEmployees: React.FC = () => {
     }, [reviewTeam, totalSpend]);
 
     useEffect(() => {
-
-       
-        
+ 
         if (Array.isArray(ratings)) {
            
             teamEmployees?.forEach(employee => {
-                let merit = employee.actual_external_data.compensation_change_reason_description
+                console.log('employee', employee)
+                let merit = employee.actual_external_data.overall_score
                 let rating = ratings.find(item => item.name == merit);
                 
                 if(rating){
@@ -123,7 +122,7 @@ const FormEmployees: React.FC = () => {
         const newMeritValues = {};
         // Iterar sobre las respuestas y guardar el id y el salary
         teamResponses.forEach(employee => {
-            let merit = employee.actual_external_data.compensation_change_reason_description 
+            let merit = employee.actual_external_data.overall_score 
             newMeritValues[employee.id] = merit
             newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary); 
         });
