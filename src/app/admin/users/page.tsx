@@ -1,5 +1,6 @@
-import { apiRequest } from '@/server/services/core/apiRequest';
-import { usePaginate } from "@/hooks/usePagination"
+'use client'
+import { useState, useEffect, useCallback, useRef } from 'react';
+
 import { Params } from '@/types/params';
 import Pagination from '@/components/Pagination/Pagination';
 import { headers, name } from './model';
@@ -8,30 +9,116 @@ import RemoveItem from '@/components/Core/RemoveItem';
 import FormUsers from './form/page';
 import FormRol from './rol/page';
 import { Title } from '@/components/Title';
-import { redirect } from 'next/navigation'
-import { getUserRoles } from '@/functions/getRoles'
 import Breadcrumb from "@/components/BreadCrumb";
+import { useSession } from 'next-auth/react';
+import { fetchData } from '@/server/services/core/fetchData'
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { InputText } from "primereact/inputtext";
+import { Paginator } from 'primereact/paginator';
+import Link from 'next/link';
+export default function Employees({ searchParams }: Params) {
 
-export default async function Employees({ searchParams }: Params) {
+  const { page: initialPage = 1, limit: initialLimit = 10, search } = searchParams; // Obtener parámetros de búsqueda y paginación
+  const [page, setPage] = useState(initialPage);
+  const [limit, setLimit] = useState(initialLimit); // Cambia a estado
+  const [results, setResults] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { data: session } = useSession()
+  const [searchTerm, setSearchTerm] = useState(search || ''); // Estado para el término de búsqueda
+  const roles = session?.user.roles.map(role => role.name)
+  const bc = [{ label: 'People' }];
+  const [globalFilter, setGlobalFilter] = useState<string | null>(null);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(limit);
+  const [data, setData] = useState([]); // Inicializa el estado con models
 
-  const { page, search, limit, skip } = usePaginate(searchParams)
-  const roles = await getUserRoles();
-  const bc = [{ label: 'Users' }];
+  const load = useCallback(async () => {
+    if (session?.user.token) {
+      try {
 
-  if (!roles.some(role => ['superuser'].includes(role))) {
-    redirect('/admin/home');
-  }
+        setResults([]); // Limpiar resultados anteriores
+        setTotalCount(0)
+        const res = await fetchData(
+          session?.user.token,
+          'GET',
+          `${name}/all/?skip=${(page - 1) * limit}&limit=${limit}${searchTerm ? `&search=${searchTerm}` : ''}`
+        );
 
-  const res = await apiRequest(`${name}/all/?skip=${skip}&limit=${limit}`, 'GET');
-  
-  if (!res?.status) {
-    throw new Error('Failed to fetch data');
-  }
+        if (res && res.data) {
+          setResults(res.data);
+          setTotalCount(res.count);
+        } else {
+          console.error("Invalid data:", res);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  }, [page, limit, searchTerm, session?.user.token]);
 
-  const data = await res.json();
-  const results = data.data;
-  const totalPages = Math.ceil(data.count / limit);
-  
+  useEffect(() => {
+    load();
+  }, [load]);
+
+
+  const onLimitChange = (newLimit) => {
+    setLimit(newLimit); // Actualiza el límite
+    setPage(1); // Reinicia a la primera página si cambias el límite
+  };
+
+  const filteredData = results.filter(item => {
+    return item
+  });
+
+  const handlePageChange = (event) => {
+    setFirst(event.first);
+    setRows(event.rows);
+    onLimitChange(event.rows);
+    setPage(event.first / event.rows + 1); // Calcula la nueva página y llama a la función onPageChange
+  };
+
+  const dt = useRef(null);
+
+  useEffect(() => {
+    dt.current?.reset(); // Resetea el DataTable para forzar un re-render
+  }, [filteredData]);
+
+  const handleDeleteLocal = (id) => {
+    // Elimina el registro del estado local
+    const updatedData = results.filter((item) => item.id !== id);
+    setResults(updatedData)
+    //setData(updatedData); // Actualiza el estado para reflejar los cambios en la tabla
+  };
+
+  const actionBodyTemplate = (item) => (
+    <>
+        <ModalButton type={true} itemId={item.id} name="Role" FormComponent={FormRol} title={item.user_name} />
+          {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
+        <>
+          <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormUsers} title={item.associate_id} />
+        </>
+      )}
+
+      {roles.some(role => ['superuser', 'administrator'].includes(role)) && (
+        <>
+          <RemoveItem id={item.id} url={name} onDelete={() => handleDeleteLocal(item.id)} />
+        </>
+      )}
+    </>
+
+  );
+
+  const externalData = (item) => (
+    <>
+      <div key={`home_department_${item.id}`}>
+         { item.active === 1 ? <span className="badge rounded-pill bg-success">Active</span> : <span className="badge rounded-pill bg-success">Inactive</span> }
+        </div>
+    </>
+  );
+
+
   return (
     <div>
       <Breadcrumb items={bc} />
@@ -49,60 +136,33 @@ export default async function Employees({ searchParams }: Params) {
             />
           </p>
         </div>
-        <div className='col-12 mt-3'>
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th>#</th>
-                {headers.map((header, key) => (
-                  <th scope="col" key={key}>{header.name}</th>
-                ))}
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                results ? (
-                  results.map((item, rowIndex) => (
-                    <tr className="align-middle" key={rowIndex}>
-                      <td>{item.id}</td>
-                      {headers.map((header, colIndex) => (
-                        <td key={header.key}>{item[header.key]}</td>
-                      ))}
-                      <td className='text-end'>
-                        <ModalButton
-                          type={false}
-                          itemId={item.id}
-                          name="Role"
-                          FormComponent={FormRol}
-                          title={"Role : " + item.user_name}
-                        />
-                        <ModalButton
-                          type={true}
-                          itemId={item.id}
-                          name="Edit"
-                          FormComponent={FormUsers}
-                          title={"Edit : " + item.user_name}
-                        />
-                        <RemoveItem
-                          url={name}
-                          id={item.id}
-                        />
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={headers.length + 2}>No data available</td>
-                  </tr>
-                )
-              }
-            </tbody>
-          </table>
-        </div>
-        <div className='col-12 mt-3'>
-          <Pagination page={page} totalPages={totalPages} />
-        </div>
+        <DataTable
+          ref={dt}
+          value={[...filteredData]}
+          dataKey="id"
+          rows={rows}
+          header={false}
+          globalFilter={globalFilter}
+          emptyMessage="No data found."
+          totalRecords={totalCount}
+        >
+          <Column field="id" sortable header="ID" />
+          <Column field="user_name" sortable header="Name" />
+          <Column field="email" sortable header="Email" />
+          {/* <Column field="active" sortable header="Status" /> */}
+          <Column body={externalData} sortable header="Status" />
+          <Column body={actionBodyTemplate} header="Actions" />
+          
+        </DataTable>
+        <Paginator
+          className="mt-4"
+          first={first}
+          rows={rows}
+          totalRecords={totalCount}
+          onPageChange={handlePageChange}
+          rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
+        />
+
       </div>
     </div>
   )

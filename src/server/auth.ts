@@ -147,7 +147,7 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken; // Token de Azure o Credentials
       session.user = {
           ...session.user,
-          id: token.id,
+          id: token.user?.id,
           roles: token.user?.roles ,
           token: token.accessToken , // Token de Credentials (si existe)
           email: token.user?.email
