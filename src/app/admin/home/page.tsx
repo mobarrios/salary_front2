@@ -10,7 +10,7 @@ import { formatDate } from "@/functions/formatDate";
 const Home = () => {
   const { data: session, status } = useSession()
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
-  const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' && role.name === 'manager');
+  const validatorAndManager = session?.user?.roles?.some(role => role.name === 'approver' && role.name === 'manager');
   const [teamUser, setTeamUser] = useState({});
 
   const userData = async () => {
