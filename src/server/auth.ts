@@ -10,10 +10,6 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      console.log("JWT Callback:");
-      console.log("Token:", token);
-      console.log("Account:", account);
-      console.log("Profile:", profile);
       if (account) {
 
         if (account.provider === "azure-ad") {
@@ -51,12 +47,6 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // return {
-      //   ...token,
-      //   user: token.user || {},
-      //   accessToken: token.accessToken || null,
-      //   id: token.id || null,
-      // };
       return token;
     },
 
@@ -74,12 +64,6 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
-      console.log("Session Callback:");
-      console.log("Session:", session);
-      console.log("Token:", token);
-
-      // console.log("session", session);
-
       // Llamar al backend para obtener roles y datos adicionales
       if (session.user?.email) {
         try {
@@ -91,8 +75,9 @@ export const authOptions: NextAuthOptions = {
             },
             body: JSON.stringify({ email: session.user.email }),
           });
-
+         
           const data = await response.json();
+          console.log('vuelve a llamar: ',data)
 
           if (response.ok && data) {
             // Agregar roles del backend a la sesión
@@ -100,6 +85,27 @@ export const authOptions: NextAuthOptions = {
           } else {
             console.error("Error backend:", data);
           }
+
+          // http://localhost:8000/api/v1/users/find_by_email
+          // buscar ID del usuario
+          const responseUser = await fetch(process.env.API_SALARY + "/users/find_by_email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Authorization: `Bearer ${session.accessToken}`, // Token del usuario
+            },
+            body: JSON.stringify({ email: session.user.email }),
+          });
+
+          const dataUser = await responseUser.json();
+          console.log('dataUser', dataUser)
+          if (responseUser.ok && dataUser) {
+            // Agregar roles del backend a la sesión
+            session.user.id = dataUser.id;
+          } else {
+            console.error("Error backend:", dataUser);
+          }
+
         } catch (error) {
           console.error("Error backend:", error);
         }
@@ -140,6 +146,9 @@ export const authOptions: NextAuthOptions = {
             body: formData,
           });
           const data = await res.json();
+          console.log('data: ', data)
+          
+
           if (res.ok && data) {
 
             const user = {

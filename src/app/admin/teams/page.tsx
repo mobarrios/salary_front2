@@ -58,6 +58,7 @@ export default function Employees({ searchParams }: Params) {
 
           if (!isAdmin) {
             const loggedInUserId = session?.user.id;
+            console.log('loggedInUserId', session?.user)
             const teamsUsers = await fetchData(
               session?.user.token,
               'GET',

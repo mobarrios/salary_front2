@@ -52,6 +52,7 @@ const UserTeams: React.FC = ({ id }) => {
         const fetchDataAndUpdateItem = async () => {
             setLoading(true);
             const jsonData = await fetchData(session?.user.token, 'GET', `users/all/?skip=0&limit=1000`);
+            console.log('user', jsonData)
             const data = jsonData.data;
             const selectOptions = data.map(user => ({
                 value: user.id,
