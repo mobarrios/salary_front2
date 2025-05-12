@@ -339,10 +339,10 @@ const FormEmployees: React.FC = () => {
         }));
     
         // Si no hay ningún empleado válido, no continuar
-        if (validEmployees.length === 0) {
-            console.log('No hay datos válidos para guardar.');
-            return;
-        }
+        // if (validEmployees.length === 0) {
+        //     console.log('No hay datos válidos para guardar.');
+        //     return;
+        // }
         setIsSubmitting(true);
         // Procesa los empleados válidos
         try {
