@@ -324,12 +324,14 @@ const FormEmployees: React.FC = () => {
             if (currentRangeValue === undefined || currentRangeValue === '') {
                 newErrors.range = 'Required.';
             }
-    
-            if (Object.keys(newErrors).length > 0) {
-                updatedErrors[id] = newErrors;
-            } else {
-                validEmployees.push(employee);
-            }
+            
+            validEmployees.push(employee);
+
+            // if (Object.keys(newErrors).length > 0) {
+            //     updatedErrors[id] = newErrors;
+            // } else {
+            //     validEmployees.push(employee);
+            // }
         }
     
         // Mostrar solo errores de los inválidos
@@ -351,22 +353,24 @@ const FormEmployees: React.FC = () => {
                 const currentSalary = calculatePriceByEmployee(id);
                 const ratingId = selectedRatings[id];
                 const percent = rangeValues[id];
-    
+                const validatedPercent = percent === '' ? 0 : percent;
+
                 const payload = {
                     reviews_id: reviews_id,
                     teams_id: team_id,
                     ratings_id: ratingId,
                     employees_id: id,
                     price: currentSalary,
-                    percent: percent,
+                    percent: validatedPercent,
                 };
     
                 const existingRecord = ratingsTeamEmployees.find(r => r.employees_id === id);
                 let response;
     
                 if (existingRecord) {
+                    //console.log(existingRecord.id, payload)
                     response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-    
+                    //console.log('Edit',response)
                     setRatingsTeamEmployees(prevState =>
                         prevState.map(item =>
                             item.id === existingRecord.id ? { ...item, ...payload } : item
@@ -374,7 +378,7 @@ const FormEmployees: React.FC = () => {
                     );
                 } else {
                     response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-    
+                    //console.log('POST',response)
                     setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
                 }
             }
