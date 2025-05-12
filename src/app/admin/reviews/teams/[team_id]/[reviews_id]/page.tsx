@@ -49,12 +49,14 @@ const FormEmployees: React.FC = () => {
     const [checked, setChecked] = useState();
 
     const isValidator = session?.user.roles.some(role => role.name === 'approver');
-    const isAdmin = session?.user.roles.some(role => role.name === 'superuser' || role.name === 'administrator');
+    const isAdmin = session?.user.roles.some(role => role.name === 'administrator');
+    const isSuper = session?.user.roles.some(role => role.name === 'superuser');
     const isManager = session?.user.roles.some(role => role.name === 'manager');
     const validatorAndManager = session?.user.roles.some(role => role.name === 'approver' || role.name === 'manager');
 
     const roles = session?.user.roles;
     const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (session?.user.token) {
@@ -80,15 +82,15 @@ const FormEmployees: React.FC = () => {
     }, [reviewTeam, totalSpend]);
 
     useEffect(() => {
- 
+
         if (Array.isArray(ratings)) {
-           
+
             teamEmployees?.forEach(employee => {
-                
+
                 let merit = employee.actual_external_data.overall_score
                 let rating = ratings.find(item => item.name == merit);
-                
-                if(rating){
+
+                if (rating) {
                     setRatingRanges(prevState => ({
                         ...prevState,
                         [employee.id]: {
@@ -107,7 +109,7 @@ const FormEmployees: React.FC = () => {
             console.warn('ratings no está definido o no es un array');
         }
     }, [ratings, session?.user.token]);
-    
+
 
     const updateEmployeesTeams = async (team) => {
 
@@ -122,9 +124,9 @@ const FormEmployees: React.FC = () => {
         const newMeritValues = {};
         // Iterar sobre las respuestas y guardar el id y el salary
         teamResponses.forEach(employee => {
-            let merit = employee.actual_external_data.overall_score 
+            let merit = employee.actual_external_data.overall_score
             newMeritValues[employee.id] = merit
-            newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary); 
+            newSalaryValues[employee.id] = formatSalary(employee.actual_external_data.annual_salary);
         });
         setSalaryValues(newSalaryValues)
         setMeritValues(newMeritValues)
@@ -157,12 +159,12 @@ const FormEmployees: React.FC = () => {
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
 
             setRatingsTeamEmployees(filterRatingEmployees);
-            
+
 
             updateRatingsEmployees(filterRatingEmployees)
 
 
-            
+
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -230,76 +232,162 @@ const FormEmployees: React.FC = () => {
 
     }
 
-    const handleSubmit = async (employeesId) => {
-        let employeesSalary = teamEmployees.find(item => item.id == parseInt(employeesId));
-        if (!employeesSalary) {
-            return;
-        }
+    // const handleSubmit = async (employeesId) => {
+    //     let employeesSalary = teamEmployees.find(item => item.id == parseInt(employeesId));
+    //     if (!employeesSalary) {
+    //         return;
+    //     }
 
-        // Validar campos requeridos
-        const currentRating = selectedRatings[employeesId];
-        const currentRangeValue = rangeValues[employeesId];
+    //     // Validar campos requeridos
+    //     const currentRating = selectedRatings[employeesId];
+    //     const currentRangeValue = rangeValues[employeesId];
 
-        const newErrors = {};
-        if (!currentRating) {
-            newErrors.rating = 'Required.';
-        }
-        if (currentRangeValue === undefined || currentRangeValue === '') {
-            newErrors.range = 'Required.';
-        }
+    //     const newErrors = {};
+    //     if (!currentRating) {
+    //         newErrors.rating = 'Required.';
+    //     }
+    //     if (currentRangeValue === undefined || currentRangeValue === '') {
+    //         newErrors.range = 'Required.';
+    //     }
 
+    //     setErrors(prevErrors => ({
+    //         ...prevErrors,
+    //         [employeesId]: newErrors
+    //     }));
+
+    //     if (Object.keys(newErrors).length > 0) {
+    //         console.log('error');
+    //         return;
+    //     }
+
+    //     // Si no hay errores, continuar con el envío
+    //     let currentSalary = calculatePriceByEmployee(employeesId);
+    //     let ratingId = selectedRatings[employeesId];
+    //     let percent = rangeValues[employeesId];
+
+    //     const payload = {
+    //         reviews_id: reviews_id,
+    //         teams_id: team_id,
+    //         ratings_id: ratingId,
+    //         employees_id: employeesId,
+    //         price: currentSalary,
+    //         percent: percent,
+    //     };
+
+    //     // solo validar el employees
+    //     const existingRecord = ratingsTeamEmployees.find(r =>
+    //         r.employees_id === employeesId
+    //     );
+
+    //     try {
+    //         let response;
+
+    //         if (existingRecord) {
+    //             response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+
+    //             setRatingsTeamEmployees(prevState =>
+    //                 prevState.map(item =>
+    //                     item.id === existingRecord.id ? { ...item, ...payload } : item
+    //                 )
+    //             );
+    //         } else {
+    //             response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+
+    //             setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
+    //         }
+
+    //     } catch (error) {
+    //         console.error('Error al enviar datos:', error);
+    //     }
+    //     showSuccessAlert("Your work has been saved");
+    //     setErrors('')
+    // };
+
+    const handleSubmit = async (employeesId = null) => {
+        // Determina si procesar uno o todos
+        const employeesToProcess = employeesId
+            ? [teamEmployees.find(item => item.id == parseInt(employeesId))].filter(Boolean)
+            : teamEmployees;
+    
+        const updatedErrors = {};
+        const validEmployees = [];
+    
+        for (const employee of employeesToProcess) {
+            const id = employee.id;
+            const currentRating = selectedRatings[id];
+            const currentRangeValue = rangeValues[id];
+            const newErrors = {};
+    
+            if (!currentRating) {
+                newErrors.rating = 'Required.';
+            }
+            if (currentRangeValue === undefined || currentRangeValue === '') {
+                newErrors.range = 'Required.';
+            }
+    
+            if (Object.keys(newErrors).length > 0) {
+                updatedErrors[id] = newErrors;
+            } else {
+                validEmployees.push(employee);
+            }
+        }
+    
+        // Mostrar solo errores de los inválidos
         setErrors(prevErrors => ({
             ...prevErrors,
-            [employeesId]: newErrors
+            ...updatedErrors
         }));
-
-        if (Object.keys(newErrors).length > 0) {
-            console.log('error');
+    
+        // Si no hay ningún empleado válido, no continuar
+        if (validEmployees.length === 0) {
+            console.log('No hay datos válidos para guardar.');
             return;
         }
-
-        // Si no hay errores, continuar con el envío
-        let currentSalary = calculatePriceByEmployee(employeesId);
-        let ratingId = selectedRatings[employeesId];
-        let percent = rangeValues[employeesId];
-
-        const payload = {
-            reviews_id: reviews_id,
-            teams_id: team_id,
-            ratings_id: ratingId,
-            employees_id: employeesId,
-            price: currentSalary,
-            percent: percent,
-        };
-
-        // solo validar el employees
-        const existingRecord = ratingsTeamEmployees.find(r =>
-            r.employees_id === employeesId
-        );
-
+        setIsSubmitting(true);
+        // Procesa los empleados válidos
         try {
-            let response;
-
-            if (existingRecord) {
-                response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-
-                setRatingsTeamEmployees(prevState =>
-                    prevState.map(item =>
-                        item.id === existingRecord.id ? { ...item, ...payload } : item
-                    )
-                );
-            } else {
-                response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-
-                setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
+            for (const employee of validEmployees) {
+                const id = employee.id;
+                const currentSalary = calculatePriceByEmployee(id);
+                const ratingId = selectedRatings[id];
+                const percent = rangeValues[id];
+    
+                const payload = {
+                    reviews_id: reviews_id,
+                    teams_id: team_id,
+                    ratings_id: ratingId,
+                    employees_id: id,
+                    price: currentSalary,
+                    percent: percent,
+                };
+    
+                const existingRecord = ratingsTeamEmployees.find(r => r.employees_id === id);
+                let response;
+    
+                if (existingRecord) {
+                    response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
+    
+                    setRatingsTeamEmployees(prevState =>
+                        prevState.map(item =>
+                            item.id === existingRecord.id ? { ...item, ...payload } : item
+                        )
+                    );
+                } else {
+                    response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+    
+                    setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
+                }
             }
-
+    
+            showSuccessAlert("Valid data has been saved.");
         } catch (error) {
             console.error('Error al enviar datos:', error);
+        } finally {
+            setIsSubmitting(false); 
         }
-        showSuccessAlert("Your work has been saved");
-        setErrors('')
     };
+    
+
 
     const changeValueSelect = async (employeeId, event) => {
 
@@ -593,7 +681,7 @@ const FormEmployees: React.FC = () => {
 
         //habilito si es admin
 
-        if (isAdmin) {
+        if (isAdmin || isSuper) {
             return false;
         }
 
@@ -625,31 +713,25 @@ const FormEmployees: React.FC = () => {
     };
 
     const enableRatings = (employeeId) => {
-
-        // si es true se deshabilita
+    
+        // Regla 1: Admin o Superuser siempre pueden editar
+        if (isAdmin || isSuper) {
+            return false; // false = habilitado
+        }
+    
+        // Regla 2: Si es tanto Approver como Manager, se habilita
         if (isValidator) {
-            return true
+            return true;
         }
-
-        if (isManager) {
-            return true
-        }
-
-        if (validatorAndManager) {
-            return false
-        }
-
-        if (isAdmin) {
+    
+        // Regla 4: Caso especial por estado
+        if (isManager && (reviewTeam.status === 1 || statusValues[employeeId] === 2)) {
             return false;
         }
-
-        if (isManager && reviewTeam.status === 1 || statusValues[employeeId] === 2) {
-            return false;
-        }
-
+    
+        // Por defecto, deshabilitado
         return true;
-
-    }
+    };
 
     //habilitar porcentaje segun rol
     const enablePercent = (employeeId) => {
@@ -861,7 +943,7 @@ const FormEmployees: React.FC = () => {
                                                         className="form-control"
                                                         style={{ width: '100%' }}
                                                         value={meritChecked(item.id)}
-                                                        onChange={(e) => changeValueSelect(item.id, e)} // Descomentado
+                                                        onChange={(e) => changeValueSelect(item.id, e)}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter') {
                                                                 handleSelectChange(item.id, e);
@@ -916,7 +998,7 @@ const FormEmployees: React.FC = () => {
                                                     </td>
                                                 )}
 
-                                                {(isAdmin) && (
+                                                {(isAdmin || isSuper) && (
                                                     <td>
                                                         <a
                                                             className="btn btn-light btn-xs m-1"
@@ -935,6 +1017,7 @@ const FormEmployees: React.FC = () => {
 
             <div className="col-12">
                 <div className="bg-white">
+                    
                     {
                         isValidator && reviewTeam?.status === 2 && (
                             <>
@@ -965,17 +1048,30 @@ const FormEmployees: React.FC = () => {
                         >
                             <i className="bi bi-save"></i> Submit
                         </a>)
+                    }
 
+                    {
+                        (
+                            isAdmin || isSuper || (isManager && reviewTeam?.status !== 3)
+                        ) && (
+                            <a
+                                onClick={() => !isSubmitting && handleSubmit()}
+                                className={`btn btn-outline-primary mt-3 mx-2 float-end ${isSubmitting ? 'disabled' : ''}`}
+                                style={{ pointerEvents: isSubmitting ? 'none' : 'auto', opacity: isSubmitting ? 0.6 : 1 }}
+                            >
+                                <i className="bi bi-save"></i> {isSubmitting ? 'Saving...' : 'Save all'}
+                            </a>
+                        )
                     }
 
                     {
                         reviewTeam?.status === 3 && (
-                            <span className="badge rounded-pill bg-success float-end p-3" style={{ fontSize: '1.0rem' }}>
+                            <span className="badge rounded-pill bg-success float-end p-3 mt-3 " style={{ fontSize: '1.0rem' }}>
                                 <i className="bi bi-check-circle"></i> Done
                             </span>
                         )
                     }
-
+                    
                 </div>
             </div>
         </div>
