@@ -325,13 +325,19 @@ const FormEmployees: React.FC = () => {
                 newErrors.range = 'Required.';
             }
             
-            validEmployees.push(employee);
+            //validEmployees.push(employee);
 
             // if (Object.keys(newErrors).length > 0) {
             //     updatedErrors[id] = newErrors;
             // } else {
             //     validEmployees.push(employee);
             // }
+            if (Object.keys(newErrors).length > 0) {
+                updatedErrors[id] = newErrors;
+            }
+            
+            validEmployees.push(employee);
+            
         }
     
         // Mostrar solo errores de los inválidos

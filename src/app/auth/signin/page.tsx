@@ -114,8 +114,17 @@ export default function SignIn({ searchParams }: PageProps) {
                   </div>
                 )}
               </div>
-              <div className="text-center mt-3">
-                <a href="#">Forgot password?</a>
+              <div className="row">
+                <div className="col-8">
+                  <div className="text-end mt-2">
+                    <a href="#">Forgot password?</a>
+                  </div>
+                </div>
+                <div className="col-4">
+                  <div className="text-end mt-2">
+                  v 140525
+                  </div>
+                </div>
               </div>
             </form>
             <div className="container mt-5 text-center">
