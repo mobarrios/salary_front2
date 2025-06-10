@@ -26,7 +26,7 @@ const FormUsers: React.FC = ({ id, type, onClose }) => {
             if (type) {
                 setLoading(true);
                 const jsonData = await fetchData(session?.user.token, 'GET', `${name}/${id}`);
-               
+                console.log(jsonData)
                 if (jsonData) {
                     updateItemState(jsonData.data[0], keys);
                     setLoading(false);

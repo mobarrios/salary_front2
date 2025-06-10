@@ -3,42 +3,69 @@ import { Title } from "@/components/Title";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import Breadcrumb from "@/components/BreadCrumb";
-import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from "@/server/services/core/fetchData";
-import { formatDate } from "@/functions/formatDate";
-import Reports from "./reports";
-import ReviewTeam from "../reviews/teams/page";
+import Reports from "../../../components/Dashboard/Reports";
+import TodoList from '@/components/Dashboard/TodoList';
+import Profile from '@/components/Dashboard/Profile';
+import SelectReview from "@/components/Dashboard/SelectReview";
+import Table from "@/components/Dashboard/Table";
 
 const Home = () => {
   const { data: session, status } = useSession()
+
+  //roles
+  const isSuper = session?.user?.roles?.some(role => role.name === 'superuser');
+  const isManager = session?.user?.roles?.some(role => role.name === 'manager');
   const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
-  const validatorAndManager = session?.user?.roles?.some(role => role.name === 'approver' && role.name === 'manager');
+  
+  // KPI
   const [teamUser, setTeamUser] = useState({});
-  const [teamAll, setTeamAll] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [selectedReview, setSelectedReview] = useState("");
-  const [reviewsTeams, setReviewsTeams] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [reviewsTeamsEmployees, setReviewsTeamsEmployees] = useState([]);
+  const [employeesReviewsTeams, setEmployeesReviewsTeams] = useState([]);
+  const [teamsIds, setTeamsId] = useState([])
 
-  //total filtered for review
+  //total
   const [totalBudget, setTotalBudget] = useState();
   const [totalTeamAssigned, setTotalTeamAssigned] = useState();
   const [totalEmployeeAssigned, setTotalEmployeeAssigned] = useState();
   const [totalConsumed, setTotalConsumed] = useState();
+  const [totalEmployees, setTotalEmployees] = useState();
+  const [totalEmployeesCargados, setTotalEmployeesCargados] = useState();
+ 
+  //select
+  const [selectedReview, setSelectedReview] = useState("");
+  const [lastReviewId, setLastReviewId] = useState();
+
+  //table 
+  const [table, setTable] = useState([])
 
   const userData = async () => {
     try {
 
       // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
+      setTeams(teamsData)
       const userIdToFilter = session?.user.email;
-      
+
       // todos los teams que tienen al usuario logeado
       const teamUserFilter = teamsData.data.filter(grupo =>
         grupo.users.some(user => user.email === userIdToFilter)
       );
-     
+
+      // teams ID
       const teamIds = teamUserFilter.map(team => team.id);
+      setTeamsId(teamIds)
+
+      const teamsFiltrados = teamUserFilter.filter(team => teamIds.includes(team.id));
+      const totalEmpleados = teamsFiltrados.reduce((total, team) => {
+        return total + (team.employees?.length || 0);
+      }, 0);
+
+      setTotalEmployees(totalEmpleados);
+
       const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
       const filteredReviewTeams = reviewTeamsResponse.data
@@ -56,7 +83,7 @@ const Home = () => {
       const sortedReviewTeams = filteredReviewTeams.sort((a, b) => {
         return new Date(b.created_at) - new Date(a.created_at);
       });
-
+     
       setTeamUser(sortedReviewTeams)
 
     } catch (error) {
@@ -65,18 +92,10 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    if (session?.user.token) {
-      userData();
-      infoData();
-    }
-  }, [session?.user.token]);
- 
-
-   const infoData = async () => {
+  const kpiData = async () => {
     try {
 
-      // all teams
+      // All reviews
       const reviewsAll = await fetchData(session?.user.token, 'POST', `reviews_all`);
       setReviews(reviewsAll);
 
@@ -85,48 +104,87 @@ const Home = () => {
         return item.id > max.id ? item : max;
       }, reviewsAll[0]);
 
-      // all reviews teams employees
+      setLastReviewId(ultimoReview.id)
+      // All reviews teams employees
       const reviewsTeams = await fetchData(session?.user.token, 'POST', `reviews_teams`);
-      setReviewsTeams(reviewsTeams)
-      
-      //inicio
-      calcularResumenReview(reviewsTeams, ultimoReview.id)
-      // Calcular resumen inicial y actualizar estados
-      const resumenReview = calcularResumenReview(reviewsTeams, ultimoReview.id);
+      setReviewsTeamsEmployees(reviewsTeams)
 
-      setSelectedReview(ultimoReview.id);
+      const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=2000`);
+      setEmployeesReviewsTeams(reviewTeamEmployeesResponse)
+      
+      //resumen review
+      const resumenReview = calcularResumenReview(reviewsTeams, ultimoReview.id);
+      const updateTable =  calcularTable(reviewsTeams, ultimoReview.id, teamsIds);
+      
+      setSelectedReview(ultimoReview.id)
+      setTable(updateTable)
       setTotalBudget(resumenReview.reviewTotalPrice);
       setTotalTeamAssigned(resumenReview.teamAssigned);
       setTotalEmployeeAssigned(resumenReview.totalAssigned);
       setTotalConsumed(resumenReview.porcentajeConsumido);
+  
 
-      const resumen = calcularTable(reviewsTeams, ultimoReview.id)
-      setTeamAll(resumen)   
-    
     } catch (error) {
       console.error('Error fetching data:', error);
       return null;
     }
   };
 
-  const calcularTable = (reviewsTeams, reviewId) => {
+  const calcularResumenReview = (reviewsTeams, selectedId) => {
+    // filtered by team_id
+    const filtered = reviewsTeams.filter(item =>
+      item.review_id == selectedId &&
+      teamsIds.includes(Number(item.team_id))
+    );
+ 
+    const reviewItem = filtered.find(item => item.review_id == selectedId);
+    const reviewTotalPrice = reviewItem?.review_total_price ?? 0;
+    const equiposContados = new Set();
+
+    const teamAssigned = filtered
+    .reduce((sum, item) => {
+      if (!equiposContados.has(item.team_name)) {
+        equiposContados.add(item.team_name);
+        return sum + (item.team_assigned_price ?? 0);
+      }
+      return sum;
+    }, 0);
+    
+    const totalAssigned = filtered.reduce((sum, item) => sum + item.employee_assigned_price, 0);
+    const porcentajeConsumido = teamAssigned > 0
+      ? ((totalAssigned / teamAssigned) * 100).toFixed(2)
+      : "0.00";
+
+    return {
+      reviewTotalPrice,
+      teamAssigned,
+      totalAssigned,
+      porcentajeConsumido
+    };
+  };
+
+  const calcularTable = (reviewsTeams, reviewId, teamsIds) => {
+
     const resumen = reviewsTeams
-      .filter(item => item.review_id == reviewId) 
-      .reduce((acc, item) => {
-        const team = item.team_name;
+    .filter(item =>
+      item.review_id == reviewId &&
+      teamsIds.includes(item.team_id)
+    )
+    .reduce((acc, item) => {
+      const team = item.team_name;
 
-        if (!acc[team]) {
-          acc[team] = {
-            team_name: team,
-            total_employee_assigned_price: 0,
-            team_assigned_price: item.team_assigned_price
-          };
-        }
+      if (!acc[team]) {
+        acc[team] = {
+          team_name: team,
+          total_employee_assigned_price: 0,
+          team_assigned_price: item.team_assigned_price
+        };
+      }
 
-        acc[team].total_employee_assigned_price += item.employee_assigned_price;
+      acc[team].total_employee_assigned_price += item.employee_assigned_price;
 
-        return acc;
-      }, {});
+      return acc;
+    }, {});
 
     // Agregar % consumido
     const resultadoFinal = Object.values(resumen).map(item => {
@@ -141,126 +199,116 @@ const Home = () => {
       };
     });
 
-    console.log(resultadoFinal)
-
     return resultadoFinal;
   };
 
-  const calcularResumenReview = (reviewsTeams, selectedId) => {
-    const reviewItem = reviewsTeams.find(item => item.review_id == selectedId);
-    const reviewTotalPrice = reviewItem?.review_total_price ?? 0;
-    //const teamAssigned = reviewItem?.team_assigned_price ?? 0;
-
-    const equiposContados = new Set();
-
-    const teamAssigned = reviewsTeams
-      .filter(item => item.review_id == selectedId)
-      .reduce((sum, item) => {
-        if (!equiposContados.has(item.team_name)) {
-          equiposContados.add(item.team_name);
-          return sum + (item.team_assigned_price ?? 0);
-        }
-        return sum;
-      }, 0);
-    
-    const totalAssigned = reviewsTeams
-      .filter(item => item.review_id == selectedId)
-      .reduce((sum, item) => sum + item.employee_assigned_price, 0);
-
-    const porcentajeConsumido = teamAssigned > 0
-      ? ((totalAssigned / teamAssigned) * 100).toFixed(2)
-      : "0.00";
-
-    return {
-      reviewTotalPrice,
-      teamAssigned,
-      totalAssigned,
-      porcentajeConsumido
-    };
-  };
-
- const handleChange = (e) => {
+  const handleChange = (e) => {
     const selectedId = e.target.value;
+    const resumen = calcularResumenReview(reviewsTeamsEmployees, selectedId);
 
-    const resumen = calcularResumenReview(reviewsTeams, selectedId);
-    
     setSelectedReview(selectedId);
     setTotalBudget(resumen.reviewTotalPrice);
     setTotalTeamAssigned(resumen.teamAssigned);
     setTotalEmployeeAssigned(resumen.totalAssigned);
     setTotalConsumed(resumen.porcentajeConsumido);
 
-    const updateTable = calcularTable(reviewsTeams, selectedId)
-    setTeamAll(updateTable)   
+    const updateTable =  calcularTable(reviewsTeamsEmployees, selectedId, teamsIds)
+    setTable(updateTable)
+
+    const profile = calculateProfile(employeesReviewsTeams, selectedId)
+    setTotalEmployees(profile.totalEmployees)
+    setTotalEmployeesCargados(profile.totalRatedCount)
+
+  }
+
+  const calculateProfile = (reviewsTeamsResponse: any, selectedId: number) => {
+    console.log(reviewsTeamsResponse)
+    const rtData = Array.isArray(reviewsTeamsResponse?.data)
+      ? reviewsTeamsResponse.data
+      : [];
+
+    const teamsIdByReview = [...new Set(
+      rtData
+        .filter(item =>
+          item.reviews_id === selectedId &&
+          teamsIds.includes(Number(item.teams_id))
+        )
+        .map(item => item.teams_id)
+    )];
+
+    const totalEmployees = teams.data
+      .filter(team => teamsIdByReview.includes(team.id))
+      .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
+
+    const totalRatedCount = rtData
+      .filter(item =>
+        item.reviews_id === selectedId &&
+        teamsIds.includes(Number(item.teams_id)) &&
+        Number(item.price) !== 0
+      ).length;
+
+    return { totalEmployees, totalRatedCount };
   };
+
+  useEffect(() => {
+    if (session?.user.token) {
+      userData();
+    }
+  }, [session?.user.token]);
+
+  useEffect(() => {
+    if (teams) {
+      kpiData();
+    }
+  }, [teams]);
+
+  useEffect(() => {
+    if (teams && lastReviewId) {
+      const profile = calculateProfile(employeesReviewsTeams, lastReviewId)
+      setTotalEmployees(profile.totalEmployees)
+      setTotalEmployeesCargados(profile.totalRatedCount)
+    }
+  }, [teams]);
 
   return (
     <div>
       <Breadcrumb />
       <Title>Welcome  {session?.user.email} ! </Title>
-      
-      { isApprover || validatorAndManager ? <h5>Below you will find all your pending tasks: </h5> : '' }
-      
-      {isAdmin ?
-        <div className="row mt-4">
-          <div className='col-6'></div>    
-          <div className='col-6'>
-            <div className="mb-3 text-end">
-              <label htmlFor="review-select" className="form-label">Review Cycle </label>
-              <select
-                id="review-select"
-                className="form-select"
-                value={selectedReview}
-                onChange={handleChange}
-                style={{ width: 'auto', display: 'inline-block' }} // opcional para achicar
-              >
-                <option value="">Seleccione una review</option>
-                {reviews.map((review) => (
-                  <option key={review.id} value={review.id}>
-                    {review.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-        : ''
+
+      {isApprover || isManager ? <h5>Below you will find all your pending tasks: </h5> : ''}
+
+      {isAdmin || isManager || isSuper ?
+        <SelectReview reviews={reviews} selectedReview={selectedReview} setSelectedReview={setSelectedReview} handleChange={handleChange} /> : ''
       }
 
-      <div className="row mt-4">
-        <div className='col-12'>
-          {
-            (isApprover || validatorAndManager) && (
-              teamUser.length > 0 && teamUser?.map((review, id) => (
-                <>
-                <div className="row m-2" key={review.id}>
-                  <div className="col-3">
-                    {review.teamName}
-                  </div>
-                  <div className="col-3">
-                    {formatDate(review.created_at)}
-                  </div>
-                  <div className="col-4">
-                    <span className="badge rounded-pill bg-danger">Pending</span>
-                  </div>
-                  <div className="col-2">
-                    <a
-                      href={`/admin/reviews/teams/${review.teams_id}/${review.reviews_id}`}
-                      className="btn btn-success ms-2">
-                      <i className="bi bi-pencil"></i>
-                    </a>
-                  </div>
-                </div>
-                </>
-              ))
-            )
-          }
-        </div>
+      {
+        (isApprover) && (
+          <>
+            {/* <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} /> */}
+            <TodoList teamUser={teamUser} />
+          </>
+        )
+      }
+
+      <div className="row">
+        {isAdmin || isManager || isSuper ? 
+          <Reports presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} />          
+          // <Reports teams={teamAll} presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} /> 
+        : ''}    
       </div>
 
       <div className="row">
-        {isAdmin ? <Reports teams={teamAll} presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} /> : ''}    
+        {isAdmin || isManager || isSuper ? 
+          <Table table={table} />
+        : ''}    
       </div>
+
+      <div className="row">
+        { isManager ?
+          <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} />
+        : ''}    
+      </div>
+
     </div>
   );
 };
