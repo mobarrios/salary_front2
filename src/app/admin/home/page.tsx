@@ -20,7 +20,7 @@ const Home = () => {
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
   
   // KPI
-  const [teamUser, setTeamUser] = useState({});
+  const [teamUser, setTeamUser] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [teams, setTeams] = useState([]);
   const [reviewsTeamsEmployees, setReviewsTeamsEmployees] = useState([]);
@@ -83,7 +83,7 @@ const Home = () => {
       const sortedReviewTeams = filteredReviewTeams.sort((a, b) => {
         return new Date(b.created_at) - new Date(a.created_at);
       });
-     
+      
       setTeamUser(sortedReviewTeams)
 
     } catch (error) {
@@ -221,34 +221,47 @@ const Home = () => {
 
   }
 
-  const calculateProfile = (reviewsTeamsResponse: any, selectedId: number) => {
-    console.log(reviewsTeamsResponse)
-    const rtData = Array.isArray(reviewsTeamsResponse?.data)
-      ? reviewsTeamsResponse.data
-      : [];
+ const calculateProfile = (reviewsTeamsResponse: any, selectedId: number) => {
+ 
+  const rtData = Array.isArray(reviewsTeamsResponse?.data)
+    ? reviewsTeamsResponse.data
+    : [];
 
-    const teamsIdByReview = [...new Set(
-      rtData
-        .filter(item =>
-          item.reviews_id === selectedId &&
-          teamsIds.includes(Number(item.teams_id))
-        )
-        .map(item => item.teams_id)
-    )];
-
-    const totalEmployees = teams.data
-      .filter(team => teamsIdByReview.includes(team.id))
-      .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
-
-    const totalRatedCount = rtData
+  const teamsIdByReview = [...new Set(
+    rtData
       .filter(item =>
-        item.reviews_id === selectedId &&
+        item.reviews_id == selectedId &&
+        teamsIds.includes(Number(item.teams_id))
+      )
+      .map(item => item.teams_id)
+  )];
+  
+  const totalEmployees = teams.data
+    .filter(team => teamsIdByReview.includes(team.id))
+    .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
+
+  // Declarar primero la variable
+  let totalRatedCount = 0;
+
+  if (!isApprover) {
+    totalRatedCount = rtData
+      .filter(item =>
+        item.reviews_id == selectedId &&
         teamsIds.includes(Number(item.teams_id)) &&
         Number(item.price) !== 0
       ).length;
+    } else {
+      totalRatedCount = rtData
+        .filter(item =>
+          item.reviews_id == selectedId &&
+          teamsIds.includes(Number(item.teams_id)) &&
+          Number(item.status) == 1
+        ).length;
+    }
 
     return { totalEmployees, totalRatedCount };
   };
+
 
   useEffect(() => {
     if (session?.user.token) {
@@ -277,15 +290,17 @@ const Home = () => {
 
       {isApprover || isManager ? <h5>Below you will find all your pending tasks: </h5> : ''}
 
-      {isAdmin || isManager || isSuper ?
-        <SelectReview reviews={reviews} selectedReview={selectedReview} setSelectedReview={setSelectedReview} handleChange={handleChange} /> : ''
-      }
+      <SelectReview reviews={reviews} selectedReview={selectedReview} setSelectedReview={setSelectedReview} handleChange={handleChange} /> 
 
       {
         (isApprover) && (
           <>
-            {/* <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} /> */}
-            <TodoList teamUser={teamUser} />
+            <div className="row mt-4">
+              <Reports presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} /> 
+            </div>
+            
+            <TodoList teamUser={teamUser} selectedReview={selectedReview} />
+            <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} />
           </>
         )
       }
@@ -293,7 +308,6 @@ const Home = () => {
       <div className="row">
         {isAdmin || isManager || isSuper ? 
           <Reports presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} />          
-          // <Reports teams={teamAll} presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} /> 
         : ''}    
       </div>
 

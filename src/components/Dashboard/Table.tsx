@@ -13,7 +13,8 @@ return (
                             <th scope="col">#</th>
                             <th scope="col">Teams</th>
                             <th scope="col">Budget</th>
-                            <th scope="col">Salary</th>
+                            {/* <th scope="col">Salary</th> */}
+                            <th scope="col">Assigned to teams</th>
                             <th scope="col">Consumed</th>
                         </tr>
                     </thead>
