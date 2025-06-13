@@ -40,7 +40,8 @@ const Home = () => {
   const [lastReviewId, setLastReviewId] = useState();
 
   //table 
-  const [table, setTable] = useState([])
+  const [table, setTable] = useState([]);
+  const [totalEmployeesByTeams, setTotalEmployeesByTeams] = useState([]);
 
   const userData = async () => {
     try {
@@ -60,6 +61,14 @@ const Home = () => {
       setTeamsId(teamIds)
 
       const teamsFiltrados = teamUserFilter.filter(team => teamIds.includes(team.id));
+      
+      const conteo = teamsFiltrados.reduce((acc, team) => {
+        acc[team.id] = team.employees ? team.employees.length : 0;
+        return acc;
+      }, {});
+
+      setTotalEmployeesByTeams(conteo);
+
       const totalEmpleados = teamsFiltrados.reduce((total, team) => {
         return total + (team.employees?.length || 0);
       }, 0);
@@ -164,28 +173,29 @@ const Home = () => {
   };
 
   const calcularTable = (reviewsTeams, reviewId, teamsIds) => {
-
+    
     const resumen = reviewsTeams
     .filter(item =>
       item.review_id == reviewId &&
       teamsIds.includes(item.team_id)
     )
     .reduce((acc, item) => {
-      const team = item.team_name;
+      const teamId = item.team_id;
 
-      if (!acc[team]) {
-        acc[team] = {
-          team_name: team,
+      if (!acc[teamId]) {
+        acc[teamId] = {
+          team_id: teamId,
+          team_name: item.team_name,
           total_employee_assigned_price: 0,
           team_assigned_price: item.team_assigned_price
         };
       }
 
-      acc[team].total_employee_assigned_price += item.employee_assigned_price;
+      acc[teamId].total_employee_assigned_price += item.employee_assigned_price;
 
       return acc;
     }, {});
-
+   
     // Agregar % consumido
     const resultadoFinal = Object.values(resumen).map(item => {
       const consumed_percentage =
@@ -313,7 +323,7 @@ const Home = () => {
 
       <div className="row">
         {isAdmin || isManager || isSuper ? 
-          <Table table={table} />
+          <Table table={table} totalTeamAssigned={totalTeamAssigned} totalEmployeeAssigned={totalEmployeeAssigned} totalEmployeesByTeams={totalEmployeesByTeams} totalConsumed={totalConsumed} />
         : ''}    
       </div>
 
