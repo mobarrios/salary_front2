@@ -122,7 +122,7 @@ export default function SignIn({ searchParams }: PageProps) {
                 </div>
                 <div className="col-4">
                   <div className="text-end mt-2">
-                  v 140525
+                  v 230625
                   </div>
                 </div>
               </div>

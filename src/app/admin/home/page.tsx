@@ -18,7 +18,9 @@ const Home = () => {
   const isManager = session?.user?.roles?.some(role => role.name === 'manager');
   const isAdmin = session?.user?.roles?.some(role => role.name === 'administrator');
   const isApprover = session?.user?.roles?.some(role => role.name === 'approver');
-  
+  const canViewCompleteColumn = isManager || isSuper || isAdmin;
+  const canViewApproverColumn = isApprover || isSuper || isAdmin;
+
   // KPI
   const [teamUser, setTeamUser] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -32,8 +34,6 @@ const Home = () => {
   const [totalTeamAssigned, setTotalTeamAssigned] = useState();
   const [totalEmployeeAssigned, setTotalEmployeeAssigned] = useState();
   const [totalConsumed, setTotalConsumed] = useState();
-  const [totalEmployees, setTotalEmployees] = useState();
-  const [totalEmployeesCargados, setTotalEmployeesCargados] = useState();
  
   //select
   const [selectedReview, setSelectedReview] = useState("");
@@ -42,6 +42,14 @@ const Home = () => {
   //table 
   const [table, setTable] = useState([]);
   const [totalEmployeesByTeams, setTotalEmployeesByTeams] = useState([]);
+  const [totalProfileByTeams, setProfileEmployeesByTeams] = useState([]);
+  const [totalApprovedByTeams, setTotalApprovedByTeams] = useState([]);
+
+  //profile
+  const [totalEmployees, setTotalEmployees] = useState();
+  const [totalEmployeesCargados, setTotalEmployeesCargados] = useState();
+  const [totalEmployeesCargadosApproved, setTotalEmployeesCargadosApproved] = useState();
+
 
   const userData = async () => {
     try {
@@ -79,7 +87,8 @@ const Home = () => {
 
       const filteredReviewTeams = reviewTeamsResponse.data
         .filter(reviewTeam =>
-          teamIds.includes(Number(reviewTeam.teams_id)) && reviewTeam.status === 2
+          //teamIds.includes(Number(reviewTeam.teams_id)) && reviewTeam.status === 2
+          teamIds.includes(Number(reviewTeam.teams_id))
         )
         .map(reviewTeam => {
           const team = teamUserFilter.find(team => team.id === Number(reviewTeam.teams_id));
@@ -92,7 +101,7 @@ const Home = () => {
       const sortedReviewTeams = filteredReviewTeams.sort((a, b) => {
         return new Date(b.created_at) - new Date(a.created_at);
       });
-      
+     
       setTeamUser(sortedReviewTeams)
 
     } catch (error) {
@@ -131,8 +140,17 @@ const Home = () => {
       setTotalTeamAssigned(resumenReview.teamAssigned);
       setTotalEmployeeAssigned(resumenReview.totalAssigned);
       setTotalConsumed(resumenReview.porcentajeConsumido);
-  
+      
+      const profile = calculateProfileManager(reviewTeamEmployeesResponse, lastReviewId)
+      setTotalEmployees(profile.totalEmployees)
+      setTotalEmployeesCargados(profile.totalRatedCount)
+      setProfileEmployeesByTeams(profile.result)
 
+      const approved = calculateProfileApproved(reviewTeamEmployeesResponse, lastReviewId)
+      setTotalEmployees(approved.totalEmployees)
+      setTotalEmployeesCargadosApproved(approved.totalRatedCount)
+      setTotalApprovedByTeams(approved.result)
+      
     } catch (error) {
       console.error('Error fetching data:', error);
       return null;
@@ -195,7 +213,7 @@ const Home = () => {
 
       return acc;
     }, {});
-   
+    
     // Agregar % consumido
     const resultadoFinal = Object.values(resumen).map(item => {
       const consumed_percentage =
@@ -209,6 +227,7 @@ const Home = () => {
       };
     });
 
+    
     return resultadoFinal;
   };
 
@@ -225,51 +244,113 @@ const Home = () => {
     const updateTable =  calcularTable(reviewsTeamsEmployees, selectedId, teamsIds)
     setTable(updateTable)
 
-    const profile = calculateProfile(employeesReviewsTeams, selectedId)
-    setTotalEmployees(profile.totalEmployees)
-    setTotalEmployeesCargados(profile.totalRatedCount)
+    const manager = calculateProfileManager(employeesReviewsTeams, selectedId)
+    setTotalEmployees(manager.totalEmployees)
+    setTotalEmployeesCargados(manager.totalRatedCount)
+    setProfileEmployeesByTeams(manager.result)
+
+    const approved = calculateProfileApproved(employeesReviewsTeams, selectedId)
+    setTotalEmployees(approved.totalEmployees)
+    setTotalEmployeesCargadosApproved(approved.totalRatedCount)
+    setTotalApprovedByTeams(approved.result)
 
   }
 
- const calculateProfile = (reviewsTeamsResponse: any, selectedId: number) => {
- 
-  const rtData = Array.isArray(reviewsTeamsResponse?.data)
-    ? reviewsTeamsResponse.data
-    : [];
+  const calculateProfileManager = (reviewsTeamsResponse: any, selectedId: number) => {
+    
+    const rtData = Array.isArray(reviewsTeamsResponse?.data)
+      ? reviewsTeamsResponse.data
+      : [];
 
-  const teamsIdByReview = [...new Set(
-    rtData
-      .filter(item =>
-        item.reviews_id == selectedId &&
-        teamsIds.includes(Number(item.teams_id))
-      )
-      .map(item => item.teams_id)
-  )];
-  
-  const totalEmployees = teams.data
+    const result = rtData.reduce((acc, item) => {
+      const { teams_id, price, reviews_id } = item;
+
+      if (reviews_id != selectedId || !teamsIds.includes(Number(teams_id))) {
+        return acc;
+      }
+
+      if (!acc[teams_id]) {
+        acc[teams_id] = 0;
+      }
+
+      if (price && price !== 0) {
+        acc[teams_id]++;
+      }
+
+      return acc;
+    }, {});
+
+    const teamsIdByReview = [...new Set(
+      rtData
+        .filter(item =>
+          item.reviews_id == selectedId &&
+          teamsIds.includes(Number(item.teams_id))
+        )
+        .map(item => item.teams_id)
+    )];
+    
+    const totalEmployees = teams.data
     .filter(team => teamsIdByReview.includes(team.id))
     .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
 
-  // Declarar primero la variable
-  let totalRatedCount = 0;
-
-  if (!isApprover) {
+    // Declarar primero la variable
+    let totalRatedCount = 0;
     totalRatedCount = rtData
-      .filter(item =>
-        item.reviews_id == selectedId &&
-        teamsIds.includes(Number(item.teams_id)) &&
-        Number(item.price) !== 0
-      ).length;
-    } else {
-      totalRatedCount = rtData
         .filter(item =>
           item.reviews_id == selectedId &&
           teamsIds.includes(Number(item.teams_id)) &&
-          Number(item.status) == 1
+          Number(item.price) !== 0
         ).length;
-    }
+     
 
-    return { totalEmployees, totalRatedCount };
+    return { totalEmployees, totalRatedCount, result };
+  };
+
+  const calculateProfileApproved = (reviewsTeamsResponse: any, selectedId: number) => {
+ 
+    const rtData = Array.isArray(reviewsTeamsResponse?.data)
+      ? reviewsTeamsResponse.data
+      : [];
+
+    const result = rtData.reduce((acc, item) => {
+      const { teams_id, status, reviews_id } = item;
+
+      if (reviews_id != selectedId) return acc;
+      if (status !== 1) return acc;
+
+      if (!acc[teams_id]) {
+        acc[teams_id] = 0;
+      }
+
+      acc[teams_id]++;
+
+      return acc;
+    }, {});
+    
+    const teamsIdByReview = [...new Set(
+      rtData
+        .filter(item =>
+          item.reviews_id == selectedId &&
+          teamsIds.includes(Number(item.teams_id))
+        )
+        .map(item => item.teams_id)
+    )];
+  
+    const totalEmployees = teams.data
+    .filter(team => teamsIdByReview.includes(team.id))
+    .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
+
+    // Declarar primero la variable
+    let totalRatedCount = 0;
+    totalRatedCount = rtData
+          .filter(item =>
+            item.reviews_id == selectedId &&
+            teamsIds.includes(Number(item.teams_id)) &&
+            Number(item.status) == 1
+          ).length;
+      
+
+    return { totalEmployees, totalRatedCount, result };
   };
 
 
@@ -280,18 +361,25 @@ const Home = () => {
   }, [session?.user.token]);
 
   useEffect(() => {
-    if (teams) {
+    if (teams && teamsIds && teams.data) {
       kpiData();
     }
   }, [teams]);
 
-  useEffect(() => {
-    if (teams && lastReviewId) {
-      const profile = calculateProfile(employeesReviewsTeams, lastReviewId)
-      setTotalEmployees(profile.totalEmployees)
-      setTotalEmployeesCargados(profile.totalRatedCount)
-    }
-  }, [teams]);
+  // useEffect(() => {
+  //   if (teams && lastReviewId) {
+  //     const profile = calculateProfileManager(employeesReviewsTeams, lastReviewId)
+  //     setTotalEmployees(profile.totalEmployees)
+  //     setTotalEmployeesCargados(profile.totalRatedCount)
+  //     setProfileEmployeesByTeams(profile.result)
+
+  //     const approved = calculateProfileApproved(employeesReviewsTeams, lastReviewId)
+  //     setTotalEmployees(approved.totalEmployees)
+  //     setTotalEmployeesCargadosApproved(approved.totalRatedCount)
+  //     setTotalApprovedByTeams(approved.result)
+    
+  // }
+  // }, [teams]);
 
   return (
     <div>
@@ -310,7 +398,7 @@ const Home = () => {
             </div>
             
             <TodoList teamUser={teamUser} selectedReview={selectedReview} />
-            <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} />
+            <Profile table={table} totalEmployeesByTeams={totalEmployeesByTeams} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargadosApproved} name={'Approved profiles'} />
           </>
         )
       }
@@ -323,13 +411,22 @@ const Home = () => {
 
       <div className="row">
         {isAdmin || isManager || isSuper ? 
-          <Table table={table} totalTeamAssigned={totalTeamAssigned} totalEmployeeAssigned={totalEmployeeAssigned} totalEmployeesByTeams={totalEmployeesByTeams} totalConsumed={totalConsumed} />
+          <Table table={table} totalTeamAssigned={totalTeamAssigned} totalEmployeeAssigned={totalEmployeeAssigned} totalEmployeesByTeams={totalEmployeesByTeams} totalConsumed={totalConsumed} totalProfileByTeams={totalProfileByTeams} totalApprovedByTeams={totalApprovedByTeams} showCompleteColumn={canViewCompleteColumn} showApproverColumn={canViewApproverColumn} />
         : ''}    
       </div>
 
       <div className="row">
         { isManager ?
-          <Profile totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} />
+          <Profile table={table} totalEmployeesByTeams={totalEmployeesByTeams} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} name={'Complete profiles'} />
+        : ''}    
+      </div>
+
+      <div className="row">
+        { isAdmin || isSuper ?
+        <>
+          <Profile table={table} totalEmployeesByTeams={totalEmployeesByTeams} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargados} name={'Complete profiles'} />
+          <Profile table={table} totalEmployeesByTeams={totalEmployeesByTeams} totalEmployees={totalEmployees} totalEmployeesCargados={totalEmployeesCargadosApproved} name={'Approved profiles'} />
+        </>
         : ''}    
       </div>
 

@@ -42,7 +42,7 @@ const Home = () => {
 
       // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
-      console.log(teamsData);
+      
       setTeams(teamsData)
       const userIdToFilter = session?.user.email;
 
@@ -142,7 +142,7 @@ const Home = () => {
       );
       
       setFilteredTeamUser(teamUserFilter)
-      console.log('teams', teams.data)
+     
       const teamsFiltrados = teamUserFilter.filter(team => teamsIds.includes(team.id));
       const totalEmpleados = teamsFiltrados.reduce((total, team) => {
         return total + (team.employees?.length || 0);
@@ -167,10 +167,7 @@ const Home = () => {
   };
 
   const calcularTable = (reviewsTeams, reviewId, teamsIds) => {
-    console.log('reviewsTeams', reviewsTeams)
-    console.log('teamsId', teamsIds)
-    console.log('reviewId', reviewId)
-
+   
     const resumen = reviewsTeams
       .filter(item =>
         item.review_id == reviewId &&
@@ -195,7 +192,6 @@ const Home = () => {
         return acc;
       }, {});
 
-    console.log('resumen', resumen)
     // Agregar % consumido
     const resultadoFinal = Object.values(resumen).map(item => {
       const consumed_percentage =

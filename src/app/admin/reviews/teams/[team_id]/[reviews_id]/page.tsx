@@ -137,7 +137,6 @@ const FormEmployees: React.FC = () => {
         try {
             // team
             const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${team_id}`);
-            console.log('teamResponse', teamResponse)
             setTeam(teamResponse[0]);
 
             // update all employees with salary
