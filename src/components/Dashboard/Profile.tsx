@@ -1,11 +1,21 @@
 import React from 'react';
 import { formatDate } from "@/functions/formatDate";
 
-const Profile = ({ table ,totalEmployeesByTeams, totalEmployees, totalEmployeesCargados, name }) => {
+
+const Profile = ({ table ,totalEmployeesByTeams, totalEmployees, totalEmployeesCargados, name, reviewTeam, missingApproved }) => {
+
+    let source; // o const si la asignás inmediatamente
+    
+    if (missingApproved) {
+        source = missingApproved;
+       
+    } else {
+        source = totalEmployeesByTeams;
+    }
 
     const totalByEmployees = table.reduce((sum, team) => {
-        const count = totalEmployeesByTeams[team.team_id] || 0;
-        return sum + count;
+    const count = source?.[team.team_id] || 0;
+    return sum + count;
     }, 0);
 
     const cargados = totalEmployeesCargados;
@@ -13,6 +23,7 @@ const Profile = ({ table ,totalEmployeesByTeams, totalEmployees, totalEmployeesC
     const porcentaje = (cargados / total) * 100;
     const color = porcentaje === 100 ? 'bg-success' : ''
     const colorText = porcentaje === 100 ? 'text-success' : 'text-primary'
+    
     return (
 
         <div className='col-12 mt-4'>
