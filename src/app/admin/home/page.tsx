@@ -119,6 +119,7 @@ const Home = () => {
 
       // All reviews
       const reviewsAll = await fetchData(session?.user.token, 'POST', `reviews_all`);
+     
       setReviews(reviewsAll);
 
       // Ultimo cargado
@@ -131,6 +132,7 @@ const Home = () => {
       
       // All reviews teams employees
       const reviewsTeams = await fetchData(session?.user.token, 'POST', `reviews_teams`);
+      
       setReviewsTeamsEmployees(reviewsTeams)
 
       const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=2000`);
@@ -143,7 +145,7 @@ const Home = () => {
       // const selectedReviewTeam = reviewsTeams.data.find(item => item.reviews_id == ultimoReview.id);
       // setReviewTeam(selectedReviewTeam)
       // console.log('selectedReviewTeam', selectedReviewTeam)
-
+     
       setSelectedReview(ultimoReview.id)
       setTable(updateTable)
       setTotalBudget(resumenReview.reviewTotalPrice);
@@ -174,8 +176,9 @@ const Home = () => {
       item.review_id == selectedId &&
       teamsIds.includes(Number(item.team_id))
     );
- 
+    console.log(reviewsTeams)
     const reviewItem = filtered.find(item => item.review_id == selectedId);
+    console.log(reviewItem)
     const reviewTotalPrice = reviewItem?.review_total_price ?? 0;
     const equiposContados = new Set();
 

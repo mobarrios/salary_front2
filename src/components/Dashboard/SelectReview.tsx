@@ -15,7 +15,7 @@ return (
             onChange={handleChange}
             style={{ width: 'auto', display: 'inline-block' }} // opcional para achicar
         >
-            <option value="">Seleccione una review</option>
+            <option value="">Select a review</option>
             {reviews.map((review) => (
             <option key={review.id} value={review.id}>
                 {review.name}
