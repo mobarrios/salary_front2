@@ -6,6 +6,7 @@ type Model = {
     status: number;
     name: string;
     price: number;
+    annual_merit: number;
     daterange: {
         form: string;
         to: string;
@@ -18,6 +19,7 @@ export const model: Model = {
     status: 0,
     name: "",
     price: 0,
+    annual_merit: 0,
     daterange: {
         form: "",
         to: "",
@@ -27,6 +29,7 @@ export const model: Model = {
 export const headers = [
     { name: 'Name', key: 'name' },
     { name: 'Budget', key: 'price' },
+    { name: 'Annual merit', key: 'annual_merit' },
     //{ name: 'From', key: 'form', type: 'date' },
     //{ name: 'To', key: 'to', type: 'date' },
     { name: 'Status', key: 'status', type: 'select', options: [{ label: 'Active', value: '1' }, { label: 'Closed', value: '0' }] }, // Opciones con valores

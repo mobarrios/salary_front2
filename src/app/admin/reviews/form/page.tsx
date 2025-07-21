@@ -62,6 +62,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
             updatedItem['status'] = jsonData.status
             updatedItem['name'] = jsonData.name
             updatedItem['price'] = jsonData.price
+            updatedItem['annual_merit'] = jsonData.annual_merit
             updatedItem['daterange'].form = jsonData.form
             updatedItem['daterange'].to = jsonData.to
 
@@ -76,6 +77,7 @@ const FormReview: React.FC = ({ id, type, onClose }) => {
             status: values.status,
             price: values.price,
             name: values.name,
+            annual_merit: values.annual_merit,
             //form: '2024-09-16',
             //to: '2024-09-20',
             form: values.daterange.form,

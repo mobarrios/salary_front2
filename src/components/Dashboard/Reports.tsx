@@ -3,7 +3,13 @@
 import React, { useEffect, useState } from "react"
 import { formatPrice } from '@/functions/formatDate';
 
-const Reports: React.FC = ({ presupuesto, teamAsignado, employeeAsignado, consumido }) => {
+const Reports: React.FC = ({ table, annualMerit, presupuesto, teamAsignado, employeeAsignado, consumido }) => {
+    
+    const totalByconsumed = table.reduce((sum, team) => {
+        
+        const count = annualMerit[team.team_id] || 0;
+        return sum + count;
+    }, 0);
 
     return (
         <>
@@ -44,9 +50,9 @@ const Reports: React.FC = ({ presupuesto, teamAsignado, employeeAsignado, consum
                 <div className="card">
                     <div className="card-body">
                         <h4 className="card-title text-center">
-                            Consumed <i className="bi bi-graph-up-arrow text-danger ms-2"></i>
+                            Annual Merit  <i className="bi bi-graph-up-arrow text-danger ms-2"></i>
                         </h4>
-                        <p className="fs-1 text-center text-primary">{consumido} %</p>
+                        <p className="fs-1 text-center text-primary">  {((employeeAsignado / totalByconsumed) * 100).toFixed(2)} %</p>
                     </div>
                 </div>
             </div>

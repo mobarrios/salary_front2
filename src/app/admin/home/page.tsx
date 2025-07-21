@@ -9,6 +9,7 @@ import TodoList from '@/components/Dashboard/TodoList';
 import Profile from '@/components/Dashboard/Profile';
 import SelectReview from "@/components/Dashboard/SelectReview";
 import Table from "@/components/Dashboard/Table";
+import { formatSalary } from "@/functions/formEmployeeHandlers";
 
 const Home = () => {
   const { data: session, status } = useSession()
@@ -53,6 +54,7 @@ const Home = () => {
   const [totalEmployeesCargados, setTotalEmployeesCargados] = useState();
   const [totalEmployeesCargadosApproved, setTotalEmployeesCargadosApproved] = useState();
   const [missingApproved, setMissingApproved] = useState();
+  const [annualMerit, setAnnualMerit] = useState({});
 
   const userData = async () => {
     try {
@@ -72,11 +74,16 @@ const Home = () => {
       setTeamsId(teamIds)
 
       const teamsFiltrados = teamUserFilter.filter(team => teamIds.includes(team.id));
+      // actualizar salarios
       
+
       const conteo = teamsFiltrados.reduce((acc, team) => {
         acc[team.id] = team.employees ? team.employees.length : 0;
         return acc;
       }, {});
+
+      const resultSalary = await updateEmployeesTeams(teamsFiltrados)
+      setAnnualMerit(resultSalary);
 
       setTotalEmployeesByTeams(conteo);
 
@@ -125,10 +132,10 @@ const Home = () => {
       const ultimoReview = reviewsAll.reduce((max, item) => {
         return item.id > max.id ? item : max;
       }, reviewsAll[0]);
-      
+
       setReview(ultimoReview)
       setLastReviewId(ultimoReview.id)
-      
+     
       // All reviews teams employees
       const reviewsTeams = await fetchData(session?.user.token, 'POST', `reviews_teams`);
       setReviewsTeamsEmployees(reviewsTeams)
@@ -170,12 +177,14 @@ const Home = () => {
 
   const calcularResumenReview = (reviewsTeams, selectedId) => {
     // filtered by team_id
+    
     const filtered = reviewsTeams.filter(item =>
       item.review_id == selectedId &&
       teamsIds.includes(Number(item.team_id))
     );
- 
+    
     const reviewItem = filtered.find(item => item.review_id == selectedId);
+   
     const reviewTotalPrice = reviewItem?.review_total_price ?? 0;
     const equiposContados = new Set();
 
@@ -252,8 +261,7 @@ const Home = () => {
     // Review team
     const selectedReviewTeam = reviewsTeams.data.find(item => item.reviews_id == selectedId);
     setReviewTeam(selectedReviewTeam)
-    console.log('selectedReviewTeam change', selectedReviewTeam)
-
+    
     const resumen = calcularResumenReview(reviewsTeamsEmployees, selectedId);
 
     setSelectedReview(selectedId);
@@ -381,6 +389,62 @@ const Home = () => {
     return { totalEmployees, totalRatedCount, result };
   };
 
+  const updateEmployeesTeams = async (teams) => {
+    const salaryByTeam = {};
+
+    for (const team of teams) {
+      let totalSalary = 0;
+
+      if (Array.isArray(team.employees)) {
+        const salaries = await Promise.all(
+          team.employees.map(async (employee) => {
+            try {
+              const res = await fetchData(session?.user.token, 'GET', `employees/${employee.id}`);
+              const salary = formatSalary(res?.actual_external_data?.annual_salary ?? 0);
+              
+              return salary;
+            } catch (error) {
+              console.error(`Error fetching employee ${employee.id}`, error);
+              return 0;
+            }
+          })
+        );
+
+        totalSalary = salaries.reduce((sum, s) => sum + s, 0);
+      }
+
+      salaryByTeam[team.id] = totalSalary;
+      
+    }
+    
+    return salaryByTeam;
+  };
+
+
+  // const updateEmployeesTeams = async (teams) => {
+  //   const employeeData = [];
+
+  //   for (const team of teams) {
+  //     if (Array.isArray(team.employees)) {
+  //       for (const employee of team.employees) {
+  //         const res = await fetchData(session?.user.token, 'GET', `employees/${employee.id}`);
+  //         console.log('Res', res)
+  //         const annual_salary = res.actual_external_data?.annual_salary;
+
+  //         if (annual_salary !== undefined) {
+  //           employeeData.push({
+  //             id: employee.id,
+  //             annual_salary,
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   console.log('Employee data:', employeeData);
+  //   return employeeData;
+  // };
+
 
   useEffect(() => {
     if (session?.user.token) {
@@ -428,7 +492,7 @@ const Home = () => {
         (isApprover) && (
           <>
             <div className="row mt-4">
-              <Reports presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} /> 
+              <Reports table={table} annualMerit={annualMerit} presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} /> 
             </div>
             
             <TodoList teamUser={teamUser} selectedReview={selectedReview} />
@@ -439,13 +503,13 @@ const Home = () => {
 
       <div className="row">
         {isAdmin || isManager || isSuper ? 
-          <Reports presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} />          
+          <Reports table={table} annualMerit={annualMerit} presupuesto={totalBudget} teamAsignado={totalTeamAssigned} employeeAsignado={totalEmployeeAssigned} consumido={totalConsumed} />          
         : ''}    
       </div>
 
       <div className="row">
         {isAdmin || isManager || isSuper ? 
-          <Table table={table} totalTeamAssigned={totalTeamAssigned} totalEmployeeAssigned={totalEmployeeAssigned} totalEmployeesByTeams={totalEmployeesByTeams} totalConsumed={totalConsumed} totalProfileByTeams={totalProfileByTeams} totalApprovedByTeams={totalApprovedByTeams} showCompleteColumn={canViewCompleteColumn} showApproverColumn={canViewApproverColumn} />
+          <Table annualMerit={annualMerit} table={table} totalTeamAssigned={totalTeamAssigned} totalEmployeeAssigned={totalEmployeeAssigned} totalEmployeesByTeams={totalEmployeesByTeams} totalConsumed={totalConsumed} totalProfileByTeams={totalProfileByTeams} totalApprovedByTeams={totalApprovedByTeams} showCompleteColumn={canViewCompleteColumn} showApproverColumn={canViewApproverColumn} />
         : ''}    
       </div>
 

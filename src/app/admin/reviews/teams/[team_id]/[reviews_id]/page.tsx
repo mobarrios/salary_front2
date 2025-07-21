@@ -116,8 +116,9 @@ const FormEmployees: React.FC = () => {
         const promises = team.employees.map(item =>
             fetchData(session?.user.token, 'GET', `employees/${item.id}`)
         );
-
+       
         const teamResponses = await Promise.all(promises);
+        
         setTeamEmployees(teamResponses)
 
         const newSalaryValues = {};
