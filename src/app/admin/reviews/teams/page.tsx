@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import { formatPrice } from '@/functions/formatDate';
+import Nav from 'react-bootstrap/Nav';
 
 const ReviewTeam: React.FC = ({ id }) => {
 
@@ -276,8 +277,13 @@ const ReviewTeam: React.FC = ({ id }) => {
               ))}
             </tbody>
           </table>
+          {(isAdmin) && (
+          <Link href={`/admin/emails/${id}`} className="btn btn-sm btn-primary float-end">
+            Email template
+          </Link>
+          )}
         </div>
-      </div >
+      </div>
     </>
   );
 };

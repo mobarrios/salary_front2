@@ -191,7 +191,7 @@ export default function EditorPDF() {
             <div
               className="editor-content"
               style={{ marginTop: '20px' }}
-              dangerouslySetInnerHTML={{ __html: value }} // ✅ esto incluye el contenido de ReactQuill
+              dangerouslySetInnerHTML={{ __html: value }}
             />
 
             <div className="table-container" style={{ marginTop: '20px' }}>

@@ -65,6 +65,7 @@ const NavbarComp = () => {
                   {/* <NavDropdown.Item href="/admin/roles" active={activePath === '/admin/roles'} >Roles</NavDropdown.Item> */}
                 </NavDropdown>
               )}
+              
             </Nav>
             <Nav >
               {/* <NavDropdown title={session?.user.name} id="basic-nav-dropdown">
