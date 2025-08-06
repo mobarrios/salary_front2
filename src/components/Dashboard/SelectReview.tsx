@@ -13,13 +13,21 @@ return (
             className="form-select"
             value={selectedReview}
             onChange={handleChange}
-            style={{ width: 'auto', display: 'inline-block' }} // opcional para achicar
+            style={{ width: 'auto', display: 'inline-block' }}
+            disabled={!Array.isArray(reviews) || reviews.length === 0}
+
         >
-            <option value="">Seleccione una review</option>
-            {reviews.map((review) => (
-            <option key={review.id} value={review.id}>
-                {review.name}
+            <option value="">
+              {Array.isArray(reviews) && reviews.length > 0
+                ? 'Select a review'
+                : 'Loading reviews...'}
             </option>
+
+            {Array.isArray(reviews) &&
+              reviews.map((review) => (
+                <option key={review.id} value={review.id}>
+                  {review.name}
+                </option>
             ))}
         </select>
         </div>

@@ -58,7 +58,7 @@ const Home = () => {
 
   const userData = async () => {
     try {
-
+      
       // all teams
       const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
       setTeams(teamsData)
@@ -123,7 +123,7 @@ const Home = () => {
 
   const kpiData = async () => {
     try {
-
+      
       // All reviews
       const reviewsAll = await fetchData(session?.user.token, 'POST', `reviews_all`);
       setReviews(reviewsAll);
