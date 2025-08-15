@@ -11,7 +11,6 @@ import { Title } from '@/components/Title';
 import { formatSalary } from '@/functions/formEmployeeHandlers';
 import { formatPrice } from '@/functions/formatDate';
 import { name } from '../../../../reviews/model';
-import { TRUE } from 'sass';
 
 export default function EditorPDF() {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -43,6 +42,10 @@ export default function EditorPDF() {
       if (session?.user.token) {
         try {
           //const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
+          //search by template
+          //const templateResponse = await fetchData(session?.user.token, 'GET', `templates/all/?skip=0&limit=1000`);
+          //let templateFiltered = templateResponse.data.filter(item => item.reviews_id == id);
+          //console.log(templateFiltered)
           
           const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
           // filter rating y employees

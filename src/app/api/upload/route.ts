@@ -1,58 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { IncomingForm } from 'formidable';
-import { Readable } from 'stream';
-import { ReadableStream } from 'stream/web';
-import path from 'path';
-import { IncomingMessage } from 'http';
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
+import fs from "fs/promises";
 
-// Next.js App Router config para permitir multipart/form-data
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-// Convierte ReadableStream de NextRequest a Readable Node.js
-function nextRequestToNodeRequest(req: NextRequest): IncomingMessage {
-  const readable = new Readable({
-    async read() {
-      const reader = req.body?.getReader();
-      if (!reader) return this.push(null);
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        this.push(Buffer.from(value));
-      }
-      this.push(null);
-    },
-  });
-
-  const nodeReq = readable as unknown as IncomingMessage;
-  nodeReq.headers = Object.fromEntries(req.headers.entries());
-  nodeReq.method = req.method;
-  nodeReq.url = req.url || '';
-
-  return nodeReq;
-}
+export const runtime = "nodejs"; // asegúrate de Node.js runtime
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const nodeReq = nextRequestToNodeRequest(req);
+  try {
+    const formData = await req.formData();
 
-  const form = new IncomingForm({
-    uploadDir: path.join(process.cwd(), '/public/uploads'),
-    keepExtensions: true,
-    multiples: false,
-  });
+    // lee opcionalmente header y footer
+    const files: Record<string, File | null> = {
+      header: formData.get("header") as File | null,
+      footer: formData.get("footer") as File | null,
+    };
 
-  return new Promise((resolve, reject) => {
-    form.parse(nodeReq, (err, fields, files) => {
-      if (err) {
-        console.error('Formidable parse error:', err);
-        reject(NextResponse.json({ error: 'Failed to parse form data' }, { status: 500 }));
-        return;
-      }
+    const saved: Record<string, string | null> = { header: null, footer: null };
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
 
-      resolve(NextResponse.json({ fields, files }));
-    });
-  });
+    for (const [field, file] of Object.entries(files)) {
+      if (!file) continue;
+      const arrayBuffer = await file.arrayBuffer(); // SIN streams
+      const buffer = Buffer.from(arrayBuffer);
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const filename = `${Date.now()}_${safeName}`;
+      await fs.writeFile(path.join(uploadDir, filename), buffer);
+      saved[field] = filename;
+    }
+
+    return NextResponse.json({ ok: true, ...saved }, { status: 200 });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ ok: false, error: "Upload failed" }, { status: 500 });
+  }
 }

@@ -110,6 +110,8 @@ export default function EditorPDF() {
                     FormComponent={Form}
                     title={'Edit : '}
                   />
+                  
+                  
                   <Link href={`/admin/emails/employees/${id}/4`} className="btn btn-sm btn-primary float-end">
                     Employees
                   </Link>
