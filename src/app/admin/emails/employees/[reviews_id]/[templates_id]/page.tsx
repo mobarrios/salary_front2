@@ -11,11 +11,15 @@ import { Title } from '@/components/Title';
 import { formatSalary } from '@/functions/formEmployeeHandlers';
 import { formatPrice } from '@/functions/formatDate';
 import { name } from '../../../../reviews/model';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { apiRequest } from '@/server/services/core/apiRequest';
+import { showSuccessAlert } from '@/hooks/alerts';
 
 export default function EditorPDF() {
   const editorRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
-  const { id, employees_id } = useParams();
+  const { reviews_id, templates_id } = useParams();
 
   const [showModal, setShowModal] = useState(false);
   const [modalSend, setModalSend] = useState(false);
@@ -34,33 +38,37 @@ export default function EditorPDF() {
   const [content3, setContent3] = useState("");
   const [reviews, setReviews] = useState([]);
   const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState([]);
-  
+  const [template, setTemplate] = useState([]);
+  const [isSending, setIsSending] = useState(false);
+  const [sentCount, setSentCount] = useState(0);
+
   const bc = [{ label: 'Review Cycle' }];
 
   useEffect(() => {
     const load = async () => {
       if (session?.user.token) {
         try {
-          //const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=${(page - 1) * limit}&limit}`);
+          
           //search by template
-          //const templateResponse = await fetchData(session?.user.token, 'GET', `templates/all/?skip=0&limit=1000`);
-          //let templateFiltered = templateResponse.data.filter(item => item.reviews_id == id);
-          //console.log(templateFiltered)
+          const templateResponse = await fetchData(session?.user.token, 'GET', `templates/all/?skip=0&limit=1000`);
+          let templateFiltered = templateResponse.data.filter(item => item.id == templates_id);
+          
+          setTemplate(templateFiltered[0])
           
           const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
           // filter rating y employees
-          const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.reviews_id == id);
-          console.log(filterRatingEmployees)
+          const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.reviews_id == reviews_id);
+          
           setRatingsTeamEmployees(filterRatingEmployees);
           
-          const res =  await fetchData(session?.user.token, 'GET', `reviews/${id}`);
+          const res =  await fetchData(session?.user.token, 'GET', `reviews/${reviews_id}`);
           setReview(res)
           
           const teamsData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=1000`);
           const userIdToFilter = session?.user.email;
 
           const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
-          const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(id));
+          const employeesWithIdOne = reviewTeamsResponse.data.filter(item => item.reviews_id === parseInt(reviews_id));
 
           const teams = [...new Set(employeesWithIdOne.map(item => (item.teams_id)))];
          
@@ -71,9 +79,8 @@ export default function EditorPDF() {
           const employeeIds: any[] = [];
 
           const filteredTeams = teamUserFilter.filter(team => teams.includes(team.id));
-          console.log('filteredTeams', filteredTeams)
           setTeam(filteredTeams)
-
+          console.log(filteredTeams)
           filteredTeams.forEach(team => {
             if (Array.isArray(team.employees)) {
               team.employees.forEach(employee => {
@@ -83,50 +90,49 @@ export default function EditorPDF() {
               });
             }
           });
-
-        const employeeData = await Promise.all(
-          employeeIds.map(async id => {
-            const res = await fetch(`https://salaryback.binetz.com/api/v1/employees/${id}`);
+         
+          const employeeData = await Promise.all(
+            employeeIds.map(async employeeId => {
             
-            if (!res.ok) {
-              console.error(`Error fetching employee ${id}:`, res.statusText);
-              return null;
-            }
+              const data = await fetchData(session?.user.token, 'GET', `employees/${employeeId}`);
 
-            const data = await res.json();
-            let salary = formatSalary(data.actual_external_data.annual_salary)
-            console.log(data)
+              if (!data) {
+                console.error(`Error fetching employee ${employeeId}:`, res.statusText);
+                return null;
+              }
+
+              //const data = await res.json();
+              let salary = formatSalary(data.actual_external_data.annual_salary)
+              
+              const reviewsTeamsEmployees = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             
-            //filterRatingEmployees.find
-            const existingRecord = filterRatingEmployees.find(r => r.employees_id === id);
-            let percent = existingRecord.percent;
-            let increment = (salary * percent) / 100;
-            let actualSalary = salary + increment
-            console.log(existingRecord)
+              const filteredReviewsTeamsEmployees = reviewsTeamsEmployees.data.filter(item => item.reviews_id == reviews_id && item.employees_id == employeeId);
+              //console.log('filteredReviewsTeamsEmployees', filteredReviewsTeamsEmployees[0])
+              let percent = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].percent : 0;
+              let increment = (salary * percent) / 100;
+              let actualSalary = salary + increment
 
-            return {
-              id: id,
-              salary: salary,
-              increment: percent,
-              actualSalary: actualSalary,
-              email: 'leandroleonelrocha@gmail.com',
-              //(2025 Base Salary * 100 / 2024 Base Salary) -100
-              name: data.name
-            };
-          })
-        );
+              return {
+                id: employeeId,
+                salary: salary,
+                increment: percent,
+                actualSalary: actualSalary,
+                email: 'leandroleonelrocha@gmail.com',
+                //email: 'nicolas.monja@gmail.com',
+                name: data.name
+              };
+            })
+          );
+         
+          // Filtramos nulos
+          const validEmployees = employeeData.filter(emp => emp !== null);
 
-        // Filtramos nulos
-        const validEmployees = employeeData.filter(emp => emp !== null);
+          const employeeMap = Object.fromEntries(
+            validEmployees.map(emp => [emp.id, emp])
+          );
 
-        const employeeMap = Object.fromEntries(
-          validEmployees.map(emp => [emp.id, emp])
-        );
-
-        // Guardamos en el estado
-        setEmployeeInfo(employeeMap);
-
-        console.log(validEmployees)
+          // Guardamos en el estado
+          setEmployeeInfo(employeeMap);
 
         } catch (error) {
           console.error("Error al cargar los datos:", error);
@@ -145,54 +151,79 @@ export default function EditorPDF() {
       // Quitar el ID si se desmarca
       setSelectedEmployees((prev) => prev.filter((id) => id !== employeeId));
     }
-     console.log(selectedEmployees)
+   
+  };
+  
+  const handleTeamCheckboxChange = (e, employees: { id: number }[]) => {
+    if (e.target.checked) {
+      setSelectedEmployees((prev) => {
+        const newIds = employees
+          .map(emp => emp.id)
+          .filter(id => !prev.includes(id)); // solo los no repetidos
+        return [...prev, ...newIds];
+      });
+    } else {
+      setSelectedEmployees((prev) => 
+        prev.filter(id => !employees.some(emp => emp.id === id))
+      );
+    }
   };
 
-  const handleTeamCheckboxChange = (e, employees: { id: number }[]) => {
-  if (e.target.checked) {
-    setSelectedEmployees((prev) => {
-      const newIds = employees
-        .map(emp => emp.id)
-        .filter(id => !prev.includes(id)); // solo los no repetidos
-      return [...prev, ...newIds];
+  async function sendEmailTo(employeeId: string) {
+    const html = generateEmailHTML(employeeInfo[employeeId]);
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        html,
+        email: employeeInfo[employeeId].email,
+        //email: 'leandroleonelrocha@gmail.com',
+        subject: 'Prueba',
+        attachments: {
+          header: template.header, 
+          footer: template.footer
+        },
+      }),
     });
-  } else {
-    setSelectedEmployees((prev) => 
-      prev.filter(id => !employees.some(emp => emp.id === id))
-    );
+
+    console.log('Res: ',res)
+    const data = await res.json();
+
+    if (res.ok) {
+      //showSuccessAlert("Emails sent correctly");
+      //console.log(`Email enviado a ${employee.name}`);
+    } else {
+      //console.error(`Error al enviar a ${employee.name}:`, data.error);
+    }
   }
-};
 
   const handleSubmit = async () => {
-    console.log('Enviando a:', selectedEmployees);
+    
+    if (isSending) return;           
+    setIsSending(true);
+    setSentCount(0);
+   
+    for (const id of selectedEmployees) {
+      
+      const payload = {
+          templates_id: templates_id,
+          reviews_id: reviews_id,
+          employees_id: id
+      };
 
-    // for (const id of selectedEmployees) {
-    //   const employee = employeeInfo[id];
-    //   const html = generateEmailHTML(employee);
+      const response = await apiRequest(`templates/review_template/`, 'POST', payload)
+      
+      console.log('Review_template: ', response)
+      await sendEmailTo(id);   
+      setSentCount((n) => n + 1);
+      
+    }
 
-    //   try {
-    //     const res = await fetch('/api/send-email', {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify({
-    //         html,
-    //         email: employee.email,
-    //       }),
-    //     });
+    setIsSending(false);
+    showSuccessAlert("Emails sent correctly");
 
-    //     const data = await res.json();
-
-    //     if (res.ok) {
-    //       console.log(`Email enviado a ${employee.name}`);
-    //     } else {
-    //       console.error(`Error al enviar a ${employee.name}:`, data.error);
-    //     }
-    //   } catch (error) {
-    //     console.error(`Falló el envío a ${employee.name}:`, error);
-    //   }
-    // }
   };
 
 
@@ -200,7 +231,7 @@ export default function EditorPDF() {
     return `
       <div style="padding: 20px; font-family: Arial;">
         <div class="header">
-          <img src="/header.png" width="100%" style="width: 100%; height: 150px;" />
+          <img src="__HEADER_CID__" style="width:100%" />
         </div>
 
         <p style="text-align: right; font-weight: bold; font-size: 16px; color: black;">
@@ -212,11 +243,11 @@ export default function EditorPDF() {
         </p>
 
         <p style="font-size: 16px; color: black; margin-top: 50px;">
-          Dear ${employee.name},
+          ${template.title} (${employee.name}),
         </p>
 
         <p style="font-size: 16px; color: black;">
-           ${content1 ? content1 : 'You will see this pay change reflected in your April 11, 2025, paycheck.'}
+           ${template?.content1}
         </p>
 
         <div style="margin-top: 50px;">
@@ -239,17 +270,15 @@ export default function EditorPDF() {
         </div>
 
         <p style="font-size: 16px; font-weight: bold; color: black; margin-top: 50px;">
-          
-         ${content2 ? content2 : 'You will see this pay change reflected in your April 11, 2025, paycheck.'}
-          
+         ${template.content2}
         </p>
 
         <p style="font-size: 16px; margin-bottom: 150px; color: black;">
-          ${content3 ? content3 : 'Thank you for your dedication and ongoing commitment to Cotton’s success! If you have any questions, please reach out to your manager for further assistance.'}
+          ${template.content3}
         </p>
 
         <div class="footer" style="margin-top: 40px;">
-          <img src="/footer.png" width="100%" />
+          <img src="__FOOTER_CID__" style="width:100%" />
         </div>
       </div>
     `;
@@ -260,7 +289,7 @@ export default function EditorPDF() {
     <>
 
     <Breadcrumb items={bc} />
-    <Title>Templates - Review # {employees_id}</Title>
+    <Title>Templates - Review # {reviews_id}</Title>
     
       <table className="table">
         <thead>
@@ -268,6 +297,9 @@ export default function EditorPDF() {
             <th scope="col">#</th>
             <th scope="col">Name</th>
             <th scope="col">Cod</th>
+            <th scope="col">Base salary</th>
+            <th scope="col">Increment</th>
+            <th scope="col">Salary actual</th>
             <th scope="col">View</th>
             <th scope="col"></th>
           </tr>
@@ -279,17 +311,19 @@ export default function EditorPDF() {
               <tr className="table-light"> 
                 <th scope="row">
                   <Checkbox 
+                    disabled={isSending}   
                     onChange={(e) => handleTeamCheckboxChange(e, t.employees)} 
                     checked={t.employees.every(emp => selectedEmployees.includes(emp.id))}
                   />
                 </th>
                 <td>{t.name}</td>
                 <td>{t.leader}</td>
-                <td>{t.code}</td>
+                <td>{t.code} </td>
+                <td></td>
+                <td></td>
                 <td></td>
               </tr>
 
-              {/* Empleados del equipo */}
               {Array.isArray(t.employees) && t.employees.map((emp, i) => (
               <tr key={emp.id || i}>
                 <td>
@@ -300,15 +334,35 @@ export default function EditorPDF() {
                 </td>
                 <td>{emp.name}</td>
                 <td>{emp.associate_id}</td>
+
+                <td >
+                  {employeeInfo?.[emp.id]?.salary != null ? (
+                    <>$ {formatPrice(employeeInfo[emp.id].salary)}</>
+                  ) : (
+                    <span className="spinner-border spinner-border-sm" role="status" aria-label="Cargando..." />
+                  )}
+                </td>
+                <td>{employeeInfo[emp.id]?.increment}</td>
+                <td >
+                  {employeeInfo?.[emp.id]?.actualSalary != null ? (
+                    <>$ {formatPrice(employeeInfo[emp.id].actualSalary)}</>
+                  ) : (
+                    <span className="spinner-border spinner-border-sm" role="status" aria-label="Cargando..." />
+                  )}
+                </td>
+
                 <td>
                   <button
                     type="button"
                     onClick={(e) => {
-                      e.preventDefault();  // evita el submit
-                      setShowModal(true);
+                      
+                      e.preventDefault();
                       setEmployeeSelected(emp.id)
+                      setShowModal(true);
+                      
                     }}
                     className="btn btn-outline-primary btn-sm"
+                    
                   >
                     <i className="bi bi-eye"></i>
                   </button>
@@ -328,7 +382,7 @@ export default function EditorPDF() {
             <div className="modal-content">
               
               <div className="modal-header">
-                <h5 className="modal-title">Vista previa del contenido - {employeeSelected}</h5>
+                <h5 className="modal-title">Preview view</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -340,8 +394,9 @@ export default function EditorPDF() {
                 {/* Tu contenido dentro del modal */}
                 <div ref={editorRef} style={{ padding: '20px', fontFamily: 'Arial' }}>
                   <div className="header">
-                    {headerImage ? <img 
-                      src={headerImage} 
+                    {template ? <img 
+                      //src={headerImage.header} 
+                      src={`/uploads/${template.header}`}
                       width="100%" 
                       style={{
                         width: '100%',      // ocupa todo el ancho del contenedor
@@ -360,9 +415,9 @@ export default function EditorPDF() {
                       day: '2-digit'
                     })}
                   </p>
-                  <p style={{ fontSize: 16, color: 'black', marginTop: '50px'}}>{title ? `${title}` : `Dear (${employeeInfo[employeeSelected].name }) ,` } </p>
+                  <p style={{ fontSize: 16, color: 'black', marginTop: '50px'}}>{template ? `${template.title} (${employeeInfo[employeeSelected]?.name }) ` : `` } </p>
                   <p style={{ fontSize: 16, color: 'black' }}>
-                    { content1 ? `${content1}` : `We appreciate and value your contribution to Cotton’s achievements this year. In recognition of your hard work and performance, we are pleased to notify you that you have been awarded the following merit increase effective 01/01/2025.`}
+                    { template ? `${template.content1}` : `We appreciate and value your contribution to Cotton’s achievements this year. In recognition of your hard work and performance, we are pleased to notify you that you have been awarded the following merit increase effective 01/01/2025.`}
                   </p>
 
                   <div style={{ marginTop: '50px' }}>
@@ -376,23 +431,30 @@ export default function EditorPDF() {
                       </thead>
                       <tbody>
                         <tr style={{ textAlign: 'center' }}>
-                          <td style={{ padding: '15px' }}>$ { formatPrice(employeeInfo[employeeSelected].salary) }</td>
-                          <td style={{ padding: '15px' }}>% { formatPrice(employeeInfo[employeeSelected].increment) }</td>
-                          <td style={{ padding: '15px' }}>$ { formatPrice(employeeInfo[employeeSelected].actualSalary) }</td>
+                          <td style={{ padding: '15px' }}>$ { formatPrice(employeeInfo[employeeSelected]?.salary) }</td>
+                          <td style={{ padding: '15px' }}>% { formatPrice(employeeInfo[employeeSelected]?.increment) }</td>
+                          <td style={{ padding: '15px' }}>$ { formatPrice(employeeInfo[employeeSelected]?.actualSalary) }</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
 
                   <p style={{ fontSize: 16, fontWeight: 'bold', color: 'black', marginTop: '50px' }}>
-                   { content2 ? `${content2}` : `You will see this pay change reflected in your April 11, 2025, paycheck.`}
+                   { template ? `${template.content2}` : `You will see this pay change reflected in your April 11, 2025, paycheck.`}
                   </p>
                   <p style={{ fontSize: 16, marginBottom: '150px', color: 'black' }}>
-                    { content3 ? `${content3}` : `Thank you for your dedication and ongoing commitment to Cotton’s success! If you have any questions, please reach out to your manager for further assistance.`}
+                    { template ? `${template.content3}` : `Thank you for your dedication and ongoing commitment to Cotton’s success! If you have any questions, please reach out to your manager for further assistance.`}
                   </p>
 
                   <div className="footer" style={{ marginTop: '40px' }}>
-                    {footerImage ? <img src={footerImage} width="100%" /> : <img src="/footer.png" width="100%" />}
+                    {footerImage ?
+                    <img 
+                      //src={footerImage} 
+                      src={`/uploads/${template.footer}`}
+                      width="100%" 
+                    /> 
+                     : 
+                     <img src="/footer.png" width="100%" />}
                   </div>
                 </div>
               </div>
@@ -413,26 +475,31 @@ export default function EditorPDF() {
 
       <div className="card">
         <div className="card-body">
-         
-          {/* style={{borderBottom: ' 1.5px solid var(--bs-primary) '}} */}
-          {/* <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault(); 
-              setShowModal(true);
-            }}
-            className="btn btn-outline-secondary float-end"
-            //style={{ background: 'var(--bs-primary) '}}
-          >
-            Enviar Emails
-          </button> */}
 
           <div className="d-grid gap-2 col-6 mx-auto">
             <p className='text-center' ><i className='bi bi-envelope'></i><strong> {selectedEmployees.length} </strong> Empleados seleccionados para envío</p>
-            <button className="btn btn-primary" type="button" onClick={ () => handleSubmit() }> Enviar Emails</button>
-     
+            
+            {/* <button className="btn btn-primary" disabled={selectedEmployees.length == 0} type="button" onClick={ () => handleSubmit() }> Enviar Emails</button> */}
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Enviando {sentCount}/{selectedEmployees.length}...
+                </>
+              ) : (
+                'Enviar Emails'
+              )}
+            </button>
           </div>
-
         </div>
       </div>
       

@@ -29,6 +29,7 @@ export default function RemoveItem({ id, url,onDelete }: { id: number, url: stri
                 "Authorization": `Bearer ${session?.user.token}`
             }
         });
+        console.log(resp)
         return resp;
     };
 
@@ -53,6 +54,9 @@ export default function RemoveItem({ id, url,onDelete }: { id: number, url: stri
         }
     };
 
-    return <button onClick={() => handleDelete(id)}
-                    className="btn btn-light  m-1"><i className="text-danger bi bi-trash"></i></button>;
+    return <button  
+                onClick={() => handleDelete(id)}
+                className="btn btn-light  m-1">
+                <i className="text-danger bi bi-trash"></i>
+            </button>;
 }

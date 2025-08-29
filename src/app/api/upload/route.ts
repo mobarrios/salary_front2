@@ -23,8 +23,12 @@ export async function POST(req: NextRequest) {
       if (!file) continue;
       const arrayBuffer = await file.arrayBuffer(); // SIN streams
       const buffer = Buffer.from(arrayBuffer);
-      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-      const filename = `${Date.now()}_${safeName}`;
+      //const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      //const filename = `${Date.now()}_${safeName}`;
+      
+      const ext = path.extname(file.name).toLowerCase();
+      const filename = `${Date.now()}${ext}`;
+
       await fs.writeFile(path.join(uploadDir, filename), buffer);
       saved[field] = filename;
     }
