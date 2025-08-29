@@ -117,8 +117,8 @@ export default function EditorPDF() {
                 salary: salary,
                 increment: percent,
                 actualSalary: actualSalary,
-                email: 'leandroleonelrocha@gmail.com',
-                //email: 'nicolas.monja@gmail.com',
+                //email: 'leandroleonelrocha@gmail.com',
+                email: 'nicolas.monja@gmail.com',
                 name: data.name
               };
             })
