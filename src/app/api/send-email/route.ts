@@ -62,15 +62,22 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 
 export async function POST(req: NextRequest) {
-  const { html, email, subject, attachments } = await req.json(); // 👈 ahora sí
+  const { html, email, subject, attachments } = await req.json();
   if (!html || !email) return new Response(JSON.stringify({ error: 'Datos incompletos' }), { status: 400 });
 
   const user = process.env.EMAIL_USER!;
   const pass = process.env.EMAIL_PASS!;
 
+  // const transporter = nodemailer.createTransport({
+  //   service: 'gmail',
+  //   auth: { user, pass },
+  // });
+
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
+    host: 'smtp.gmail.com',
+    port: 465,        // puerto SMTPS
+    secure: true,     // TLS desde el inicio
+    auth: { user, pass }, // App Password de Gmail
   });
 
   // Convierte lo que te llega (filename o URL) en adjuntos con CID

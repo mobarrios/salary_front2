@@ -80,7 +80,7 @@ export default function EditorPDF() {
 
           const filteredTeams = teamUserFilter.filter(team => teams.includes(team.id));
           setTeam(filteredTeams)
-          console.log(filteredTeams)
+          
           filteredTeams.forEach(team => {
             if (Array.isArray(team.employees)) {
               team.employees.forEach(employee => {
@@ -101,13 +101,12 @@ export default function EditorPDF() {
                 return null;
               }
 
-              //const data = await res.json();
               let salary = formatSalary(data.actual_external_data.annual_salary)
               
               const reviewsTeamsEmployees = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             
               const filteredReviewsTeamsEmployees = reviewsTeamsEmployees.data.filter(item => item.reviews_id == reviews_id && item.employees_id == employeeId);
-              //console.log('filteredReviewsTeamsEmployees', filteredReviewsTeamsEmployees[0])
+              
               let percent = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].percent : 0;
               let increment = (salary * percent) / 100;
               let actualSalary = salary + increment
@@ -179,7 +178,6 @@ export default function EditorPDF() {
       body: JSON.stringify({
         html,
         email: employeeInfo[employeeId].email,
-        //email: 'leandroleonelrocha@gmail.com',
         subject: 'Prueba',
         attachments: {
           header: template.header, 
@@ -187,16 +185,6 @@ export default function EditorPDF() {
         },
       }),
     });
-
-    console.log('Res: ',res)
-    const data = await res.json();
-
-    if (res.ok) {
-      //showSuccessAlert("Emails sent correctly");
-      //console.log(`Email enviado a ${employee.name}`);
-    } else {
-      //console.error(`Error al enviar a ${employee.name}:`, data.error);
-    }
   }
 
   const handleSubmit = async () => {
@@ -213,9 +201,7 @@ export default function EditorPDF() {
           employees_id: id
       };
 
-      const response = await apiRequest(`templates/review_template/`, 'POST', payload)
-      
-      console.log('Review_template: ', response)
+      await apiRequest(`templates/review_template/`, 'POST', payload)
       await sendEmailTo(id);   
       setSentCount((n) => n + 1);
       
@@ -401,9 +387,6 @@ export default function EditorPDF() {
                       style={{
                         width: '100%',      // ocupa todo el ancho del contenedor
                         height: '150px',    // altura fija
-                        //objectFit: 'contain', // mantiene proporción y muestra todo
-                        //border: '1px solid #ccc',
-                        //borderRadius: '8px',
                       }}  
                     /> : <img src="/header.png" width="100%" />}
                   </div>
@@ -447,14 +430,23 @@ export default function EditorPDF() {
                   </p>
 
                   <div className="footer" style={{ marginTop: '40px' }}>
-                    {footerImage ?
+                    {/* {footerImage ?
                     <img 
-                      //src={footerImage} 
                       src={`/uploads/${template.footer}`}
                       width="100%" 
                     /> 
                      : 
-                     <img src="/footer.png" width="100%" />}
+                     <img src="/footer.png" width="100%" />} */}
+                     {template ? <img 
+                      
+                      src={`/uploads/${template.footer}`}
+                      width="100%" 
+                      style={{
+                        width: '100%',      // ocupa todo el ancho del contenedor
+                        height: '150px',    // altura fija
+                      }}  
+                    /> : <img src="/header.png" width="100%" />}
+
                   </div>
                 </div>
               </div>
@@ -465,7 +457,7 @@ export default function EditorPDF() {
                   className="btn btn-secondary"
                   onClick={() => setShowModal(false)}
                 >
-                  Cerrar
+                  Closed
                 </button>
               </div>
             </div>
@@ -477,7 +469,7 @@ export default function EditorPDF() {
         <div className="card-body">
 
           <div className="d-grid gap-2 col-6 mx-auto">
-            <p className='text-center' ><i className='bi bi-envelope'></i><strong> {selectedEmployees.length} </strong> Empleados seleccionados para envío</p>
+            <p className='text-center' ><i className='bi bi-envelope'></i><strong> {selectedEmployees.length} </strong> Employees selected for shipment</p>
             
             {/* <button className="btn btn-primary" disabled={selectedEmployees.length == 0} type="button" onClick={ () => handleSubmit() }> Enviar Emails</button> */}
             <button
@@ -493,7 +485,7 @@ export default function EditorPDF() {
                     role="status"
                     aria-hidden="true"
                   />
-                  Enviando {sentCount}/{selectedEmployees.length}...
+                  Sending {sentCount}/{selectedEmployees.length}...
                 </>
               ) : (
                 'Enviar Emails'

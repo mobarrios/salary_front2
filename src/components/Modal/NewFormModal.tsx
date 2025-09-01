@@ -26,7 +26,7 @@ const ModalComp = ({ isOpen, onClose, title, children }) => {
 };
 
 
-const NewFormModal = ({ itemId, name, FormComponent, type, title }) => {
+const NewFormModal = ({ itemId, name, FormComponent, type, title, onSuccess }) => {
   const [modalId, setModalId] = useState(null);
   const openModal = (id) => {
     setModalId(id);
@@ -42,7 +42,7 @@ const NewFormModal = ({ itemId, name, FormComponent, type, title }) => {
         <button className="btn btn-light ms-2" onClick={() => openModal(itemId)}><i className="bi bi-pencil"></i></button> :
         <button className="btn btn-outline-primary ms-2" onClick={() => openModal(itemId)}>{name}</button>}
       <ModalComp isOpen={modalId === itemId} onClose={closeModal} title={title} >
-        <FormComponent type={type} id={modalId} onClose={closeModal} />
+        <FormComponent type={type} id={modalId} onClose={closeModal} onSuccess={onSuccess} />
       </ModalComp>
     </>
   );
