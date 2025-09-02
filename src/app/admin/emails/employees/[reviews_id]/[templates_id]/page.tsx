@@ -14,7 +14,7 @@ import { name } from '../../../../reviews/model';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { showSuccessAlert } from '@/hooks/alerts';
+import { showErrorAlert, showSuccessAlert } from '@/hooks/alerts';
 
 export default function EditorPDF() {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -168,48 +168,114 @@ export default function EditorPDF() {
     }
   };
 
+  // async function sendEmailTo(employeeId: string) {
+  //   const html = generateEmailHTML(employeeInfo[employeeId]);
+  //   const res = await fetch('/api/send-email', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       html,
+  //       email: employeeInfo[employeeId].email,
+  //       subject: 'Prueba',
+  //       attachments: {
+  //         header: template.header, 
+  //         footer: template.footer
+  //       },
+  //     }),
+  //   });
+  // }
+
   async function sendEmailTo(employeeId: string) {
     const html = generateEmailHTML(employeeInfo[employeeId]);
     const res = await fetch('/api/send-email', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         html,
         email: employeeInfo[employeeId].email,
         subject: 'Prueba',
-        attachments: {
-          header: template.header, 
-          footer: template.footer
-        },
+        attachments: { header: template.header, footer: template.footer },
       }),
     });
-  }
 
-  const handleSubmit = async () => {
-    
-    if (isSending) return;           
-    setIsSending(true);
-    setSentCount(0);
-   
-    for (const id of selectedEmployees) {
-      
-      const payload = {
-          templates_id: templates_id,
-          reviews_id: reviews_id,
-          employees_id: id
-      };
+    // 👇 Si no es 2xx, leer el body y lanzar error
+    const text = await res.text(); // leo texto para poder parsear o loguear
+    console.log('SEND status', res.status, text);
 
-      await apiRequest(`templates/review_template/`, 'POST', payload)
-      await sendEmailTo(id);   
-      setSentCount((n) => n + 1);
-      
+    let data: any = {};
+    try { data = JSON.parse(text); } catch { /* puede no ser JSON */ }
+
+    if (!res.ok) {
+      const msg = data?.error || text || `HTTP ${res.status}`;
+      throw new Error(msg);
     }
 
-    setIsSending(false);
-    showSuccessAlert("Emails sent correctly");
+    return data; // opcional
+  }
 
+  // const handleSubmit = async () => {
+    
+  //   if (isSending) return;           
+  //   setIsSending(true);
+  //   setSentCount(0);
+   
+  //   for (const id of selectedEmployees) {
+      
+  //     const payload = {
+  //         templates_id: templates_id,
+  //         reviews_id: reviews_id,
+  //         employees_id: id
+  //     };
+
+  //     await apiRequest(`templates/review_template/`, 'POST', payload)
+  //     await sendEmailTo(id);   
+  //     setSentCount((n) => n + 1);
+      
+  //   }
+
+  //   setIsSending(false);
+  //   showSuccessAlert("Emails sent correctly");
+
+  // };
+
+  const handleSubmit = async () => {
+    if (isSending) return;
+    setIsSending(true);
+    setSentCount(0);
+
+    const successes: string[] = [];
+    const failures: { id: string; error: string }[] = [];
+
+    try {
+      for (const id of selectedEmployees) {
+        try {
+          const payload = { templates_id, reviews_id, employees_id: id };
+          await apiRequest('templates/review_template/', 'POST', payload);
+
+          await sendEmailTo(id); // lanza si falla
+          setSentCount((n) => n + 1);
+          successes.push(id);
+        } catch (err: any) {
+          console.error('sendEmailTo error for', id, err);
+          failures.push({ id, error: err?.message || String(err) });
+        }
+      }
+
+      if (failures.length === 0) {
+        showSuccessAlert(`Emails sent: ${successes.length}/${selectedEmployees.length}`);
+      } else if (successes.length > 0) {
+        showErrorAlert(
+          `Partial: ${successes.length} ok, ${failures.length} with error. ` +
+          failures.slice(0, 5).map(f => `ID ${f.id}: ${f.error}`).join(' | ')
+        );
+      } else {
+        showErrorAlert(`All failed (${failures.length}). Ej: ${failures[0].id}: ${failures[0].error}`);
+      }
+    } finally {
+      setIsSending(false);
+    }
   };
 
 
@@ -341,11 +407,9 @@ export default function EditorPDF() {
                   <button
                     type="button"
                     onClick={(e) => {
-                      
                       e.preventDefault();
                       setEmployeeSelected(emp.id)
-                      setShowModal(true);
-                      
+                      setShowModal(true); 
                     }}
                     className="btn btn-outline-primary btn-sm"
                     
@@ -381,7 +445,6 @@ export default function EditorPDF() {
                 <div ref={editorRef} style={{ padding: '20px', fontFamily: 'Arial' }}>
                   <div className="header">
                     {template ? <img 
-                      //src={headerImage.header} 
                       src={`/uploads/${template.header}`}
                       width="100%" 
                       style={{
@@ -430,13 +493,6 @@ export default function EditorPDF() {
                   </p>
 
                   <div className="footer" style={{ marginTop: '40px' }}>
-                    {/* {footerImage ?
-                    <img 
-                      src={`/uploads/${template.footer}`}
-                      width="100%" 
-                    /> 
-                     : 
-                     <img src="/footer.png" width="100%" />} */}
                      {template ? <img 
                       
                       src={`/uploads/${template.footer}`}
@@ -446,7 +502,6 @@ export default function EditorPDF() {
                         height: '150px',    // altura fija
                       }}  
                     /> : <img src="/header.png" width="100%" />}
-
                   </div>
                 </div>
               </div>
@@ -470,8 +525,6 @@ export default function EditorPDF() {
 
           <div className="d-grid gap-2 col-6 mx-auto">
             <p className='text-center' ><i className='bi bi-envelope'></i><strong> {selectedEmployees.length} </strong> Employees selected for shipment</p>
-            
-            {/* <button className="btn btn-primary" disabled={selectedEmployees.length == 0} type="button" onClick={ () => handleSubmit() }> Enviar Emails</button> */}
             <button
               className="btn btn-primary"
               type="button"
@@ -488,15 +541,12 @@ export default function EditorPDF() {
                   Sending {sentCount}/{selectedEmployees.length}...
                 </>
               ) : (
-                'Enviar Emails'
+                'Send emails'
               )}
             </button>
           </div>
         </div>
       </div>
-      
-
     </>
-    
   );
 }
