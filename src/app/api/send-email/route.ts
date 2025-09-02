@@ -66,9 +66,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS;
-    
+    //const user = process.env.EMAIL_USER;
+    //const pass = process.env.EMAIL_PASS;
+    const user = 'rochaleandroleonel@gmail.com'
+    const pass = 'plweshznafjndgad'
+
     if (!user || !pass) {
       return new Response(JSON.stringify({ error: 'Faltan EMAIL_USER/EMAIL_PASS' }), {
         status: 500,
