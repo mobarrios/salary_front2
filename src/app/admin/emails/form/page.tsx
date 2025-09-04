@@ -21,23 +21,29 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
   const [content3, setContent3] = useState("")
   const [content4, setContent4] = useState("")
   const [reviews, setReviews] = useState([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitting, setSubmitting] = useState(false)
 
   const router = useRouter()
 
   const validationSchema = Yup.object({
-    title: Yup.string().required("El título es obligatorio"),
-    content1: Yup.string().required("Content 1 es obligatorio"),
-    content2: Yup.string().required("Content 2 es obligatorio"),
-    content3: Yup.string().required("Content 3 es obligatorio"),
+    // title: Yup.string().required("El título es obligatorio"),
+    // content1: Yup.string().required("Content 1 es obligatorio"),
+    // content2: Yup.string().required("Content 2 es obligatorio"),
+    // content3: Yup.string().required("Content 3 es obligatorio"),
+    headerFile: Yup.mixed().required("* Required"),
+    footerFile: Yup.mixed().required("* Required"),
   })
 
   console.log("Form")
-
   const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setHeaderFile(file)
-      setHeaderImage(URL.createObjectURL(file)) // Para preview si querés
+      setHeaderImage(URL.createObjectURL(file))
+      if (errors.headerFile) {
+        setErrors((prev) => ({ ...prev, headerFile: "" }))
+      }
     }
   }
 
@@ -45,12 +51,43 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
     const file = e.target.files?.[0]
     if (file) {
       setFooterFile(file)
-      setFooterImage(URL.createObjectURL(file)) // Para preview si querés
+      setFooterImage(URL.createObjectURL(file))
+      if (errors.footerFile) {
+        setErrors((prev) => ({ ...prev, footerFile: "" }))
+      }
     }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (submitting) return; 
+
+    setSubmitting(true)
+
+    const formData = {
+      title,
+      content1,
+      content2,
+      content3,
+      headerFile,
+      footerFile,
+    }
+
+    try {
+      await validationSchema.validate(formData, { abortEarly: false })
+      setErrors({}) // Clear any previous errors
+    } catch (validationErrors: any) {
+      const errorMessages: Record<string, string> = {}
+      if (validationErrors.inner) {
+        validationErrors.inner.forEach((error: any) => {
+          if (error.path) {
+            errorMessages[error.path] = error.message
+          }
+        })
+      }
+      setErrors(errorMessages)
+      return // Stop submission if validation fails
+    }
 
     const fileUpload = async (file: File, field: "header" | "footer") => {
       const formData = new FormData()
@@ -87,18 +124,19 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
         footer: footerFileName,
       }
 
-      const response = await apiRequest(`templates/`, "POST", payload)
-      console.log(payload, response)
+      const t = await apiRequest(`templates/`, "POST", payload)
+      console.log(payload)
 
       if (onSuccess) {
         onSuccess()
-        
       }
 
       onClose()
-      showSuccessAlert("Your work has been saved");
+      showSuccessAlert("Your work has been saved")
     } catch (err) {
       console.error("Error al enviar formulario:", err)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -107,12 +145,25 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="mb-3">
           <label className="form-label">Header</label>
-          <input type="file" className="form-control" onChange={handleHeaderChange} />
+          {/* <input type="file" className="form-control" onChange={handleHeaderChange} /> */}
+          <input
+            type="file"
+            className="form-control"
+            onChange={handleHeaderChange}
+            accept="image/*"
+          />
+          {errors.headerFile && <div className='text-danger'>{errors.headerFile}</div>}
         </div>
         <div className="mb-3">
           <label className="form-label">Footer</label>
-          <input type="file" className="form-control" onChange={handleFooterChange} />
+          <input 
+            type="file" 
+            className="form-control" 
+            onChange={handleFooterChange} 
+          />
+          {errors.footerFile && <div className='text-danger'>{errors.footerFile}</div>}
         </div>
+
         <div className="mb-3">
           <label className="form-label">Title</label>
           <input
@@ -143,6 +194,14 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
         <button type="submit" className="btn btn-primary">
           Save
         </button>
+
+        {/* <button type="submit" className="btn btn-primary">
+          {submitting && (
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+          )}
+          {submitting ? "Saving..." : "Save"}
+        </button> */}
+
       </form>
     </>
   )
