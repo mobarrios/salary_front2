@@ -24,7 +24,7 @@ export default function EditorPDF() {
 
   // Lógica de búsqueda real a la API
   const handleSearch = async (search: string) => {
-    console.log(search)
+   
     try {
     //https://salaryback.binetz.com/api/v1/employees/all/?skip=1&limit=10&search=Carolina%20Castillo
 
@@ -33,7 +33,7 @@ export default function EditorPDF() {
         'GET',
         `employees/all/?skip=1&limit=10&search=${search}`
       );
-      console.log(res)
+     
       setResults(res.data || []);
     } catch (error) {
       console.error('Error al buscar:', error);
@@ -45,7 +45,7 @@ export default function EditorPDF() {
   
 
   const handleSelect = (item: any) => {
-    console.log(item)
+   
     setSelectedData(item);
     setResults([]);
     setQuery('');
@@ -74,7 +74,7 @@ export default function EditorPDF() {
             body: formData,
           });
 
-          console.log(response)
+         
 
           alert('PDF enviado por email');
         });

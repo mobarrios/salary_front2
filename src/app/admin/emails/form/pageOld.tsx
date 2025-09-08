@@ -33,7 +33,7 @@ const Form: React.FC = ({ id, onClose }) => {
     content3: Yup.string().required("Content 3 es obligatorio"),
   });
 
-  console.log('Form')
+
 
   const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,7 +90,7 @@ const Form: React.FC = ({ id, onClose }) => {
       };
 
       const response = await apiRequest(`templates/`, 'POST', payload)
-      console.log(payload, response)
+      
 
       onClose();
       

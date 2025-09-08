@@ -176,9 +176,9 @@ const Home = () => {
       item.review_id == selectedId &&
       teamsIds.includes(Number(item.team_id))
     );
-    console.log(reviewsTeams)
+    
     const reviewItem = filtered.find(item => item.review_id == selectedId);
-    console.log(reviewItem)
+    
     const reviewTotalPrice = reviewItem?.review_total_price ?? 0;
     const equiposContados = new Set();
 
@@ -255,8 +255,7 @@ const Home = () => {
     // Review team
     const selectedReviewTeam = reviewsTeams.data.find(item => item.reviews_id == selectedId);
     setReviewTeam(selectedReviewTeam)
-    console.log('selectedReviewTeam change', selectedReviewTeam)
-
+    
     const resumen = calcularResumenReview(reviewsTeamsEmployees, selectedId);
 
     setSelectedReview(selectedId);

@@ -8,79 +8,115 @@ import ModalButton from '@/components/Modal/NewFormModal';
 import FormEmployees from "@/app/admin/employees/form/page";
 import FormEmployeesTeams from "@/app/admin/employees/teams/page";
 import RemoveItem from "./Core/RemoveItem";
-import { Paginator } from 'primereact/paginator';
-import { Toolbar } from 'primereact/toolbar';
+import { Paginator, PaginatorPageChangeEvent } from 'primereact/paginator';
 import { Button } from 'primereact/button';
 
-const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearchChange, onLimitChange, roles }) => {
-  const [globalFilter, setGlobalFilter] = useState<string | null>(null);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(limit);
-  const [data, setData] = useState([]); // Inicializa el estado con models
-  const dt = useRef(null);
+type Employee = {
+  id: number | string;
+  name: string;
+  associate_id: string;
+  teams?: { name?: string } | null;
+  actual_external_data?: {
+    home_department_description?: string;
+    job_title_description?: string;
+    business_unit_code?: string;
+  } | null;
+};
 
-  // Efecto para actualizar el estado de data cuando models cambia
+type Props = {
+  models: Employee[];
+  totalCount: number;
+  limit: number;
+  page: number;
+  onPageChange: (newPage: number) => void;
+  onSearchChange: (value: string) => void;
+  onLimitChange: (newLimit: number) => void;
+  roles: string[];
+};
+
+const PrimeDataTable: React.FC<Props> = ({
+  models,
+  totalCount,
+  limit,
+  page,
+  onPageChange,
+  onSearchChange,
+  onLimitChange,
+  roles
+}) => {
+  const [globalFilter, setGlobalFilter] = useState<string>('');
+  const [first, setFirst] = useState<number>((page - 1) * limit);
+  const [rows, setRows] = useState<number>(limit);
+
+  const dt = useRef<DataTable<Employee[]>>(null);
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Sin estado duplicado: usar "models" directamente
+  const data = models ?? [];
+
+  // Mantener Paginator sincronizado si cambian props desde el padre
   useEffect(() => {
-    setData(models);
-  }, [models]); // Solo se ejecuta cuando models cambia
+    setRows(limit);
+    setFirst((page - 1) * limit);
+  }, [limit, page]);
 
-  const handlePageChange = (event) => {
+  const handlePageChange = (event: PaginatorPageChangeEvent) => {
     setFirst(event.first);
     setRows(event.rows);
     onLimitChange(event.rows);
-    onPageChange(event.first / event.rows + 1); // Calcula la nueva página y llama a la función onPageChange
+    const newPage = event.first / event.rows + 1;
+    onPageChange(newPage);
   };
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ?? '';
     setGlobalFilter(value);
 
-    // Usar un debounce para evitar demasiadas llamadas al padre
-    const delayDebounceFn = setTimeout(() => {
-      onSearchChange(value); // Llama a la función para cambiar la búsqueda en el componente padre
+    // Debounce real limpiando timeouts anteriores
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      onSearchChange(value);
     }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
   };
 
-  const handleRowsPerPageChange = (event) => {
-    setRows(event.rows); // Actualiza el número de filas por página
-    setFirst(0); // Reinicia el paginador a la primera página
-    onPageChange(1); // Reinicia la página actual a la primera
+  // Al cambiar el filtro global, volver a la primera página visual del paginator
+  useEffect(() => {
+    setFirst(0);
+  }, [globalFilter]);
+
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    };
+  }, []);
+
+  const handleDeleteLocal = (id: number | string) => {
+    // Como el estado fuente viene del padre, idealmente el padre recarga.
+    // Si querés ocultarlo al toque sin esperar el refetch, podrías levantar
+    // un callback al padre. Lo dejamos a decisión del flujo actual.
   };
 
-  const handleDeleteLocal = (id) => {
-    // Elimina el registro del estado local
-    const updatedData = data.filter((item) => item.id !== id);
-    setData(updatedData); // Actualiza el estado para reflejar los cambios en la tabla
-  };
-
-  const renderHeader = () => {
-    return (
-      <div className="table-header text-end">
-        <span className="p-input-icon-left">
-          <InputText
-            type="search"
-            onInput={handleSearchChange}
-            placeholder="Search..."
-            style={{ width: "100%" }}
-          />
-        </span>
-        {/* <span className="ms-5">
-          <Button label="Export" icon="pi pi-upload" className="p-button-success" onClick={exportCSV} />
-        </span> */}
-      </div>
-    );
-  };
-
-  const exportCSV = () => {
-    dt.current.exportCSV();
-  };
+  const renderHeader = () => (
+    <div className="table-header text-end">
+      <span className="p-input-icon-left" style={{ width: '100%' }}>
+        <InputText
+          type="search"
+          value={globalFilter}
+          onInput={handleSearchChange}
+          placeholder="Search..."
+          style={{ width: "100%" }}
+        />
+      </span>
+    </div>
+  );
 
   const header = renderHeader();
-  const actionBodyTemplate = (item) => (
+
+  const actionBodyTemplate = (item: Employee) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
+
       {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
         <>
           <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
@@ -91,49 +127,39 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
         <>
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
           <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
-
         </>
       )}
     </>
   );
 
-  const teamsTemplate = (item) => (
-    <>
-      <div key={`home_name_${item.id}`}>{item.teams?.name}</div>
-      {/* { 
-        item.teams.map((item, i) => ( 
-          <div>{item.name}</div> 
-        )) 
-      } */}
-    </>
+  const teamsTemplate = (item: Employee) => (
+    <div key={`home_name_${item.id}`}>{item.teams?.name}</div>
   );
 
-  const externalData = (item) => (
+  const externalData = (item: Employee) => (
     <>
       <div key={`home_department_${item.id}`}>{item.actual_external_data?.home_department_description}</div>
       <div key={`job_title_${item.id}`}>{item.actual_external_data?.job_title_description}</div>
     </>
   );
 
-  const businessData = (item) => (
-    <>
-      <div key={`business_unit_${item.id}`}>{item.actual_external_data?.business_unit_code}</div>
-    </>
+  const businessData = (item: Employee) => (
+    <div key={`business_unit_${item.id}`}>{item.actual_external_data?.business_unit_code}</div>
   );
 
-  const filteredData = data.filter(item => {
-    const teamName = item.teams?.name?.toLowerCase() || '';
-    return (
-      item.name.toLowerCase().includes(globalFilter?.toLowerCase() || '') ||
-      item.associate_id.toLowerCase().includes(globalFilter?.toLowerCase() || '') ||
-      teamName.includes(globalFilter?.toLowerCase() || '')
-    );
-  });
-
-  useEffect(() => {
-    dt.current?.reset(); // Resetea el DataTable para forzar un re-render
-  }, [filteredData]);
-
+  // Filtrado local opcional (además del backend). Si no lo querés, reemplazá por: const filteredData = data;
+  const q = globalFilter.trim().toLowerCase();
+  const filteredData = q
+    ? data.filter(item => {
+        const teamName = item.teams?.name?.toLowerCase() || '';
+        return (
+          item.name?.toLowerCase().includes(q) ||
+          item.associate_id?.toLowerCase().includes(q) ||
+          teamName.includes(q)
+        );
+      })
+    : data;
+  
   return (
     <div className="mb-5">
       <DataTable
@@ -148,18 +174,19 @@ const PrimeDataTable = ({ models, totalCount, limit, page, onPageChange, onSearc
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
-        <Column body={businessData} field="Business unit code" header="Business unit code" />
+        <Column body={businessData} header="Business unit code" />
         <Column body={externalData} sortable header="Departament" />
         <Column body={teamsTemplate} sortable header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
+
       <Paginator
         className="mt-4"
         first={first}
         rows={rows}
         totalRecords={totalCount}
         onPageChange={handlePageChange}
-        rowsPerPageOptions={[10, 25, 50]} // Configura las opciones de filas por página
+        rowsPerPageOptions={[10, 25, 50]}
       />
     </div>
   );

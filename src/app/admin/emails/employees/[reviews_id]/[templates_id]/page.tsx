@@ -185,7 +185,7 @@ export default function EditorPDF() {
 
     // 👇 Si no es 2xx, leer el body y lanzar error
     const text = await res.text() // leo texto para poder parsear o loguear
-    console.log("SEND status", res.status, text)
+    
 
     let data: any = {}
     try {

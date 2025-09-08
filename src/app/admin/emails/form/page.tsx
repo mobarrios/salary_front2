@@ -35,7 +35,6 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
     footerFile: Yup.mixed().required("* Required"),
   })
 
-  console.log("Form")
   const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -125,7 +124,7 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
       }
 
       const t = await apiRequest(`templates/`, "POST", payload)
-      console.log(payload)
+      
 
       if (onSuccess) {
         onSuccess()

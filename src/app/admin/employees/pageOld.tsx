@@ -31,7 +31,7 @@ export default function Employees({ searchParams }: Params) {
 
   const load = useCallback(async () => {
     if (!session?.user?.token) return;
-    
+
     const myId = ++requestIdRef.current;
 
     try {
@@ -53,7 +53,6 @@ export default function Employees({ searchParams }: Params) {
       if (myId !== requestIdRef.current) return;
 
       if (res?.data) {
-        
         setResults(res.data);
         setTotalCount(res.count ?? 0);
       } else {

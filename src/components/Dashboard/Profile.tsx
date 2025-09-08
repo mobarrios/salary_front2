@@ -31,7 +31,7 @@ const Profile = ({ table ,totalEmployeesByTeams, totalEmployees, totalEmployeesC
                 <div className="card-body">
                 <h3 className="card-title text-center">{name}</h3>
                 <p className={`fs-1 text-center ${colorText}`}>
-                    {cargados} de {total}
+                    {cargados} of {total}
                 </p>
                 <div className="progress">
                     <div
