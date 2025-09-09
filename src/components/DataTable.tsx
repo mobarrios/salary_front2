@@ -51,9 +51,6 @@ const PrimeDataTable: React.FC<Props> = ({
   const dt = useRef<DataTable<Employee[]>>(null);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Sin estado duplicado: usar "models" directamente
-  const data = models ?? [];
-
   // Mantener Paginator sincronizado si cambian props desde el padre
   useEffect(() => {
     setRows(limit);
@@ -71,12 +68,7 @@ const PrimeDataTable: React.FC<Props> = ({
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value ?? '';
     setGlobalFilter(value);
-
-    // Debounce real limpiando timeouts anteriores
-    if (typingTimeout.current) clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => {
-      onSearchChange(value);
-    }, 300);
+    onSearchChange(value); //
   };
 
   // Al cambiar el filtro global, volver a la primera página visual del paginator
@@ -90,6 +82,8 @@ const PrimeDataTable: React.FC<Props> = ({
       if (typingTimeout.current) clearTimeout(typingTimeout.current);
     };
   }, []);
+
+  const q = Array.isArray(models) ? models : [];
 
   const handleDeleteLocal = (id: number | string) => {
     // Como el estado fuente viene del padre, idealmente el padre recarga.
@@ -112,7 +106,7 @@ const PrimeDataTable: React.FC<Props> = ({
   );
 
   const header = renderHeader();
-
+  
   const actionBodyTemplate = (item: Employee) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
@@ -147,28 +141,14 @@ const PrimeDataTable: React.FC<Props> = ({
     <div key={`business_unit_${item.id}`}>{item.actual_external_data?.business_unit_code}</div>
   );
 
-  // Filtrado local opcional (además del backend). Si no lo querés, reemplazá por: const filteredData = data;
-  const q = globalFilter.trim().toLowerCase();
-  const filteredData = q
-    ? data.filter(item => {
-        const teamName = item.teams?.name?.toLowerCase() || '';
-        return (
-          item.name?.toLowerCase().includes(q) ||
-          item.associate_id?.toLowerCase().includes(q) ||
-          teamName.includes(q)
-        );
-      })
-    : data;
-  
   return (
     <div className="mb-5">
       <DataTable
         ref={dt}
-        value={[...filteredData]}
+        value={q}
         dataKey="id"
         rows={rows}
         header={header}
-        globalFilter={globalFilter}
         emptyMessage="No data found."
         totalRecords={totalCount}
       >

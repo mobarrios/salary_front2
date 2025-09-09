@@ -531,7 +531,7 @@ export default function EditorPDF() {
                     })}
                   </p>
                   <p style={{ fontSize: 16, color: "black", marginTop: "50px" }}>
-                    {template ? `${template.title} (${employeeInfo[employeeSelected]?.name}) ` : ``}{" "}
+                    {template ? `${template.title} ${employeeInfo[employeeSelected]?.name} ` : ``}{" "}
                   </p>
                   <p style={{ fontSize: 16, color: "black" }}>
                     {template

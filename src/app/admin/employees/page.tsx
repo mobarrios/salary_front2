@@ -52,13 +52,14 @@ export default function Employees({ searchParams }: Params) {
       // Ignorar respuestas viejas
       if (myId !== requestIdRef.current) return;
 
-      if (res?.data) {
-        
+      if (res?.data && Array.isArray(res.data)) {
         setResults(res.data);
-        setTotalCount(res.count ?? 0);
+        setTotalCount(res.count ?? res.data.length);
       } else {
-        console.error('Invalid data:', res);
+        setResults([]);
+        setTotalCount(0);
       }
+
     } catch (error) {
       // Si esta respuesta ya no es la última, ignorar el error
       if (myId === requestIdRef.current) {
