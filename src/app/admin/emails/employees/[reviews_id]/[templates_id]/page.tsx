@@ -101,13 +101,14 @@ export default function EditorPDF() {
           const employeeData = await Promise.all(
             employeeIds.map(async (employeeId) => {
               const data = await fetchData(session?.user.token, "GET", `employees/${employeeId}`)
-
+              console.log(data)
               if (!data) {
                 console.error(`Error fetching employee ${employeeId}:`, data.statusText)
                 return null
               }
 
               const salary = formatSalary(data.actual_external_data.annual_salary)
+              const email = data.actual_external_data.email
 
               const reviewsTeamsEmployees = await fetchData(
                 session?.user.token,
@@ -128,7 +129,7 @@ export default function EditorPDF() {
                 salary: salary,
                 increment: percent,
                 actualSalary: actualSalary,
-                email: "nicolas.monja@gmail.com",
+                email: email,
                 name: data.name,
               }
             }),
