@@ -68,8 +68,11 @@ export async function POST(req: NextRequest) {
 
     //const user = process.env.EMAIL_USER;
     //const pass = process.env.EMAIL_PASS;
-    const user = 'rochaleandroleonel@gmail.com'
-    const pass = 'plweshznafjndgad'
+    //Username: Compensation@cottonteam.com
+    //Password: jbzycvnmdthmjhky
+
+    const user = 'Compensation@cottonteam.com'
+    const pass = 'jbzycvnmdthmjhky'
 
     if (!user || !pass) {
       return new Response(JSON.stringify({ error: 'Faltan EMAIL_USER/EMAIL_PASS' }), {
@@ -79,11 +82,33 @@ export async function POST(req: NextRequest) {
     }
 
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user, pass },
+      host: "smtp.office365.com",
+      port: 587,          // STARTTLS
+      secure: false,      // importante: false en 587
+      requireTLS: true,
+      tls: { minVersion: "TLSv1.2" },
+      auth: {
+        user: "compensation@cottonteam.com",  // UPN/correo completo
+        pass: "jbzycvnmdthmjhky",  
+      },
     });
+
+    // const transporter = nodemailer.createTransport({
+    //   host: "smtp.office365.com",
+    //   port: 587,
+    //   secure: false,              // STARTTLS (no usar 465 con secure:true)
+    //   auth: { user, pass },
+    //   requireTLS: true,           // fuerza el upgrade a TLS
+    //   tls: { minVersion: "TLSv1.2" }, // Exchange Online acepta TLS 1.2/1.3
+    //   // authMethod: "LOGIN",     // opcional; si tu tenant no acepta PLAIN
+    // });
+
+    // const transporter = nodemailer.createTransport({
+    //   host: 'smtp.gmail.com',
+    //   port: 465,
+    //   secure: true,
+    //   auth: { user, pass },
+    // });
 
     const buildPathOrUrl = (ref?: string) => {
       if (!ref) return undefined;
