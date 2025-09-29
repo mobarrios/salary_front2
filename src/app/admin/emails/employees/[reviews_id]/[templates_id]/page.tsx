@@ -108,8 +108,8 @@ export default function EditorPDF() {
               }
 
               const salary = formatSalary(data.actual_external_data.annual_salary)
-              //const email = data.actual_external_data.email
-              const email = 'nicolas.monja@gmail.com'
+              const email = data.actual_external_data.email
+              //const email = 'nicolas.monja@gmail.com'
 
               const reviewsTeamsEmployees = await fetchData(
                 session?.user.token,
