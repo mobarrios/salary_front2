@@ -13,6 +13,8 @@ import { apiRequest } from "@/server/services/core/apiRequest"
 import { showErrorAlert, showSuccessAlert } from "@/hooks/alerts"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
+import JSZip from 'jszip'
+import { saveAs } from 'file-saver'
 
 export default function EditorPDF() {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -39,6 +41,7 @@ export default function EditorPDF() {
   const [template, setTemplate] = useState([])
   const [isSending, setIsSending] = useState(false)
   const [sentCount, setSentCount] = useState(0)
+  const [isBulkDownloading, setIsBulkDownloading] = useState(false)
 
   const bc = [{ label: "Review Cycle" }]
 
@@ -101,7 +104,7 @@ export default function EditorPDF() {
           const employeeData = await Promise.all(
             employeeIds.map(async (employeeId) => {
               const data = await fetchData(session?.user.token, "GET", `employees/${employeeId}`)
-              console.log(data)
+              
               if (!data) {
                 console.error(`Error fetching employee ${employeeId}:`, data.statusText)
                 return null
@@ -390,10 +393,113 @@ export default function EditorPDF() {
     }
   }
 
+  const createEmployeePdfBlob = async (employeeId: number | string) => {
+    const employee = employeeInfo[employeeId]
+    if (!employee) throw new Error('Employee information not found')
+
+    // === lo mismo que tu downloadPDF, pero retornando el Blob ===
+    const tempDiv = document.createElement("div")
+    tempDiv.innerHTML = generateEmailHTML(employee)
+    tempDiv.style.position = "absolute"
+    tempDiv.style.left = "-9999px"
+    tempDiv.style.width = "800px"
+    tempDiv.style.backgroundColor = "white"
+    tempDiv.style.padding = "20px"
+
+    const headerImg = tempDiv.querySelector('img[src="__HEADER_CID__"]') as HTMLImageElement | null
+    const footerImg = tempDiv.querySelector('img[src="__FOOTER_CID__"]') as HTMLImageElement | null
+    if (headerImg && template?.header) headerImg.setAttribute("src", `/uploads/${template.header}`)
+    if (footerImg && template?.footer) footerImg.setAttribute("src", `/uploads/${template.footer}`)
+
+    document.body.appendChild(tempDiv)
+
+    const images = tempDiv.querySelectorAll("img")
+    await Promise.all(
+      Array.from(images).map((img) => new Promise<void>((resolve) => {
+        if ((img as HTMLImageElement).complete) return resolve()
+        img.onload = () => resolve()
+        img.onerror = () => resolve()
+      }))
+    )
+
+    const canvas = await html2canvas(tempDiv, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#ffffff",
+    })
+
+    document.body.removeChild(tempDiv)
+
+    const pdf = new jsPDF("p", "mm", "a4")
+    const imgWidth = 210
+    const pageHeight = 295
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+    let heightLeft = imgHeight
+    let position = 0
+
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
+    heightLeft -= pageHeight
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight
+      pdf.addPage()
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+    }
+
+    const fileName = `salary_review_${employee.name.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
+    const blob = pdf.output('blob') as Blob
+    return { blob, fileName }
+  }
+
+  const handleBulkDownload = async () => {
+    try {
+      if (!selectedEmployees.length) {
+        showErrorAlert("No hay empleados seleccionados")
+        return
+      }
+      setIsBulkDownloading(true)
+
+      const zip = new JSZip()
+      // procesar secuencialmente para no explotar memoria/CPU
+      for (const id of selectedEmployees) {
+        try {
+          const { blob, fileName } = await createEmployeePdfBlob(id)
+          zip.file(fileName, blob)
+          // ceder el hilo (mejora UX si son muchos)
+          await new Promise(r => setTimeout(r, 0))
+        } catch (e) {
+          console.error('Error con empleado', id, e)
+        }
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      const stamp = new Date().toISOString().slice(0,10)
+      saveAs(zipBlob, `salary_reviews_${stamp}_${selectedEmployees.length}employees.zip`)
+      showSuccessAlert("Your work has been saved")
+    } catch (err) {
+      console.error(err)
+      showErrorAlert("An error occurred while saving")
+    } finally {
+      setIsBulkDownloading(false)
+    }
+  }
+
   return (
     <>
       <Breadcrumb items={bc} />
-      <Title>Templates - Review # {reviews_id}</Title>
+      <Title>Templates - Review # {reviews_id}
+
+      {selectedEmployees.length > 0 && (
+        <button className='btn btn-primary ms-2 float-end' onClick={(e) => handleBulkDownload()}
+        disabled={!selectedEmployees.length || isBulkDownloading}
+        >
+          <i className="bi bi-download"></i> {isBulkDownloading ? 'Downloading' : `Download PDF (${selectedEmployees.length})`}
+        </button>
+      )}
+
+      </Title>
 
       <table className="table">
         <thead>
@@ -405,7 +511,6 @@ export default function EditorPDF() {
             <th scope="col">Increment</th>
             <th scope="col">Salary actual</th>
             <th scope="col">View</th>
-            <th scope="col">Download</th>
             <th scope="col"></th>
             <th scope="col"></th>
           </tr>
@@ -433,6 +538,7 @@ export default function EditorPDF() {
 
               {Array.isArray(t.employees) &&
                 t.employees.map((emp, i) => (
+                  <>
                   <tr key={emp.id || i}>
                     <td>
                       <Checkbox
@@ -473,7 +579,7 @@ export default function EditorPDF() {
                       </button>
                     </td>
 
-                    <td>
+                    {/* <td>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -484,9 +590,11 @@ export default function EditorPDF() {
                       >
                         <i className="bi bi-download"></i>
                       </button>
-                    </td>
+                    </td> */}
                     <td></td>
                   </tr>
+            
+                  </>
                 ))}
             </React.Fragment>
           ))}
