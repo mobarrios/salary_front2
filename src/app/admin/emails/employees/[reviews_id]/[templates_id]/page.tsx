@@ -174,7 +174,7 @@ export default function EditorPDF() {
       body: JSON.stringify({
         html,
         email: employeeInfo[employeeId].email,
-        subject: "Prueba",
+        subject: "Important: 2026 Merit Increase Details Enclosed",
         attachments: { header: template.header, footer: template.footer },
       }),
     })
