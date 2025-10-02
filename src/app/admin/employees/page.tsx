@@ -148,7 +148,7 @@ export default function Employees({ searchParams }: Params) {
         </div>
 
         <div className="col-12">
-          {loading && <div className="alert alert-info">Cargando todos los empleados…</div>}
+          {loading && <div className="alert alert-primary">Loading employees...</div>}
           {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
           <PrimeDataTable
