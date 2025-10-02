@@ -22,21 +22,12 @@ export default function EditorPDF() {
   const { reviews_id, templates_id } = useParams()
 
   const [showModal, setShowModal] = useState(false)
-  const [modalSend, setModalSend] = useState(false)
-
+ 
   const [review, setReview] = useState([])
-  const [selectedReview, setSelectedReview] = useState("")
   const [team, setTeam] = useState([])
   const [employeeSelected, setEmployeeSelected] = useState()
   const [employeeInfo, setEmployeeInfo] = useState([])
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([])
-  const [headerImage, setHeaderImage] = useState<string | null>(null)
-  const [footerImage, setFooterImage] = useState<string | null>(null)
-  const [title, setTitle] = useState("")
-  const [content1, setContent1] = useState("")
-  const [content2, setContent2] = useState("")
-  const [content3, setContent3] = useState("")
-  const [reviews, setReviews] = useState([])
   const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState([])
   const [template, setTemplate] = useState([])
   const [isSending, setIsSending] = useState(false)
@@ -305,93 +296,93 @@ export default function EditorPDF() {
     `
   }
 
-  const downloadPDF = async (employeeId: number) => {
-    try {
-      const employee = employeeInfo[employeeId]
-      if (!employee) {
-        showErrorAlert("Employee information not found")
-        return
-      }
+  // const downloadPDF = async (employeeId: number) => {
+  //   try {
+  //     const employee = employeeInfo[employeeId]
+  //     if (!employee) {
+  //       showErrorAlert("Employee information not found")
+  //       return
+  //     }
 
-      // Create a temporary div with the email HTML content
-      const tempDiv = document.createElement("div")
-      tempDiv.innerHTML = generateEmailHTML(employee)
-      tempDiv.style.position = "absolute"
-      tempDiv.style.left = "-9999px"
-      tempDiv.style.width = "800px"
-      tempDiv.style.backgroundColor = "white"
-      tempDiv.style.padding = "20px"
+  //     // Create a temporary div with the email HTML content
+  //     const tempDiv = document.createElement("div")
+  //     tempDiv.innerHTML = generateEmailHTML(employee)
+  //     tempDiv.style.position = "absolute"
+  //     tempDiv.style.left = "-9999px"
+  //     tempDiv.style.width = "800px"
+  //     tempDiv.style.backgroundColor = "white"
+  //     tempDiv.style.padding = "20px"
 
-      // Replace image placeholders with actual images
-      const headerImg = tempDiv.querySelector('img[src="__HEADER_CID__"]')
-      const footerImg = tempDiv.querySelector('img[src="__FOOTER_CID__"]')
+  //     // Replace image placeholders with actual images
+  //     const headerImg = tempDiv.querySelector('img[src="__HEADER_CID__"]')
+  //     const footerImg = tempDiv.querySelector('img[src="__FOOTER_CID__"]')
 
-      if (headerImg && template?.header) {
-        headerImg.setAttribute("src", `/uploads/${template.header}`)
-      }
-      if (footerImg && template?.footer) {
-        footerImg.setAttribute("src", `/uploads/${template.footer}`)
-      }
+  //     if (headerImg && template?.header) {
+  //       headerImg.setAttribute("src", `/uploads/${template.header}`)
+  //     }
+  //     if (footerImg && template?.footer) {
+  //       footerImg.setAttribute("src", `/uploads/${template.footer}`)
+  //     }
 
-      document.body.appendChild(tempDiv)
+  //     document.body.appendChild(tempDiv)
 
-      // Wait for images to load
-      const images = tempDiv.querySelectorAll("img")
-      await Promise.all(
-        Array.from(images).map((img) => {
-          return new Promise((resolve) => {
-            if (img.complete) {
-              resolve(true)
-            } else {
-              img.onload = () => resolve(true)
-              img.onerror = () => resolve(true)
-            }
-          })
-        }),
-      )
+  //     // Wait for images to load
+  //     const images = tempDiv.querySelectorAll("img")
+  //     await Promise.all(
+  //       Array.from(images).map((img) => {
+  //         return new Promise((resolve) => {
+  //           if (img.complete) {
+  //             resolve(true)
+  //           } else {
+  //             img.onload = () => resolve(true)
+  //             img.onerror = () => resolve(true)
+  //           }
+  //         })
+  //       }),
+  //     )
 
-      // Generate canvas from the HTML
-      const canvas = await html2canvas(tempDiv, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-      })
+  //     // Generate canvas from the HTML
+  //     const canvas = await html2canvas(tempDiv, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       allowTaint: true,
+  //       backgroundColor: "#ffffff",
+  //     })
 
-      // Remove temporary div
-      document.body.removeChild(tempDiv)
+  //     // Remove temporary div
+  //     document.body.removeChild(tempDiv)
 
-      // Create PDF
-      const pdf = new jsPDF("p", "mm", "a4")
-      const imgWidth = 210 // A4 width in mm
-      const pageHeight = 295 // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-      let heightLeft = imgHeight
+  //     // Create PDF
+  //     const pdf = new jsPDF("p", "mm", "a4")
+  //     const imgWidth = 210 // A4 width in mm
+  //     const pageHeight = 295 // A4 height in mm
+  //     const imgHeight = (canvas.height * imgWidth) / canvas.width
+  //     let heightLeft = imgHeight
 
-      let position = 0
+  //     let position = 0
 
-      // Add first page
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
+  //     // Add first page
+  //     pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
+  //     heightLeft -= pageHeight
 
-      // Add additional pages if content is longer than one page
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight
-        pdf.addPage()
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-      }
+  //     // Add additional pages if content is longer than one page
+  //     while (heightLeft >= 0) {
+  //       position = heightLeft - imgHeight
+  //       pdf.addPage()
+  //       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
+  //       heightLeft -= pageHeight
+  //     }
 
-      // Download the PDF
-      const fileName = `salary_review_${employee.name.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
-      pdf.save(fileName)
+  //     // Download the PDF
+  //     const fileName = `salary_review_${employee.name.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
+  //     pdf.save(fileName)
 
-      showSuccessAlert("PDF downloaded successfully")
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      showErrorAlert("Error generating PDF. Please try again.")
-    }
-  }
+  //     showSuccessAlert("PDF downloaded successfully")
+  //   } catch (error) {
+  //     console.error("Error generating PDF:", error)
+  //     showErrorAlert("Error generating PDF. Please try again.")
+  //   }
+  // }
 
   const createEmployeePdfBlob = async (employeeId: number | string) => {
     const employee = employeeInfo[employeeId]

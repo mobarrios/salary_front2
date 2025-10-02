@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -8,8 +8,6 @@ import ModalButton from '@/components/Modal/NewFormModal';
 import FormEmployees from "@/app/admin/employees/form/page";
 import FormEmployeesTeams from "@/app/admin/employees/teams/page";
 import RemoveItem from "./Core/RemoveItem";
-import { Paginator, PaginatorPageChangeEvent } from 'primereact/paginator';
-import { Button } from 'primereact/button';
 
 type Employee = {
   id: number | string;
@@ -24,152 +22,93 @@ type Employee = {
 };
 
 type Props = {
-  models: Employee[];
-  totalCount: number;
-  limit: number;
-  page: number;
-  onPageChange: (newPage: number) => void;
-  onSearchChange: (value: string) => void;
-  onLimitChange: (newLimit: number) => void;
+  models: Employee[];                    // <- TODA la data (filtrada) para ordenar globalmente
   roles: string[];
+  onSearchChange: (value: string) => void;
 };
 
-const PrimeDataTable: React.FC<Props> = ({
-  models,
-  totalCount,
-  limit,
-  page,
-  onPageChange,
-  onSearchChange,
-  onLimitChange,
-  roles
-}) => {
-  const [globalFilter, setGlobalFilter] = useState<string>('');
-  const [first, setFirst] = useState<number>((page - 1) * limit);
-  const [rows, setRows] = useState<number>(limit);
-
-  const dt = useRef<DataTable<Employee[]>>(null);
-  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  // Mantener Paginator sincronizado si cambian props desde el padre
-  useEffect(() => {
-    setRows(limit);
-    setFirst((page - 1) * limit);
-  }, [limit, page]);
-
-  const handlePageChange = (event: PaginatorPageChangeEvent) => {
-    setFirst(event.first);
-    setRows(event.rows);
-    onLimitChange(event.rows);
-    const newPage = event.first / event.rows + 1;
-    onPageChange(newPage);
-  };
+const PrimeDataTable: React.FC<Props> = ({ models, roles, onSearchChange }) => {
+  const [first, setFirst] = useState<number>(0);
+  const [rows, setRows] = useState<number>(25);
+  const [search, setSearch] = useState<string>("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value ?? '';
-    setGlobalFilter(value);
-    onSearchChange(value); //
-  };
-
-  // Al cambiar el filtro global, volver a la primera página visual del paginator
-  useEffect(() => {
+    const value = e.target.value ?? "";
+    setSearch(value);
     setFirst(0);
-  }, [globalFilter]);
-
-  // Limpiar timeout al desmontar
-  useEffect(() => {
-    return () => {
-      if (typingTimeout.current) clearTimeout(typingTimeout.current);
-    };
-  }, []);
-
-  const q = Array.isArray(models) ? models : [];
-
-  const handleDeleteLocal = (id: number | string) => {
-    // Como el estado fuente viene del padre, idealmente el padre recarga.
-    // Si querés ocultarlo al toque sin esperar el refetch, podrías levantar
-    // un callback al padre. Lo dejamos a decisión del flujo actual.
+    onSearchChange(value); // el padre filtra en cliente
   };
 
-  const renderHeader = () => (
-    <div className="table-header text-end">
-      <span className="p-input-icon-left" style={{ width: '100%' }}>
-        <InputText
-          type="search"
-          value={globalFilter}
-          onInput={handleSearchChange}
-          placeholder="Search..."
-          style={{ width: "100%" }}
-        />
-      </span>
-    </div>
-  );
-
-  const header = renderHeader();
-  
   const actionBodyTemplate = (item: Employee) => (
     <>
       <Link href={`/admin/employees/external_data/${item.id}`} className="btn btn-primary">Details</Link>
 
       {roles.some(role => ['superuser', 'administrator', 'manager'].includes(role)) && (
-        <>
-          <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
-        </>
+        <ModalButton type={true} itemId={item.id} name="Edit" FormComponent={FormEmployees} title={item.associate_id} />
       )}
 
       {roles.some(role => ['superuser', 'administrator'].includes(role)) && (
         <>
           <ModalButton type={true} itemId={item.id} name="Teams" FormComponent={FormEmployeesTeams} title={item.associate_id + " Teams"} />
-          <RemoveItem id={item.id} url='employees' onDelete={() => handleDeleteLocal(item.id)} />
+          <RemoveItem id={item.id} url='employees' onDelete={() => { /* opcional: pedir refetch al padre */ }} />
         </>
       )}
     </>
   );
 
-  const teamsTemplate = (item: Employee) => (
-    <div key={`home_name_${item.id}`}>{item.teams?.name}</div>
+  const businessData = (item: Employee) => (
+    <div>{item.actual_external_data?.business_unit_code}</div>
   );
 
   const externalData = (item: Employee) => (
     <>
-      <div key={`home_department_${item.id}`}>{item.actual_external_data?.home_department_description}</div>
-      <div key={`job_title_${item.id}`}>{item.actual_external_data?.job_title_description}</div>
+      <div>{item.actual_external_data?.home_department_description}</div>
+      <div>{item.actual_external_data?.job_title_description}</div>
     </>
   );
 
-  const businessData = (item: Employee) => (
-    <div key={`business_unit_${item.id}`}>{item.actual_external_data?.business_unit_code}</div>
+  const teamsTemplate = (item: Employee) => (
+    <div>{item.teams?.name}</div>
   );
 
   return (
     <div className="mb-5">
+      <div className="table-header text-end mb-3">
+        <span className="p-input-icon-left" style={{ width: '100%' }}>
+          <InputText
+            type="search"
+            value={search}
+            onInput={handleSearchChange}
+            placeholder="Search..."
+            style={{ width: "100%" }}
+          />
+        </span>
+      </div>
+
       <DataTable
-        ref={dt}
-        value={q}
+        value={models}          // <- lista completa; DataTable se encarga de ordenar y paginar
         dataKey="id"
+        paginator               // <- paginación interna
         rows={rows}
-        header={header}
+        first={first}
+        onPage={(e) => { setFirst(e.first); setRows(e.rows); }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        sortMode="single"       // o 'multiple' si querés
+        removableSort
         emptyMessage="No data found."
-        totalRecords={totalCount}
       >
         <Column field="associate_id" sortable header="ID" />
         <Column field="name" sortable header="Name" />
         <Column body={businessData} header="Business unit code" />
-        <Column body={externalData} sortable header="Departament" />
-        <Column body={teamsTemplate} sortable header="Teams" />
+        <Column body={externalData} header="Department" />
+        <Column body={teamsTemplate} header="Teams" />
         <Column body={actionBodyTemplate} header="Actions" />
       </DataTable>
-
-      <Paginator
-        className="mt-4"
-        first={first}
-        rows={rows}
-        totalRecords={totalCount}
-        onPageChange={handlePageChange}
-        rowsPerPageOptions={[10, 25, 50]}
-      />
     </div>
   );
 };
+
+
+
 
 export default PrimeDataTable;
