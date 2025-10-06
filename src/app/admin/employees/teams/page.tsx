@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
 import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
+import { json } from "stream/consumers";
 
 const FormEmployeesTeams: React.FC = ({id}) => {
 
@@ -19,6 +20,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
     try {
       
       const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
+    
       const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 
@@ -54,6 +56,9 @@ const FormEmployeesTeams: React.FC = ({id}) => {
   }
 
   const handleCheckboxChange = async (teamId, isChecked) => {
+
+    const idChecked = userTeams.filter(team => team.teams_id == teamId && team.employees_id == id)
+   
     const updatedRoles = isChecked
       ? [...userTeams, { teams_id: teamId }]
       : userTeams.filter(team => team.teams_id !== teamId);
@@ -67,7 +72,8 @@ const FormEmployeesTeams: React.FC = ({id}) => {
    
     } else {
       // El checkbox está desmarcado
-      const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);
+      //const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);
+      const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${idChecked[0].id}`);
       showSuccessAlert("Your work has been deleted");
 
     }
