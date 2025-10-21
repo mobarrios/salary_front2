@@ -73,12 +73,15 @@ const Home = () => {
 
       const teamsFiltrados = teamUserFilter.filter(team => teamIds.includes(team.id));
       
+      // aca contar todos los empleados por api/v1/reviews_teams_employees/all/
       const conteo = teamsFiltrados.reduce((acc, team) => {
         acc[team.id] = team.employees ? team.employees.length : 0;
         return acc;
       }, {});
 
       setTotalEmployeesByTeams(conteo);
+
+      // aca contar todos los empleados por api/v1/reviews_teams_employees/all/
 
       const totalEmpleados = teamsFiltrados.reduce((total, team) => {
         return total + (team.employees?.length || 0);

@@ -19,6 +19,7 @@
     "formik": "^2.4.6",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.3",
+    "isomorphic-dompurify": "^2.29.0",
     "jspdf": "^3.0.2",
     "jszip": "^3.10.1",
     "next": "14.2.3",
@@ -43,6 +44,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@types/dompurify": "^3.2.0",
     "@types/file-saver": "^2.0.7",
     "@types/formidable": "^3.4.5",
     "@types/node": "^20",

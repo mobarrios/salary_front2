@@ -23,7 +23,7 @@ const FormEmployees: React.FC = () => {
   const load = async () => {
     try {
       const jsonData = await fetchData(session?.user.token, 'GET', `employees/${id}`);
-    
+      console.log(jsonData)
       setOptions(jsonData.external_data);
       setActual(jsonData.actual_external_data);
       setFormData(jsonData.actual_external_data); // Inicializa el formulario con los datos actuales

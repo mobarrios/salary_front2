@@ -20,7 +20,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
     try {
       
       const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
-    
+      console.log(jsonData)
       const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
       setUserTeams(employeesWithIdOne)
 

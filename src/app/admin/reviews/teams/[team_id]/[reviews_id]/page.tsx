@@ -112,11 +112,14 @@ const FormEmployees: React.FC = () => {
 
 
     const updateEmployeesTeams = async (team) => {
-
+        console.log('Team: ', team.employees)
+        
+        //aca traer todos los Ids de empleados que vengan de api/v1/reviews_teams_employees/all/
+        
         const promises = team.employees.map(item =>
             fetchData(session?.user.token, 'GET', `employees/${item.id}`)
         );
-
+        console.log('Promises: ',promises)
         const teamResponses = await Promise.all(promises);
         setTeamEmployees(teamResponses)
 
@@ -157,6 +160,7 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
+            console.log('filterRatingEmployees: ', filterRatingEmployees)
 
             setRatingsTeamEmployees(filterRatingEmployees);
 
@@ -232,77 +236,6 @@ const FormEmployees: React.FC = () => {
 
     }
 
-    // const handleSubmit = async (employeesId) => {
-    //     let employeesSalary = teamEmployees.find(item => item.id == parseInt(employeesId));
-    //     if (!employeesSalary) {
-    //         return;
-    //     }
-
-    //     // Validar campos requeridos
-    //     const currentRating = selectedRatings[employeesId];
-    //     const currentRangeValue = rangeValues[employeesId];
-
-    //     const newErrors = {};
-    //     if (!currentRating) {
-    //         newErrors.rating = 'Required.';
-    //     }
-    //     if (currentRangeValue === undefined || currentRangeValue === '') {
-    //         newErrors.range = 'Required.';
-    //     }
-
-    //     setErrors(prevErrors => ({
-    //         ...prevErrors,
-    //         [employeesId]: newErrors
-    //     }));
-
-    //     if (Object.keys(newErrors).length > 0) {
-    //         console.log('error');
-    //         return;
-    //     }
-
-    //     // Si no hay errores, continuar con el envío
-    //     let currentSalary = calculatePriceByEmployee(employeesId);
-    //     let ratingId = selectedRatings[employeesId];
-    //     let percent = rangeValues[employeesId];
-
-    //     const payload = {
-    //         reviews_id: reviews_id,
-    //         teams_id: team_id,
-    //         ratings_id: ratingId,
-    //         employees_id: employeesId,
-    //         price: currentSalary,
-    //         percent: percent,
-    //     };
-
-    //     // solo validar el employees
-    //     const existingRecord = ratingsTeamEmployees.find(r =>
-    //         r.employees_id === employeesId
-    //     );
-
-    //     try {
-    //         let response;
-
-    //         if (existingRecord) {
-    //             response = await apiRequest(`reviews_teams_employees/edit/${existingRecord.id}`, 'PUT', payload);
-
-    //             setRatingsTeamEmployees(prevState =>
-    //                 prevState.map(item =>
-    //                     item.id === existingRecord.id ? { ...item, ...payload } : item
-    //                 )
-    //             );
-    //         } else {
-    //             response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-
-    //             setRatingsTeamEmployees(prevState => [...prevState, { ...payload, id: response.id }]);
-    //         }
-
-    //     } catch (error) {
-    //         console.error('Error al enviar datos:', error);
-    //     }
-    //     showSuccessAlert("Your work has been saved");
-    //     setErrors('')
-    // };
-
     const handleSubmit = async (employeesId = null) => {
         // Determina si procesar uno o todos
         const employeesToProcess = employeesId
@@ -324,14 +257,7 @@ const FormEmployees: React.FC = () => {
             if (currentRangeValue === undefined || currentRangeValue === '') {
                 newErrors.range = 'Required.';
             }
-            
-            //validEmployees.push(employee);
 
-            // if (Object.keys(newErrors).length > 0) {
-            //     updatedErrors[id] = newErrors;
-            // } else {
-            //     validEmployees.push(employee);
-            // }
             if (Object.keys(newErrors).length > 0) {
                 updatedErrors[id] = newErrors;
             }
@@ -346,11 +272,6 @@ const FormEmployees: React.FC = () => {
             ...updatedErrors
         }));
     
-        // Si no hay ningún empleado válido, no continuar
-        // if (validEmployees.length === 0) {
-        //     console.log('No hay datos válidos para guardar.');
-        //     return;
-        // }
         setIsSubmitting(true);
         // Procesa los empleados válidos
         try {
