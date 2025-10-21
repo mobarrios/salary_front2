@@ -15,9 +15,16 @@ import { Title } from "@/components/Title"
 import { useParams } from "next/navigation"
 import RemoveItem from "@/components/Core/RemoveItem"
 
+type Template = {
+  id: number
+  title: string
+  footer?: string | null
+  header?: string | null
+}
+
 export default function EditorPDF() {
   const { data: session } = useSession()
-  const [templates, setTemplates] = useState([])
+  const [templates, setTemplates] = useState<Template[]>([])
   const { id } = useParams()
   const bc = [{ label: "Review Cycle" }]
 
@@ -78,7 +85,7 @@ export default function EditorPDF() {
               </tr>
             </thead>
             <tbody>
-              {templates.map((template, index) => (
+              {templates.map((template) => (
                 <tr key={template.id}>
                   <th scope="row">{template.id}</th>
                   <td>{template.title}</td>

@@ -8,15 +8,34 @@ import Select from 'react-select';
 import { apiRequest } from "@/server/services/core/apiRequest";
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 
-const UserTeams: React.FC = ({ id }) => {
+interface UserTeam {
+  teams_id: number;
+  users_id: number;
+}
+
+interface User {
+  id: number;
+  user_name: string;
+}
+
+interface SelectOption {
+  value: number;
+  label: string;
+}
+
+interface Props {
+  id: string;
+}
+
+const UserTeams: React.FC<Props> = ({ id }) => {
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
-    const [options, setOptions] = useState([]);
-    const [usersTeams, setUsersTeams] = useState();
+    const [options, setOptions] = useState<SelectOption[]>([]);
+    const [usersTeams, setUsersTeams] = useState<UserTeam[]>([]);
     
     const formik = useFormik({
         initialValues: {
-            users_teams: [],
+            users_teams: [] as number[],
         },
         validationSchema: Yup.object().shape({
             users_teams: Yup.array().required('At least one user must be selected'),
@@ -53,8 +72,8 @@ const UserTeams: React.FC = ({ id }) => {
             setLoading(true);
             const jsonData = await fetchData(session?.user.token, 'GET', `users/all/?skip=0&limit=1000`);
             
-            const data = jsonData.data;
-            const selectOptions = data.map(user => ({
+            const data = jsonData.data as User[];
+            const selectOptions = data.map((user: User) => ({
                 value: user.id,
                 label: user.user_name
             }));
@@ -62,9 +81,9 @@ const UserTeams: React.FC = ({ id }) => {
             setOptions(selectOptions);
 
             const usersTeamsResponse = await fetchData(session?.user.token, 'GET', `teams_users/all/?skip=0&limit=1000`);
-            const usersTeams = usersTeamsResponse.data.filter(item => item.teams_id === parseInt(id));
+            const usersTeams = usersTeamsResponse.data.filter((item: UserTeam) => item.teams_id === parseInt(id));
             setUsersTeams(usersTeams);
-            const initialUserIds = usersTeams.map(userTeam => userTeam.users_id);
+            const initialUserIds = usersTeams.map((userTeam: UserTeam) => userTeam.users_id);
             formik.setFieldValue('users_teams', initialUserIds);
             setLoading(false);
         };
@@ -84,22 +103,23 @@ const UserTeams: React.FC = ({ id }) => {
                 {
                     !loading ?
                         <form onSubmit={formik.handleSubmit}>
-                            <Select
+                            <Select<SelectOption, true>
                                 isMulti
                                 options={options}
                                 onChange={selectedOptions => {
-                                    const selectedIds = selectedOptions.map(option => option.value);
+                                    const selectedIds = selectedOptions?.map(option => option.value) ?? [];
                                     formik.setFieldValue('users_teams', selectedIds); 
                                 }}
                                 onBlur={formik.handleBlur}
-                                onFocus={handleSelectFocus} // Agregar el evento onFocus
-                                onMenuOpen={handleSelectFocus} // O puedes usar onMenuOpen
+                                onFocus={handleSelectFocus}
+                                onMenuOpen={handleSelectFocus}
                                 placeholder="Seleccione una o más opciones"
-                                value={options.filter(option => formik.values.users_teams.includes(option.value))}
-
-                                menuPortalTarget={document.body} // Añadir esta línea
+                                value={options.filter((option: SelectOption) => 
+                                    formik.values.users_teams.includes(option.value)
+                                )}
+                                menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
                                 styles={{
-                                    menuPortal: base => ({ ...base, zIndex: 9999 }) // Asegúrate de que el z-index sea alto
+                                    menuPortal: base => ({ ...base, zIndex: 9999 })
                                 }}
 
                             />

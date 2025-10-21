@@ -122,7 +122,7 @@ const ReviewTeam: React.FC = ({ id }) => {
     return <p>Loading...</p>;
   }
 
-  const handleCheckboxChange = async (teamId, isChecked) => {
+  const handleCheckboxChange = async (teamId: string, isChecked: boolean) => {
 
     if (isChecked) {
       // El checkbox está marcado
@@ -134,7 +134,7 @@ const ReviewTeam: React.FC = ({ id }) => {
       }));
     } else {
 
-      let reviewTeamId = reviewTeam.find(item => item.teams_id === parseInt(teamId));
+      let reviewTeamId = reviewTeam.find((item: { teams_id: number; }) => item.teams_id === parseInt(teamId));
       // El checkbox está desmarcado
       if (reviewTeamId) {
         const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);

@@ -16,20 +16,60 @@ import html2canvas from "html2canvas"
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
+/**
+ * Types added to avoid implicit any and incorrect never[] typing
+ */
+type Template = {
+  id?: number
+  title?: string
+  content1?: string
+  content2?: string
+  content3?: string
+  header?: string
+  footer?: string
+}
+
+type UserMinimal = {
+  email?: string
+}
+
+type EmployeeMinimal = {
+  id: number
+  name?: string
+  associate_id?: string | number
+}
+
+type Team = {
+  id: number
+  name?: string
+  leader?: string
+  code?: string
+  employees?: EmployeeMinimal[]
+  users?: UserMinimal[]
+}
+
+type EmployeeInfo = {
+  id: number
+  name?: string
+  salary: number
+  increment: number
+  actualSalary: number
+  email?: string
+}
+
 export default function EditorPDF() {
   const editorRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
   const { reviews_id, templates_id } = useParams()
 
   const [showModal, setShowModal] = useState(false)
- 
-  const [review, setReview] = useState([])
-  const [team, setTeam] = useState([])
-  const [employeeSelected, setEmployeeSelected] = useState()
-  const [employeeInfo, setEmployeeInfo] = useState([])
+
+  // typed state
+  const [team, setTeam] = useState<Team[]>([])
+  const [employeeSelected, setEmployeeSelected] = useState<number | null>(null)
+  const [employeeInfo, setEmployeeInfo] = useState<Record<number, EmployeeInfo>>({})
   const [selectedEmployees, setSelectedEmployees] = useState<number[]>([])
-  const [ratingsTeamEmployees, setRatingsTeamEmployees] = useState([])
-  const [template, setTemplate] = useState([])
+  const [template, setTemplate] = useState<Template | null>(null)
   const [isSending, setIsSending] = useState(false)
   const [sentCount, setSentCount] = useState(0)
   const [isBulkDownloading, setIsBulkDownloading] = useState(false)
@@ -38,156 +78,157 @@ export default function EditorPDF() {
 
   useEffect(() => {
     const load = async () => {
-      if (session?.user.token) {
-        try {
-          //search by template
-          const templateResponse = await fetchData(session?.user.token, "GET", `templates/all/?skip=0&limit=1000`)
-          const templateFiltered = templateResponse.data.filter((item) => item.id == templates_id)
+      const token = session?.user?.token
+      if (!token) return
 
-          setTemplate(templateFiltered[0])
+      try {
+        // ensure params are string (useParams can return string | string[] | undefined)
+        const rid = Array.isArray(reviews_id) ? reviews_id[0] : reviews_id ?? ""
+        const tid = Array.isArray(templates_id) ? templates_id[0] : templates_id ?? ""
 
-          const reviewTeamEmployeesResponse = await fetchData(
-            session?.user.token,
-            "GET",
-            `reviews_teams_employees/all/?skip=0&limit=1000`,
-          )
-          // filter rating y employees
-          const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter((item) => item.reviews_id == reviews_id)
+        // search by template
+        const templateResponse = await fetchData(token, "GET", `templates/all/?skip=0&limit=1000`)
+        const templateFiltered = Array.isArray(templateResponse?.data)
+          ? templateResponse.data.filter((item: any) => item.id == tid)
+          : []
+        setTemplate((templateFiltered[0] ?? null) as Template | null)
 
-          setRatingsTeamEmployees(filterRatingEmployees)
+        // load review-team-employee (we keep it for possible future use)
+        const reviewTeamEmployeesResponse = await fetchData(token, "GET", `reviews_teams_employees/all/?skip=0&limit=1000`)
+        const filterRatingEmployees = Array.isArray(reviewTeamEmployeesResponse?.data)
+          ? reviewTeamEmployeesResponse.data.filter((item: any) => item.reviews_id == rid)
+          : []
+        // not used in UI directly but we fetched it successfully - no assignment to unused state
 
-          const res = await fetchData(session?.user.token, "GET", `reviews/${reviews_id}`)
-          setReview(res)
+        // get list of teams
+        const teamsData = await fetchData(token, "GET", `teams/all/?skip=0&limit=1000`)
+        const userIdToFilter = (session?.user as any)?.email as string | undefined
 
-          const teamsData = await fetchData(session?.user.token, "GET", `teams/all/?skip=0&limit=1000`)
-          const userIdToFilter = session?.user.email
+        const reviewTeamsResponse = await fetchData(token, "GET", `reviews_teams/all/?skip=0&limit=1000`)
+        const employeesWithIdOne = Array.isArray(reviewTeamsResponse?.data)
+          ? reviewTeamsResponse.data.filter((item: any) => item.reviews_id === Number.parseInt(rid || "0"))
+          : []
 
-          const reviewTeamsResponse = await fetchData(
-            session?.user.token,
-            "GET",
-            `reviews_teams/all/?skip=0&limit=1000`,
-          )
-          const employeesWithIdOne = reviewTeamsResponse.data.filter(
-            (item) => item.reviews_id === Number.parseInt(reviews_id),
-          )
+        // build unique teams array (cast to number[])
+        const teams = Array.from(new Set(employeesWithIdOne.map((item: any) => item.teams_id))) as number[]
 
-          const teams = [...new Set(employeesWithIdOne.map((item) => item.teams_id))]
+        const teamUserFilter = Array.isArray(teamsData?.data)
+          ? teamsData.data.filter((grupo: any) =>
+              Array.isArray(grupo.users) ? grupo.users.some((user: any) => user.email === userIdToFilter) : false,
+            )
+          : []
 
-          const teamUserFilter = teamsData.data.filter((grupo) =>
-            grupo.users.some((user) => user.email === userIdToFilter),
-          )
+        const employeeIds: number[] = []
 
-          const employeeIds: any[] = []
+        const filteredTeams = teamUserFilter.filter((t: any) => teams.includes(t.id))
+        setTeam(filteredTeams as Team[])
 
-          const filteredTeams = teamUserFilter.filter((team) => teams.includes(team.id))
-          setTeam(filteredTeams)
+        filteredTeams.forEach((t: any) => {
+          if (Array.isArray(t.employees)) {
+            t.employees.forEach((employee: any) => {
+              if (!employeeIds.includes(employee.id)) {
+                employeeIds.push(employee.id)
+              }
+            })
+          }
+        })
 
-          filteredTeams.forEach((team) => {
-            if (Array.isArray(team.employees)) {
-              team.employees.forEach((employee) => {
-                if (!employeeIds.includes(employee.id)) {
-                  employeeIds.push(employee.id)
-                }
-              })
+        const employeeData = await Promise.all(
+          employeeIds.map(async (employeeId: number) => {
+            const data = await fetchData(token, "GET", `employees/${employeeId}`)
+
+            if (!data) {
+              console.error(`Error fetching employee ${employeeId}:`, (data as any)?.statusText)
+              return null
             }
-          })
 
-          const employeeData = await Promise.all(
-            employeeIds.map(async (employeeId) => {
-              const data = await fetchData(session?.user.token, "GET", `employees/${employeeId}`)
-              
-              if (!data) {
-                console.error(`Error fetching employee ${employeeId}:`, data.statusText)
-                return null
-              }
+            const salary = (formatSalary(data?.actual_external_data?.annual_salary) as number) ?? 0
+            const email = data?.actual_external_data?.email as string | undefined
+            //testing
+            //const email = 'leandroleonelrocha@gmail.com'
+            
+            const reviewsTeamsEmployees = await fetchData(token, "GET", `reviews_teams_employees/all/?skip=0&limit=1000`)
+            const filteredReviewsTeamsEmployees = Array.isArray(reviewsTeamsEmployees?.data)
+              ? reviewsTeamsEmployees.data.filter((item: any) => item.reviews_id == rid && item.employees_id == employeeId)
+              : []
 
-              const salary = formatSalary(data.actual_external_data.annual_salary)
-              const email = data.actual_external_data.email
-              //const email = 'nicolas.monja@gmail.com'
+            const percent = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].percent : 0
+            const increment = (salary * percent) / 100
+            const actualSalary = salary + increment
 
-              const reviewsTeamsEmployees = await fetchData(
-                session?.user.token,
-                "GET",
-                `reviews_teams_employees/all/?skip=0&limit=1000`,
-              )
+            return {
+              id: employeeId,
+              salary,
+              increment,
+              actualSalary,
+              email,
+              name: data?.name,
+            } as EmployeeInfo
+          }),
+        )
 
-              const filteredReviewsTeamsEmployees = reviewsTeamsEmployees.data.filter(
-                (item) => item.reviews_id == reviews_id && item.employees_id == employeeId,
-              )
-
-              const percent = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].percent : 0
-              const increment = (salary * percent) / 100
-              const actualSalary = salary + increment
-
-              return {
-                id: employeeId,
-                salary: salary,
-                increment: percent,
-                actualSalary: actualSalary,
-                email: email,
-                name: data.name,
-              }
-            }),
-          )
-
-          // Filtramos nulos
-          const validEmployees = employeeData.filter((emp) => emp !== null)
-
-          const employeeMap = Object.fromEntries(validEmployees.map((emp) => [emp.id, emp]))
-
-          // Guardamos en el estado
-          setEmployeeInfo(employeeMap)
-        } catch (error) {
-          console.error("Error al cargar los datos:", error)
-        }
+        // Filter nulls and build map
+        const validEmployees = (employeeData as (EmployeeInfo | null)[]).filter(
+          (emp): emp is EmployeeInfo => emp !== null,
+        )
+        const employeeMap = Object.fromEntries(validEmployees.map((emp) => [emp.id, emp])) as Record<number, EmployeeInfo>
+        setEmployeeInfo(employeeMap)
+      } catch (error) {
+        console.error("Error al cargar los datos:", error)
       }
     }
     load()
-  }, [session?.user.token])
+    // include reviews_id/templates_id so the effect refreshes when params change
+  }, [session?.user?.token, reviews_id, templates_id])
 
-  const handleCheckboxChange = (e, employeeId: number) => {
-    if (e.checked) {
-      // Agregar el ID si está marcado
-      setSelectedEmployees((prev) => [...prev, employeeId])
+  // general event typing compatible with PrimeReact Checkbox (has checked or target.checked)
+  const handleCheckboxChange = (e: { checked?: boolean; target?: { checked?: boolean } }, employeeId: number) => {
+    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
+    if (checked) {
+      setSelectedEmployees((prev) => (prev.includes(employeeId) ? prev : [...prev, employeeId]))
     } else {
-      // Quitar el ID si se desmarca
       setSelectedEmployees((prev) => prev.filter((id) => id !== employeeId))
     }
   }
 
-  const handleTeamCheckboxChange = (e, employees: { id: number }[]) => {
-    if (e.target.checked) {
+  const handleTeamCheckboxChange = (
+    e: { checked?: boolean; target?: { checked?: boolean } },
+    employees?: EmployeeMinimal[],
+  ) => {
+    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
+    const list = Array.isArray(employees) ? employees : []
+    if (checked) {
       setSelectedEmployees((prev) => {
-        const newIds = employees.map((emp) => emp.id).filter((id) => !prev.includes(id)) // solo los no repetidos
+        const newIds = list.map((emp) => emp.id).filter((id) => !prev.includes(id))
         return [...prev, ...newIds]
       })
     } else {
-      setSelectedEmployees((prev) => prev.filter((id) => !employees.some((emp) => emp.id === id)))
+      setSelectedEmployees((prev) => prev.filter((id) => !list.some((emp) => emp.id === id)))
     }
   }
 
-  async function sendEmailTo(employeeId: string) {
-    const html = generateEmailHTML(employeeInfo[employeeId])
+  async function sendEmailTo(employeeId: number) {
+    const emp = employeeInfo[employeeId]
+    if (!emp) throw new Error("Employee not found")
+
+    const html = generateEmailHTML(emp)
     const res = await fetch("/api/send-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         html,
-        email: employeeInfo[employeeId].email,
+        email: emp.email,
         subject: "Important: 2026 Merit Increase Details Enclosed",
-        attachments: { header: template.header, footer: template.footer },
+        attachments: { header: template?.header, footer: template?.footer },
       }),
     })
 
-    // 👇 Si no es 2xx, leer el body y lanzar error
-    const text = await res.text() // leo texto para poder parsear o loguear
-    
-
+    const text = await res.text()
     let data: any = {}
     try {
       data = JSON.parse(text)
     } catch {
-      /* puede no ser JSON */
+      /* not json */
     }
 
     if (!res.ok) {
@@ -195,7 +236,7 @@ export default function EditorPDF() {
       throw new Error(msg)
     }
 
-    return data // opcional
+    return data
   }
 
   const handleSubmit = async () => {
@@ -203,8 +244,8 @@ export default function EditorPDF() {
     setIsSending(true)
     setSentCount(0)
 
-    const successes: string[] = []
-    const failures: { id: string; error: string }[] = []
+    const successes: number[] = []
+    const failures: { id: number; error: string }[] = []
 
     try {
       for (const id of selectedEmployees) {
@@ -212,7 +253,7 @@ export default function EditorPDF() {
           const payload = { templates_id, reviews_id, employees_id: id }
           await apiRequest("templates/review_template/", "POST", payload)
 
-          await sendEmailTo(id) // lanza si falla
+          await sendEmailTo(id)
           setSentCount((n) => n + 1)
           successes.push(id)
         } catch (err: any) {
@@ -220,16 +261,13 @@ export default function EditorPDF() {
           failures.push({ id, error: err?.message || String(err) })
         }
       }
-
+      console.log(failures)
       if (failures.length === 0) {
         showSuccessAlert(`Emails sent: ${successes.length}/${selectedEmployees.length}`)
       } else if (successes.length > 0) {
         showErrorAlert(
           `Partial: ${successes.length} ok, ${failures.length} with error. ` +
-            failures
-              .slice(0, 5)
-              .map((f) => `ID ${f.id}: ${f.error}`)
-              .join(" | "),
+            failures.slice(0, 5).map((f) => `ID ${f.id}: ${f.error}`).join(" | "),
         )
       } else {
         showErrorAlert(`All failed (${failures.length}). Ej: ${failures[0].id}: ${failures[0].error}`)
@@ -239,7 +277,8 @@ export default function EditorPDF() {
     }
   }
 
-  const generateEmailHTML = (employee) => {
+  const generateEmailHTML = (employee: EmployeeInfo) => {
+    const tpl = template ?? ({} as Template)
     return `
       <div style="padding: 20px; font-family: Arial;">
         <div class="header">
@@ -255,11 +294,11 @@ export default function EditorPDF() {
         </p>
 
         <p style="font-size: 16px; color: black; margin-top: 50px;">
-          ${template.title} ${employee.name},
+          ${tpl.title ?? ""} ${employee.name},
         </p>
 
         <p style="font-size: 16px; color: black;">
-           ${template?.content1}
+           ${tpl.content1 ?? ""}
         </p>
 
         <div style="margin-top: 50px;">
@@ -282,11 +321,11 @@ export default function EditorPDF() {
         </div>
 
         <p style="font-size: 16px; font-weight: bold; color: black; margin-top: 50px;">
-         ${template.content2}
+         ${tpl.content2 ?? ""}
         </p>
 
         <p style="font-size: 16px; margin-bottom: 150px; color: black;">
-          ${template.content3}
+          ${tpl.content3 ?? ""}
         </p>
 
         <div class="footer" style="margin-top: 40px;">
@@ -296,96 +335,9 @@ export default function EditorPDF() {
     `
   }
 
-  // const downloadPDF = async (employeeId: number) => {
-  //   try {
-  //     const employee = employeeInfo[employeeId]
-  //     if (!employee) {
-  //       showErrorAlert("Employee information not found")
-  //       return
-  //     }
-
-  //     // Create a temporary div with the email HTML content
-  //     const tempDiv = document.createElement("div")
-  //     tempDiv.innerHTML = generateEmailHTML(employee)
-  //     tempDiv.style.position = "absolute"
-  //     tempDiv.style.left = "-9999px"
-  //     tempDiv.style.width = "800px"
-  //     tempDiv.style.backgroundColor = "white"
-  //     tempDiv.style.padding = "20px"
-
-  //     // Replace image placeholders with actual images
-  //     const headerImg = tempDiv.querySelector('img[src="__HEADER_CID__"]')
-  //     const footerImg = tempDiv.querySelector('img[src="__FOOTER_CID__"]')
-
-  //     if (headerImg && template?.header) {
-  //       headerImg.setAttribute("src", `/uploads/${template.header}`)
-  //     }
-  //     if (footerImg && template?.footer) {
-  //       footerImg.setAttribute("src", `/uploads/${template.footer}`)
-  //     }
-
-  //     document.body.appendChild(tempDiv)
-
-  //     // Wait for images to load
-  //     const images = tempDiv.querySelectorAll("img")
-  //     await Promise.all(
-  //       Array.from(images).map((img) => {
-  //         return new Promise((resolve) => {
-  //           if (img.complete) {
-  //             resolve(true)
-  //           } else {
-  //             img.onload = () => resolve(true)
-  //             img.onerror = () => resolve(true)
-  //           }
-  //         })
-  //       }),
-  //     )
-
-  //     // Generate canvas from the HTML
-  //     const canvas = await html2canvas(tempDiv, {
-  //       scale: 2,
-  //       useCORS: true,
-  //       allowTaint: true,
-  //       backgroundColor: "#ffffff",
-  //     })
-
-  //     // Remove temporary div
-  //     document.body.removeChild(tempDiv)
-
-  //     // Create PDF
-  //     const pdf = new jsPDF("p", "mm", "a4")
-  //     const imgWidth = 210 // A4 width in mm
-  //     const pageHeight = 295 // A4 height in mm
-  //     const imgHeight = (canvas.height * imgWidth) / canvas.width
-  //     let heightLeft = imgHeight
-
-  //     let position = 0
-
-  //     // Add first page
-  //     pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
-  //     heightLeft -= pageHeight
-
-  //     // Add additional pages if content is longer than one page
-  //     while (heightLeft >= 0) {
-  //       position = heightLeft - imgHeight
-  //       pdf.addPage()
-  //       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, position, imgWidth, imgHeight)
-  //       heightLeft -= pageHeight
-  //     }
-
-  //     // Download the PDF
-  //     const fileName = `salary_review_${employee.name.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
-  //     pdf.save(fileName)
-
-  //     showSuccessAlert("PDF downloaded successfully")
-  //   } catch (error) {
-  //     console.error("Error generating PDF:", error)
-  //     showErrorAlert("Error generating PDF. Please try again.")
-  //   }
-  // }
-
   const createEmployeePdfBlob = async (employeeId: number | string) => {
-    const employee = employeeInfo[employeeId]
+    const id = typeof employeeId === "string" ? parseInt(employeeId, 10) : employeeId
+    const employee = employeeInfo[id as number]
     if (!employee) throw new Error('Employee information not found')
 
     // === lo mismo que tu downloadPDF, pero retornando el Blob ===
@@ -439,7 +391,8 @@ export default function EditorPDF() {
       heightLeft -= pageHeight
     }
 
-    const fileName = `salary_review_${employee.name.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
+  const safeName = (employee.name ?? "employee").toString()
+  const fileName = `salary_review_${safeName.replace(/\s+/g, "_")}_${new Date().getFullYear()}.pdf`
     const blob = pdf.output('blob') as Blob
     return { blob, fileName }
   }
@@ -509,12 +462,12 @@ export default function EditorPDF() {
         <tbody>
           {team.map((t, index) => (
             <React.Fragment key={t.id || index}>
-              <tr className="table-light">
+                  <tr className="table-light">
                 <th scope="row">
                   <Checkbox
                     disabled={isSending}
                     onChange={(e) => handleTeamCheckboxChange(e, t.employees)}
-                    checked={t.employees.every((emp) => selectedEmployees.includes(emp.id))}
+                    checked={Array.isArray(t.employees) ? t.employees.every((emp) => selectedEmployees.includes(emp.id)) : false}
                   />
                 </th>
                 <td>{t.name}</td>
@@ -569,19 +522,6 @@ export default function EditorPDF() {
                         <i className="bi bi-eye"></i>
                       </button>
                     </td>
-
-                    {/* <td>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          downloadPDF(emp.id)
-                        }}
-                        className="btn btn-outline-primary btn-sm"
-                      >
-                        <i className="bi bi-download"></i>
-                      </button>
-                    </td> */}
                     <td></td>
                   </tr>
             
@@ -632,7 +572,7 @@ export default function EditorPDF() {
                     })}
                   </p>
                   <p style={{ fontSize: 16, color: "black", marginTop: "50px" }}>
-                    {template ? `${template.title} ${employeeInfo[employeeSelected]?.name} ` : ``}{" "}
+                    {template ? `${template.title} ${employeeSelected != null ? employeeInfo[employeeSelected]?.name ?? "" : ""} ` : ``} {" "}
                   </p>
                   <p style={{ fontSize: 16, color: "black" }}>
                     {template
@@ -651,12 +591,12 @@ export default function EditorPDF() {
                       </thead>
                       <tbody>
                         <tr style={{ textAlign: "center" }}>
-                          <td style={{ padding: "15px" }}>$ {formatPrice(employeeInfo[employeeSelected]?.salary)}</td>
+                          <td style={{ padding: "15px" }}>$ {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.salary : 0)}</td>
                           <td style={{ padding: "15px" }}>
-                            {formatPrice(employeeInfo[employeeSelected]?.increment)} %
+                            {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.increment : 0)} %
                           </td>
                           <td style={{ padding: "15px" }}>
-                            $ {formatPrice(employeeInfo[employeeSelected]?.actualSalary)}
+                            $ {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.actualSalary : 0)}
                           </td>
                         </tr>
                       </tbody>

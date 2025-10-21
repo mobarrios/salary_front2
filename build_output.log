@@ -1,0 +1,87 @@
+
+> front@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.3
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+(node:26558) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
+(node:26774) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:26774) ExperimentalWarning: CommonJS module /Users/leandrorocha/Desktop/next/salary_front2/node_modules/tailwindcss/lib/lib/load-config.js is loading ES Module /Users/leandrorocha/Desktop/next/salary_front2/tailwind.config.ts using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
+ ✓ Compiled successfully
+   Skipping validation of types
+   Linting ...
+   Collecting page data ...
+   Generating static pages (0/31) ...
+ReferenceError: window is not defined
+    at 7653 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:1:399767)
+    at t (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at 73537 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:5:48958)
+    at t (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at 30375 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:5:52141)
+    at Object.t [as require] (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at require (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
+    at I (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106) {
+  digest: '4200540486'
+}
+
+Error occurred prerendering page "/admin/analytics". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ReferenceError: window is not defined
+    at 7653 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:1:399767)
+    at t (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at 73537 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:5:48958)
+    at t (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at 30375 (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/analytics/page.js:5:52141)
+    at Object.t [as require] (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/webpack-runtime.js:1:128)
+    at require (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:16:18365)
+    at I (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:94362)
+    at /Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:96668
+    at F._fromJSON (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:97106)
+   Generating static pages (7/31) 
+   Generating static pages (15/31) 
+ReferenceError: document is not defined
+    at p (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/teams/user/page.js:1:4726)
+    at nj (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nN (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nI (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47010)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47717)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nB (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67538)
+    at nD (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66680) {
+  digest: '4226688656'
+}
+
+Error occurred prerendering page "/admin/teams/user". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ReferenceError: document is not defined
+    at p (/Users/leandrorocha/Desktop/next/salary_front2/.next/server/app/admin/teams/user/page.js:1:4726)
+    at nj (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46251)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47571)
+    at nN (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nI (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47010)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47717)
+    at nM (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61546)
+    at nN (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64546)
+    at nB (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67538)
+    at nD (/Users/leandrorocha/Desktop/next/salary_front2/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66680)
+   Generating static pages (23/31) 
+ ✓ Generating static pages (31/31)
+
+> Export encountered errors on following paths:
+	/admin/analytics/page: /admin/analytics
+	/admin/teams/user/page: /admin/teams/user

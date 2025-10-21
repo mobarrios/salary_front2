@@ -2,15 +2,17 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useSession } from "next-auth/react"
 import { apiRequest } from "@/server/services/core/apiRequest"
-import { useRouter } from "next/navigation"
 import * as Yup from "yup"
 import { showSuccessAlert } from "@/hooks/alerts"
 
-const Form: React.FC = ({ id, onClose, onSuccess }) => {
-  const { data: session } = useSession()
+interface FormProps {
+  id?: string
+  onClose?: () => void
+  onSuccess?: () => void
+}
 
+const Form: React.FC<FormProps> = ({ onClose, onSuccess }) => {
   const [headerImage, setHeaderImage] = useState<string | null>(null)
   const [footerImage, setFooterImage] = useState<string | null>(null)
   const [headerFile, setHeaderFile] = useState<File | null>(null)
@@ -20,11 +22,8 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
   const [content2, setContent2] = useState("")
   const [content3, setContent3] = useState("")
   const [content4, setContent4] = useState("")
-  const [reviews, setReviews] = useState([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
-
-  const router = useRouter()
 
   const validationSchema = Yup.object({
     // title: Yup.string().required("El título es obligatorio"),
@@ -59,7 +58,7 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (submitting) return; 
+    if (submitting) return
 
     setSubmitting(true)
 
@@ -85,6 +84,7 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
         })
       }
       setErrors(errorMessages)
+      setSubmitting(false)
       return // Stop submission if validation fails
     }
 
@@ -123,14 +123,16 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
         footer: footerFileName,
       }
 
-      const t = await apiRequest(`templates/`, "POST", payload)
-      
+      await apiRequest(`templates/`, "POST", payload)
 
       if (onSuccess) {
         onSuccess()
       }
 
-      onClose()
+      if (onClose) {
+        onClose()
+      }
+
       showSuccessAlert("Your work has been saved")
     } catch (err) {
       console.error("Error al enviar formulario:", err)
@@ -144,23 +146,32 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="mb-3">
           <label className="form-label">Header</label>
-          {/* <input type="file" className="form-control" onChange={handleHeaderChange} /> */}
           <input
             type="file"
             className="form-control"
             onChange={handleHeaderChange}
             accept="image/*"
           />
-          {errors.headerFile && <div className='text-danger'>{errors.headerFile}</div>}
+          {errors.headerFile && <div className="text-danger">{errors.headerFile}</div>}
+          {headerImage && (
+            // show preview so headerImage is used
+            <img src={headerImage} alt="Header preview" className="mt-2" style={{ maxWidth: "100%", height: "auto" }} />
+          )}
         </div>
+
         <div className="mb-3">
           <label className="form-label">Footer</label>
-          <input 
-            type="file" 
-            className="form-control" 
-            onChange={handleFooterChange} 
+          <input
+            type="file"
+            className="form-control"
+            onChange={handleFooterChange}
+            accept="image/*"
           />
-          {errors.footerFile && <div className='text-danger'>{errors.footerFile}</div>}
+          {errors.footerFile && <div className="text-danger">{errors.footerFile}</div>}
+          {footerImage && (
+            // show preview so footerImage is used
+            <img src={footerImage} alt="Footer preview" className="mt-2" style={{ maxWidth: "100%", height: "auto" }} />
+          )}
         </div>
 
         <div className="mb-3">
@@ -190,20 +201,25 @@ const Form: React.FC = ({ id, onClose, onSuccess }) => {
           </div>
         ))}
 
-        <button type="submit" className="btn btn-primary">
-          Save
-        </button>
+        <div className="mb-3">
+          <label className="form-label">Content 4</label>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Content 4"
+            value={content4}
+            onChange={(e) => setContent4(e.target.value)}
+          />
+        </div>
 
-        {/* <button type="submit" className="btn btn-primary">
-          {submitting && (
-            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-          )}
+        <button type="submit" className="btn btn-primary" disabled={submitting}>
           {submitting ? "Saving..." : "Save"}
-        </button> */}
-
+        </button>
       </form>
     </>
   )
 }
 
-export default Form
+export default function Page() {
+  return <Form />
+}

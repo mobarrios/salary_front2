@@ -18,9 +18,10 @@ export async function POST(req: NextRequest) {
     //const pass = process.env.EMAIL_PASS;
     //Username: Compensation@cottonteam.com
     //Password: jbzycvnmdthmjhky
-    
-    const user = 'Compensation@cottonteam.com'
-    const pass = 'jbzycvnmdthmjhky'
+
+
+    const user = 'rochaleandroleonel@gmail.com'
+    const pass = 'plweshznafjndgad'
 
     if (!user || !pass) {
       return new Response(JSON.stringify({ error: 'Faltan EMAIL_USER/EMAIL_PASS' }), {
@@ -30,14 +31,13 @@ export async function POST(req: NextRequest) {
     }
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.office365.com",
-      port: 587,          // STARTTLS
-      secure: false,      // importante: false en 587
-      requireTLS: true,
-      tls: { minVersion: "TLSv1.2" },
+      service: "gmail", // o bien host: "smtp.gmail.com"
+      host: "smtp.gmail.com",
+      port: 587,             // STARTTLS
+      secure: false,         // debe ser false en 587
       auth: {
-        user: "compensation@cottonteam.com",  // UPN/correo completo
-        pass: "jbzycvnmdthmjhky",  
+        user: "rochaleandroleonel@gmail.com",
+        pass: "plweshznafjndgad",
       },
     });
 

@@ -13,12 +13,14 @@ import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 const FormEmployees: React.FC = () => {
   const bc = [{ label: 'People', url: '/admin/employees' }, { label: 'External data' }];
   const { data: session, status } = useSession();
-  const [options, setOptions] = useState([]);
-  const [actual, setActual] = useState({});
-  const [formData, setFormData] = useState({}); // Estado para los datos del formulario
+  const [options, setOptions] = useState<any[]>([]);
+  const [actual, setActual] = useState<any>({});
+  const [formData, setFormData] = useState<any>({}); // Estado para los datos del formulario
   const { id } = useParams();
   const router = useRouter();
-  const isValidator = session?.user.roles.some(role => role.name === 'approver');
+  const isValidator = Array.isArray((session as any)?.user?.roles)
+    ? (session as any).user.roles.some((role: any) => role?.name === 'approver')
+    : false;
 
   const load = async () => {
     try {
@@ -43,11 +45,11 @@ const FormEmployees: React.FC = () => {
     return <p>Loading...</p>;
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
     //console.log(formData, actual)
     try {
-      const response = await apiRequest(`external_data/edit/${actual.id}`, 'PUT', formData);
+      const response = await apiRequest(`external_data/edit/${(actual as any).id}`, 'PUT', formData);
      
       router.refresh();
       showSuccessAlert("Your work has been saved");
@@ -56,10 +58,10 @@ const FormEmployees: React.FC = () => {
     }
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const { name, value } = e.target as HTMLInputElement;
+    setFormData((prevState: Record<string, any>) => ({
+      ...(prevState || {}),
       [name]: value
     }));
   };
