@@ -111,14 +111,17 @@ const FormEmployees: React.FC = () => {
     }, [ratings, session?.user.token]);
 
 
-    const updateEmployeesTeams = async (team) => {
-        console.log('Team: ', team.employees)
-        
+    const updateEmployeesTeams = async (team, filterRatingEmployees) => {
+        //todos los empleados de ese teams
+        // const promises = team.employees.map(item =>
+        //     fetchData(session?.user.token, 'GET', `employees/${item.id}`)
+        // );
+
         //aca traer todos los Ids de empleados que vengan de api/v1/reviews_teams_employees/all/
-        
-        const promises = team.employees.map(item =>
-            fetchData(session?.user.token, 'GET', `employees/${item.id}`)
+        const promises = filterRatingEmployees.map(item =>
+            fetchData(session?.user.token, 'GET', `employees/${item.employees_id}`)
         );
+
         console.log('Promises: ',promises)
         const teamResponses = await Promise.all(promises);
         setTeamEmployees(teamResponses)
@@ -142,9 +145,6 @@ const FormEmployees: React.FC = () => {
             const teamResponse = await fetchData(session?.user.token, 'GET', `teams/${team_id}`);
             setTeam(teamResponse[0]);
 
-            // update all employees with salary
-            updateEmployeesTeams(teamResponse[0]);
-
             // all team review
             const teamReview = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
 
@@ -163,10 +163,10 @@ const FormEmployees: React.FC = () => {
             console.log('filterRatingEmployees: ', filterRatingEmployees)
 
             setRatingsTeamEmployees(filterRatingEmployees);
-
-
             updateRatingsEmployees(filterRatingEmployees)
 
+            // update all employees with salary
+            updateEmployeesTeams(teamResponse[0], filterRatingEmployees);
 
 
 
@@ -852,6 +852,7 @@ const FormEmployees: React.FC = () => {
                             <tbody>
                                 {
                                     teamEmployees && teamEmployees
+                                        // cual es este filtro si borraron al empleado de la vista
                                         .filter(item => statusValues[item.id] !== 3) // Filtrar empleados
                                         .map((item) => (
                                             <tr key={item.id}>
@@ -939,7 +940,7 @@ const FormEmployees: React.FC = () => {
                                                     </td>
                                                 )}
                                             </tr>
-                                        ))}
+                                    ))}
                             </tbody>
                         </table>
                     </div>

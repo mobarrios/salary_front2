@@ -10,6 +10,42 @@ import Profile from '@/components/Dashboard/Profile';
 import SelectReview from "@/components/Dashboard/SelectReview";
 import Table from "@/components/Dashboard/Table";
 
+interface Employee {
+  id: number;
+  email: string;
+  name: string;
+}
+
+interface Team {
+  id: number;
+  name: string;
+  users: Employee[];
+  employees: Employee[];
+}
+
+interface ReviewTeamEmployee {
+  id: number;
+  teams_id: string;
+  review_id: string;
+  employees_id: number;
+  price: number;
+  percent: number;
+  status: number;
+  comments?: string;
+}
+
+interface TeamCount {
+  [key: string]: number;
+}
+
+interface TableItem {
+  team_id: number;
+  team_name: string;
+  total_employee_assigned_price: number;
+  team_assigned_price: number;
+  consumed_percentage: string;
+}
+
 const Home = () => {
   const { data: session, status } = useSession()
 
@@ -42,11 +78,23 @@ const Home = () => {
   const [reviewsTeams, setReviewsTeams] = useState([]);
   const [reviewTeam, setReviewTeam] = useState([]);
 
+  interface TeamCount {
+    [key: string]: number;
+  }
+
+  interface TableItem {
+    team_id: number;
+    team_name: string;
+    total_employee_assigned_price: number;
+    team_assigned_price: number;
+    consumed_percentage: string;
+  }
+
   //table 
-  const [table, setTable] = useState([]);
-  const [totalEmployeesByTeams, setTotalEmployeesByTeams] = useState([]);
-  const [totalProfileByTeams, setProfileEmployeesByTeams] = useState([]);
-  const [totalApprovedByTeams, setTotalApprovedByTeams] = useState([]);
+  const [table, setTable] = useState<TableItem[]>([]);
+  const [totalEmployeesByTeams, setTotalEmployeesByTeams] = useState<TeamCount>({});
+  const [totalProfileByTeams, setProfileEmployeesByTeams] = useState<TeamCount>({});
+  const [totalApprovedByTeams, setTotalApprovedByTeams] = useState<TeamCount>({});
 
   //profile
   const [totalEmployees, setTotalEmployees] = useState();
@@ -54,7 +102,7 @@ const Home = () => {
   const [totalEmployeesCargadosApproved, setTotalEmployeesCargadosApproved] = useState();
   const [missingApproved, setMissingApproved] = useState();
 
-  const userData = async () => {
+  const userData = async (currentLastReviewId) => {
     try {
 
       // all teams
@@ -71,23 +119,26 @@ const Home = () => {
       const teamIds = teamUserFilter.map(team => team.id);
       setTeamsId(teamIds)
 
-      const teamsFiltrados = teamUserFilter.filter(team => teamIds.includes(team.id));
-      
-      // aca contar todos los empleados por api/v1/reviews_teams_employees/all/
-      const conteo = teamsFiltrados.reduce((acc, team) => {
-        acc[team.id] = team.employees ? team.employees.length : 0;
-        return acc;
-      }, {});
+      const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=2000`);
+          
+      // 1. Manejo seguro de la respuesta y filtrado
+      const filteredEmployees = Array.isArray(reviewTeamEmployeesResponse?.data) 
+          ? reviewTeamEmployeesResponse.data.filter(employee => {
+                return employee.reviews_id == currentLastReviewId;
+            })
+          : []; // Usa un array vacío si los datos no son válidos
 
-      setTotalEmployeesByTeams(conteo);
+      const totalEmpleadosAsignados = filteredEmployees.length;
 
-      // aca contar todos los empleados por api/v1/reviews_teams_employees/all/
+      // 3. Calcular el conteo agrupado por team_id
+      const employeeCountByTeam = filteredEmployees.reduce((acc, currentItem) => {
+          const teamId = Number(currentItem.teams_id); 
+          acc[teamId] = (acc[teamId] || 0) + 1;
+          return acc;
+      }, {} as Record<number, number>);
 
-      const totalEmpleados = teamsFiltrados.reduce((total, team) => {
-        return total + (team.employees?.length || 0);
-      }, 0);
-
-      setTotalEmployees(totalEmpleados);
+      setTotalEmployeesByTeams(employeeCountByTeam);
+      setTotalEmployees(totalEmpleadosAsignados);
 
       const reviewTeamsResponse = await fetchData(session?.user.token, 'GET', `reviews_teams/all/?skip=0&limit=1000`);
       setReviewsTeams(reviewTeamsResponse)
@@ -117,22 +168,35 @@ const Home = () => {
     }
   };
 
-  const kpiData = async () => {
-    try {
-
-      // All reviews
-      const reviewsAll = await fetchData(session?.user.token, 'POST', `reviews_all`);
+  const calculateEmployeeCounts = (
+    employeesData: any[], // Usamos 'any[]' por simplicidad si el tipo exacto no está disponible
+    reviewId: string | number, 
+      managerTeamIds: number[]
+  ): { conteoPorEquipo: Record<number, number>; totalEmpleadosAsignados: number } => {
+      
+      const filteredEmployees = employeesData.filter(employee => {
+          return employee.review_id == reviewId;
+      });
+ 
+      const totalEmpleadosAsignados = filteredEmployees.length;
      
-      setReviews(reviewsAll);
+      // 3. Calcular el conteo agrupado por team_id
+      const employeeCountByTeam = filteredEmployees.reduce((acc, currentItem) => {
+          // Aseguramos que teamId sea un número o convertimos si es necesario
+          const teamId = Number(currentItem.team_id); 
+          acc[teamId] = (acc[teamId] || 0) + 1;
 
-      // Ultimo cargado
-      const ultimoReview = reviewsAll.reduce((max, item) => {
-        return item.id > max.id ? item : max;
-      }, reviewsAll[0]);
-      
-      setReview(ultimoReview)
-      setLastReviewId(ultimoReview.id)
-      
+          return acc;
+      }, {} as Record<number, number>);
+     
+      return { 
+          conteoPorEquipo: employeeCountByTeam, 
+          totalEmpleadosAsignados: totalEmpleadosAsignados 
+      };
+  };
+
+  const kpiData = async () => {
+    try {      
       // All reviews teams employees
       const reviewsTeams = await fetchData(session?.user.token, 'POST', `reviews_teams`);
       
@@ -140,28 +204,24 @@ const Home = () => {
 
       const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=2000`);
       setEmployeesReviewsTeams(reviewTeamEmployeesResponse)
-      
+        
       //resumen review
-      const resumenReview = calcularResumenReview(reviewsTeams, ultimoReview.id);
-      const updateTable =  calcularTable(reviewsTeams, ultimoReview.id, teamsIds);
-      
-      // const selectedReviewTeam = reviewsTeams.data.find(item => item.reviews_id == ultimoReview.id);
-      // setReviewTeam(selectedReviewTeam)
-      // console.log('selectedReviewTeam', selectedReviewTeam)
-     
-      setSelectedReview(ultimoReview.id)
+      const resumenReview = calcularResumenReview(reviewsTeams, lastReviewId);
+      const updateTable =  calcularTable(reviewsTeams, lastReviewId, teamsIds);
+           
+      setSelectedReview(lastReviewId)
       setTable(updateTable)
       setTotalBudget(resumenReview.reviewTotalPrice);
       setTotalTeamAssigned(resumenReview.teamAssigned);
       setTotalEmployeeAssigned(resumenReview.totalAssigned);
       setTotalConsumed(resumenReview.porcentajeConsumido);
       
-      const profile = calculateProfileManager(reviewTeamEmployeesResponse, ultimoReview.id)
+      const profile = calculateProfileManager(reviewTeamEmployeesResponse, lastReviewId)
       setTotalEmployees(profile.totalEmployees)
       setTotalEmployeesCargados(profile.totalRatedCount)
       setProfileEmployeesByTeams(profile.result)
 
-      const approved = calculateProfileApproved(reviewTeamEmployeesResponse, ultimoReview.id)
+      const approved = calculateProfileApproved(reviewTeamEmployeesResponse, lastReviewId)
       setMissingApproved(approved.totalEmployees)
       //setTotalEmployees(approved.totalEmployees)
       setTotalEmployeesCargadosApproved(approved.totalRatedCount)
@@ -208,7 +268,7 @@ const Home = () => {
   };
 
   const calcularTable = (reviewsTeams, reviewId, teamsIds) => {
-    
+   
     const resumen = reviewsTeams
     .filter(item =>
       item.review_id == reviewId &&
@@ -250,7 +310,7 @@ const Home = () => {
 
   const handleChange = (e) => {
     const selectedId = e.target.value;
-
+    
     // Ultimo cargado
     const selectedReview = reviews.find(item => item.id == selectedId);
     setReview(selectedReview)
@@ -258,7 +318,7 @@ const Home = () => {
     // Review team
     const selectedReviewTeam = reviewsTeams.data.find(item => item.reviews_id == selectedId);
     setReviewTeam(selectedReviewTeam)
-    
+
     const resumen = calcularResumenReview(reviewsTeamsEmployees, selectedId);
 
     setSelectedReview(selectedId);
@@ -269,6 +329,17 @@ const Home = () => {
 
     const updateTable =  calcularTable(reviewsTeamsEmployees, selectedId, teamsIds)
     setTable(updateTable)
+
+    // TOTAL
+    const { conteoPorEquipo, totalEmpleadosAsignados } = calculateEmployeeCounts(
+    reviewsTeamsEmployees, 
+    selectedId, 
+    teamsIds
+    );
+
+    setTotalEmployeesByTeams(conteoPorEquipo);
+    setTotalEmployees(totalEmpleadosAsignados);
+    
 
     const manager = calculateProfileManager(employeesReviewsTeams, selectedId)
     setTotalEmployees(manager.totalEmployees)
@@ -288,7 +359,7 @@ const Home = () => {
     const rtData = Array.isArray(reviewsTeamsResponse?.data)
       ? reviewsTeamsResponse.data
       : [];
-
+   
     const result = rtData.reduce((acc, item) => {
       const { teams_id, price, reviews_id } = item;
 
@@ -315,11 +386,11 @@ const Home = () => {
         )
         .map(item => item.teams_id)
     )];
-       
+    
     const totalEmployees = teams.data
     .filter(team => teamsIdByReview.includes(team.id))
     .reduce((sum, team) => sum + (team.employees?.length || 0), 0);
- 
+   
     // Declarar primero la variable
     let totalRatedCount = 0;
     totalRatedCount = rtData
@@ -328,7 +399,7 @@ const Home = () => {
           teamsIds.includes(Number(item.teams_id)) &&
           Number(item.price) !== 0
         ).length;
-     
+   
     return { totalEmployees, totalRatedCount, result };
   };
 
@@ -386,18 +457,55 @@ const Home = () => {
     return { totalEmployees, totalRatedCount, result };
   };
 
+  // useEffect(() => {
+  //   if (session?.user.token) {
+  //     userData();
+  //   }
+  // }, [session?.user.token]);
 
   useEffect(() => {
-    if (session?.user.token) {
-      userData();
-    }
-  }, [session?.user.token]);
+      if (lastReviewId) {
+        userData(lastReviewId); 
+      }
+  }, [lastReviewId, session?.user?.token]);
 
   useEffect(() => {
     if (teams && teamsIds && teams.data) {
       kpiData();
     }
   }, [teams]);
+
+  useEffect(() => {
+    // Definimos una función asíncrona dentro del useEffect
+    const fetchReviewsAndSetLastId = async () => {
+      if (!session?.user?.token) return; // Evitar llamada si no hay token
+
+      try {
+        // 1. Obtener todos los reviews
+        const reviewsData = await fetchData(session.user.token, 'POST', `reviews_all`);
+        
+        // 2. Establecer el estado de todos los reviews
+        setReviews(reviewsData);
+
+        // 3. Calcular el último review (el de ID más alto)
+        if (reviewsData && reviewsData.length > 0) {
+          const latestReview = reviewsData.reduce((max, item) => {
+            // Asume que item.id es un número o un string comparable
+            return item.id > max.id ? item : max;
+          }, reviewsData[0]);
+
+          // 4. Establecer los estados del último review
+          
+          setReview(latestReview);
+          setLastReviewId(latestReview.id);
+        }
+      } catch (error) {
+        console.error('Error fetching initial reviews:', error);
+      }
+    };
+
+    fetchReviewsAndSetLastId();
+  }, [session?.user?.token]);
 
   useEffect(() => {
     if (reviewsTeams && reviewsTeams.data && lastReviewId) {
@@ -474,5 +582,4 @@ const Home = () => {
 };
 
 export default Home;
-
 

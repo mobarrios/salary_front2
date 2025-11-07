@@ -78,7 +78,7 @@ export default function Employees({ searchParams }: Params) {
     setErrorMsg(null);
 
     try {
-      const BATCH = 1000; // ajustá si necesitás
+      const BATCH = 2000; // ajustá si necesitás
       let skip = 0;
       const acc: Emp[] = [];
       let expectedCount: number | null = null;
@@ -94,7 +94,7 @@ export default function Employees({ searchParams }: Params) {
 
         const data: Emp[] = Array.isArray(res?.data) ? res.data : [];
         if (expectedCount == null) expectedCount = Number(res?.count ?? data.length) || 0;
-
+        console.log(`Fetched ${data.length} of ${expectedCount} employees...`);
         for (const row of data) {
           if (!seen.has(row.id)) {
             seen.add(row.id);

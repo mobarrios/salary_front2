@@ -127,11 +127,20 @@ const ReviewTeam: React.FC = ({ id }) => {
     if (isChecked) {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId, status: 1 });
+      console.log(resp)
       showSuccessAlert("Your work has been saved");
       setStatusTeams(prevStatus => ({
         ...prevStatus,
         [teamId]: 1 
       }));
+
+      const payload = {
+          reviews_id: resp.reviews_id,
+          teams_id: resp.teams_id,
+      };
+      console.log(payload)
+      const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
+      console.log(response);
     } else {
 
       let reviewTeamId = reviewTeam.find((item: { teams_id: number; }) => item.teams_id === parseInt(teamId));

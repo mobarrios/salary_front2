@@ -143,6 +143,8 @@ export default function EditorPDF() {
             }
 
             const salary = (formatSalary(data?.actual_external_data?.annual_salary) as number) ?? 0
+            //prod
+            //const email = 'leandroleonelrocha@gmail.com'
             const email = data?.actual_external_data?.email as string | undefined
             //testing
             //const email = 'leandroleonelrocha@gmail.com'

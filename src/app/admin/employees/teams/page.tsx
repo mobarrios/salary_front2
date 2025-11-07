@@ -1,114 +1,138 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { apiRequest } from '@/server/services/core/apiRequest';
-import { fetchData } from '@/server/services/core/fetchData'
+import { fetchData } from '@/server/services/core/fetchData';
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
-import { json } from "stream/consumers";
 
 const FormEmployeesTeams: React.FC = ({id}) => {
+    
+    const { data: session, status } = useSession();
+    const router = useRouter();
 
-  const { data: session, status } = useSession()
-  const [options, setOptions] = useState();
-  const [loading, setLoading] = useState(false);
-  const [userTeams, setUserTeams] = useState();
-  const router = useRouter()
+    const [options, setOptions] = useState<any[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [userTeams, setUserTeams] = useState<any | null>(null);
 
-  const userData = async () => {
-    try {
-      
-      const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
-      console.log(jsonData)
-      const employeesWithIdOne = jsonData.data.filter(item => item.employees_id === parseInt(id));
-      setUserTeams(employeesWithIdOne)
+    // Convertimos el ID de string a number (o lo dejamos como string si el parseo falla)
+    const numericId = id ? parseInt(id, 10) : undefined;
+    
+    // Si el ID no se pudo parsear, salimos de la carga
+    if (isNaN(numericId as number)) return <p>Error: ID de empleado no válido.</p>;
 
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      return null;
-    }
-  };
+    // --------------------------------------------------
+    // 3. ENCAPSULAR LÓGICA DE CARGA EN useCallback
+    // --------------------------------------------------
+    const userData = useCallback(async () => {
+        // Usamos numericId directamente, ya que lo verificamos
+        const currentNumericId = numericId as number;
 
-  const load = async () => {
-    try {
-      setLoading(true)
-      const jsonData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
-      setOptions(jsonData.data)
+        try {
+            const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
+            const all = Array.isArray(jsonData?.data) ? jsonData.data : [];
+            console.log(all)
+            // Usamos currentNumericId
+            const rowsForEmployee = all.filter((item: any) => item.employees_id === currentNumericId);
 
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally{
-      setLoading(false)
-    }
-  };
+            if (rowsForEmployee.length === 0) {
+                setUserTeams(null);
+                return;
+            }
 
-  useEffect(() => {
-    if (session?.user.token) {
-      userData();
-      load();
-    }
+            // ... (Lógica de ordenamiento y selección del último)
+            const sorted = [...rowsForEmployee].sort((a, b) => {
+                const aKey = a?.created_at ? new Date(a.created_at).getTime() : (a?.id ?? 0);
+                const bKey = b?.created_at ? new Date(b.created_at).getTime() : (b?.id ?? 0);
+                return aKey - bKey; // orden ascendente
+            });
 
-  }, [id, session?.user.token]);
+            const last = sorted[sorted.length - 1];
+            setUserTeams(last); 
+        } catch (error) {
+            console.error('Error fetching teams_employees:', error);
+            showErrorAlert('No se pudo obtener la afiliación del empleado.');
+        }
+    }, [numericId, session?.user.token]); // Dependencias
 
-  if (status === 'loading') {
-    return <p>Loading...</p>;
-  }
+    const loadOptions = useCallback(async () => {
+        try {
+            setLoading(true);
+            const jsonData = await fetchData(session?.user.token, 'GET', `teams/all/?skip=0&limit=100`);
+            setOptions(Array.isArray(jsonData?.data) ? jsonData.data : []);
+        } catch (error) {
+            console.error('Error fetching teams:', error);
+            showErrorAlert('No se pudieron cargar los equipos.');
+        } finally {
+            setLoading(false);
+        }
+    }, [session?.user.token]); // Dependencias
 
-  const handleCheckboxChange = async (teamId, isChecked) => {
+    useEffect(() => {
+        // Usamos numericId para verificar que el ID es válido
+        if (session?.user.token && numericId !== undefined && !isNaN(numericId)) {
+            userData();
+            loadOptions();
+        }
+    }, [numericId, session?.user.token, userData, loadOptions]); // Agregamos userData y loadOptions a las dependencias
 
-    const idChecked = userTeams.filter(team => team.teams_id == teamId && team.employees_id == id)
-   
-    const updatedRoles = isChecked
-      ? [...userTeams, { teams_id: teamId }]
-      : userTeams.filter(team => team.teams_id !== teamId);
-    setUserTeams(updatedRoles);
+    if (status === 'loading') return <p>Loading...</p>;
+    
+    // Si el ID no es válido, mostramos un error más claro
+    if (numericId === undefined || isNaN(numericId)) return <p>Error: Falta o es incorrecto el ID del empleado en la URL.</p>;
 
-    if (isChecked) {
-      // El checkbox está marcado
-      const response = await apiRequest(`teams_employees/`, 'POST', { employees_id: id, teams_id: teamId });
-      showSuccessAlert("Your work has been saved");
 
-   
-    } else {
-      // El checkbox está desmarcado
-      //const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${teamId}/${id}`);
-      const jsonData = await fetchData(session?.user.token, 'DELETE', `teams_employees/delete/${idChecked[0].id}`);
-      showSuccessAlert("Your work has been deleted");
+    const handleRadioChange = async (teamId: number) => {
+        try {
+            // Usamos numericId
+            await apiRequest(`teams_employees/`, 'POST', { employees_id: numericId, teams_id: teamId });
+            showSuccessAlert("Your work has been saved");
 
-    }
-    router.refresh();
-  };
+            // Re-consulta: Llama a la función memoizada
+            await userData();
+            router.refresh();
+        } catch (error) {
+            console.error('Error creating teams_employees:', error);
+            showErrorAlert("Error creating teams_employees");
+        }
+    };
 
-  return (
-    <div className="row m-2">
-      <div className='col-12'>
-        {loading ? (
-          <p>Cargando...</p>
-        ) : (
-          options && options.map((option) => (
-            <div className="row form-check form-switch mt-2"  key={option.id}>
-              <div className="col-2">
-              <input
-                className="form-check-input"
-                checked={Array.isArray(userTeams) && userTeams.some(item => item.teams_id === option.id)}
-                type="checkbox"
-                role="switch"
-                name="roles_id"
-                id={option.id}
-                value={option.id}
-                onChange={(e) => handleCheckboxChange(option.id, e.target.checked)}
-              />
-              </div>
-              <div className="col-10 ms-3 ">
-              <label className="form-check-label" htmlFor={option.id}>{option.name}</label>
-              </div>
+    // ... (El return se mantiene igual)
+    return (
+        <div className="row m-2">
+            <div className="col-12">
+                {loading ? (
+                    <p>Cargando...</p>
+                ) : (
+                    options && options.map((option: any) => {
+                        const checked = userTeams?.teams_id === option.id;
+                        const inputId = `team_${option.id}`;
+                        return (
+                            <div className="row form-check mt-2" key={option.id}>
+                                <div className="col-2">
+                                    <input
+                                        className="form-check-input"
+                                        type="radio"
+                                        name="teamSelection"
+                                        id={inputId}
+                                        value={option.id}
+                                        checked={!!checked}
+                                        onChange={() => handleRadioChange(option.id)}
+                                    />
+                                </div>
+                                <div className="col-10 ms-3">
+                                    <label className="form-check-label" htmlFor={inputId}>
+                                        {option.name}
+                                    </label>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default FormEmployeesTeams;
