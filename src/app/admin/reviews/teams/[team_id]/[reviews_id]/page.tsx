@@ -84,10 +84,11 @@ const FormEmployees: React.FC = () => {
     useEffect(() => {
 
         if (Array.isArray(ratings)) {
-
+          
             teamEmployees?.forEach(employee => {
-
+                
                 let merit = employee.actual_external_data.overall_score
+                
                 let rating = ratings.find(item => item.name == merit);
 
                 if (rating) {
@@ -122,7 +123,6 @@ const FormEmployees: React.FC = () => {
             fetchData(session?.user.token, 'GET', `employees/${item.employees_id}`)
         );
 
-        console.log('Promises: ',promises)
         const teamResponses = await Promise.all(promises);
         setTeamEmployees(teamResponses)
 
@@ -160,7 +160,7 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
-            console.log('filterRatingEmployees: ', filterRatingEmployees)
+            //console.log('filterRatingEmployees: ', filterRatingEmployees)
 
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
@@ -774,14 +774,16 @@ const FormEmployees: React.FC = () => {
     };
 
     const meritChecked = (employeeId) => {
-
+   
         let ratingSelected;
 
         if (selectedRatings[employeeId]) {
             ratingSelected = selectedRatings[employeeId]
+            
         } else if (meritValues[employeeId]) {
 
             let rating = ratings.find(item => item.name === meritValues[employeeId]);
+            
             let ratingsId = rating ? rating.id : null; // Devuelve el ID o null si no se encuentra
 
             ratingSelected = ratingsId

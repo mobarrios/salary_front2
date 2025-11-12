@@ -8,6 +8,7 @@ import { fetchData } from '@/server/services/core/fetchData'
 import { showSuccessAlert, showErrorAlert } from '@/hooks/alerts';
 import { formatPrice } from '@/functions/formatDate';
 import Nav from 'react-bootstrap/Nav';
+import Swal from 'sweetalert2'
 
 const ReviewTeam: React.FC = ({ id }) => {
 
@@ -122,12 +123,25 @@ const ReviewTeam: React.FC = ({ id }) => {
     return <p>Loading...</p>;
   }
 
+  const confirmDelete = async () => {
+    const message = await Swal.fire({
+        title: "Are you sure to delete this record?",
+        text: "All related records will be deleted",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+    });
+    return message.isConfirmed;
+  };
+
   const handleCheckboxChange = async (teamId: string, isChecked: boolean) => {
 
     if (isChecked) {
       // El checkbox está marcado
       const resp = await apiRequest(`reviews_teams/`, 'POST', { reviews_id: id, teams_id: teamId, status: 1 });
-      console.log(resp)
+      
       showSuccessAlert("Your work has been saved");
       setStatusTeams(prevStatus => ({
         ...prevStatus,
@@ -138,20 +152,56 @@ const ReviewTeam: React.FC = ({ id }) => {
           reviews_id: resp.reviews_id,
           teams_id: resp.teams_id,
       };
-      console.log(payload)
+      
       const response = await apiRequest(`reviews_teams_employees/`, 'POST', payload);
-      console.log(response);
+      
     } else {
 
       let reviewTeamId = reviewTeam.find((item: { teams_id: number; }) => item.teams_id === parseInt(teamId));
+      
       // El checkbox está desmarcado
       if (reviewTeamId) {
-        const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);
-        showSuccessAlert("Your work has been saved");
-        setStatusTeams(prevStatus => ({
-          ...prevStatus,
-          [teamId]: 0
-        }));
+        
+        try {
+          const confirmed = await confirmDelete();
+          if (confirmed) {
+              const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
+              // filter rating y employees
+              const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == reviewTeamId.teams_id && item.reviews_id == reviewTeamId.reviews_id);
+           
+              const deletePromises = filterRatingEmployees.map((item) =>
+                fetchData(
+                  session?.user.token,
+                  'DELETE',
+                  `reviews_teams_employees/delete/${item.id}`
+                )
+              );
+
+              // Esperás a que se completen todas las eliminaciones
+              const deleteResults = await Promise.all(deletePromises);
+
+              const resp = await fetchData(session?.user.token, 'DELETE', `reviews_teams/delete/${reviewTeamId.id}`);
+             
+              showSuccessAlert("Your work has been saved");
+              setStatusTeams(prevStatus => ({
+                ...prevStatus,
+                [teamId]: 0
+              }));
+
+              if (deleteResults) {
+                  // onDelete(); // Si tienes una función para manejar la eliminación, descomenta esto
+                  Swal.fire({
+                      title: "Delete!",
+                      icon: "success"
+                  });
+              }
+
+          }
+        } catch (error) {
+          console.log("error ===> ", error);
+        }
+        
+
       }
     }
 

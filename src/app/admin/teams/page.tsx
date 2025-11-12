@@ -53,6 +53,7 @@ export default function Employees({ searchParams }: Params) {
         );
       
         if (res && res.data) {
+          
           let filteredResults = res.data; // Inicializa filteredResults con los datos obtenidos
           let cont = res.count;
 
