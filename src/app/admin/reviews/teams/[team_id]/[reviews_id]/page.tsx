@@ -81,35 +81,40 @@ const FormEmployees: React.FC = () => {
         }
     }, [reviewTeam, totalSpend]);
 
-    useEffect(() => {
-
-        if (Array.isArray(ratings)) {
-          
-            teamEmployees?.forEach(employee => {
+    // useEffect(() => {
+    //     console.log('1')
+    //     if (Array.isArray(ratings)) {
+    //         console.log(ratings)
+    //         teamEmployees?.forEach(employee => {
                 
-                let merit = employee.actual_external_data.overall_score
+    //             console.log(employee)
+    //             //const existingRecord = ratingsTeamEmployees.find(r => r.employees_id === employee.id);
+    //             //console.log(existingRecord)
+
+    //             // rating por defecto
+    //             let merit = employee.actual_external_data.overall_score
                 
-                let rating = ratings.find(item => item.name == merit);
+    //             let rating = ratings.find(item => item.name == merit);
 
-                if (rating) {
-                    setRatingRanges(prevState => ({
-                        ...prevState,
-                        [employee.id]: {
-                            min: rating.percent_min,
-                            max: rating.percent_max
-                        }
-                    }));
+    //             if (rating) {
+    //                 setRatingRanges(prevState => ({
+    //                     ...prevState,
+    //                     [employee.id]: {
+    //                         min: rating.percent_min,
+    //                         max: rating.percent_max
+    //                     }
+    //                 }));
 
-                    setSelectedRatings(prevState => ({
-                        ...prevState,
-                        [employee.id]: rating.id
-                    }));
-                }
-            });
-        } else {
-            console.warn('ratings no está definido o no es un array');
-        }
-    }, [ratings, session?.user.token]);
+    //                 setSelectedRatings(prevState => ({
+    //                     ...prevState,
+    //                     [employee.id]: rating.id
+    //                 }));
+    //             }
+    //         });
+    //     } else {
+    //         console.warn('ratings no está definido o no es un array');
+    //     }
+    // }, [ratings, session?.user.token]);
 
 
     const updateEmployeesTeams = async (team, filterRatingEmployees) => {

@@ -143,6 +143,8 @@ const FormEmployees: React.FC = () => {
                 <th className='text-uppercase text-center' style={{ whiteSpace: 'nowrap' }}>Annual Salary</th>
                 <th className='text-uppercase text-center' style={{ whiteSpace: 'nowrap' }}>Basis of Pay</th>
                 <th className='text-uppercase text-center' style={{ whiteSpace: 'nowrap' }}>Compensation Change Reason Description</th>
+                <th className='text-uppercase text-center' style={{ whiteSpace: 'nowrap' }}>Overall Score</th>
+       
               </tr>
             </thead>
             <tbody>
@@ -175,6 +177,7 @@ const FormEmployees: React.FC = () => {
                   <td>{option.annual_salary}</td>
                   <td>{option.basis_of_pay}</td>
                   <td>{option.compensation_change_reason_description}</td>
+                  <td>{option.overall_score}</td>
                 </tr>
               ))}
             </tbody>
