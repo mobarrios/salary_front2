@@ -32,7 +32,7 @@ const FormEmployeesTeams: React.FC = ({id}) => {
         try {
             const jsonData = await fetchData(session?.user.token, 'GET', `teams_employees/all/?skip=0&limit=1000`);
             const all = Array.isArray(jsonData?.data) ? jsonData.data : [];
-            console.log(all)
+            
             // Usamos currentNumericId
             const rowsForEmployee = all.filter((item: any) => item.employees_id === currentNumericId);
 

@@ -79,8 +79,9 @@ export default function Employees({ searchParams }: Params) {
           const res = await fetchData(session?.user.token, 'GET', `${name}/all/?skip=0&limit=1000`);
           
           if (res && res.data) {
-          
-            setResults(res.data); // Establece los resultados
+            
+            const ordenados = [...res.data].sort((a, b) => b.id - a.id);
+            setResults(ordenados); // Establece los resultados
             setTotalCount(res.count); // Establece el total de conteo
             // 
 
@@ -97,7 +98,6 @@ export default function Employees({ searchParams }: Params) {
   //console.log(checkedIds)
 
   const totalPages = Math.ceil(totalCount / limit);
-
 
   return (
     <div>
@@ -144,7 +144,7 @@ export default function Employees({ searchParams }: Params) {
                       <td>{item.id}</td>
                       <td>{item.name}</td>
                       <td>{formatPrice(item.price)}</td>
-                      <td>{item.status === 1 ? 'Active' : 'Clossed'}</td>
+                      <td>{item.status === 1 ? 'Active' : 'Closed'}</td>
                       <td>
                         {formatDate(item.form)} - {formatDate(item.to)}
                       </td>

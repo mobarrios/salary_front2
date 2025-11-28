@@ -94,7 +94,7 @@ export default function Employees({ searchParams }: Params) {
 
         const data: Emp[] = Array.isArray(res?.data) ? res.data : [];
         if (expectedCount == null) expectedCount = Number(res?.count ?? data.length) || 0;
-        console.log(`Fetched ${data.length} of ${expectedCount} employees...`);
+        
         for (const row of data) {
           if (!seen.has(row.id)) {
             seen.add(row.id);

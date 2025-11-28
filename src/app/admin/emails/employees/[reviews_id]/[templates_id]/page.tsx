@@ -263,7 +263,7 @@ export default function EditorPDF() {
           failures.push({ id, error: err?.message || String(err) })
         }
       }
-      console.log(failures)
+      
       if (failures.length === 0) {
         showSuccessAlert(`Emails sent: ${successes.length}/${selectedEmployees.length}`)
       } else if (successes.length > 0) {

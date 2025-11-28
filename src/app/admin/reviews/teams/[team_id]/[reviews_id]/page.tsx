@@ -165,8 +165,7 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
-            //console.log('filterRatingEmployees: ', filterRatingEmployees)
-
+           
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
 
@@ -252,7 +251,10 @@ const FormEmployees: React.FC = () => {
     
         for (const employee of employeesToProcess) {
             const id = employee.id;
-            const currentRating = selectedRatings[id];
+            
+            //cambiar por meritChecked
+            //const currentRating = selectedRatings[id];
+            const currentRating = meritChecked(id);
             const currentRangeValue = rangeValues[id];
             const newErrors = {};
     
@@ -283,7 +285,8 @@ const FormEmployees: React.FC = () => {
             for (const employee of validEmployees) {
                 const id = employee.id;
                 const currentSalary = calculatePriceByEmployee(id);
-                const ratingId = selectedRatings[id];
+                //const ratingId = selectedRatings[id];
+                const ratingId = meritChecked(id);
                 const percent = rangeValues[id];
                 const validatedPercent = percent === '' ? 0 : percent;
 
