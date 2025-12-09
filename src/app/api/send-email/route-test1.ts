@@ -13,15 +13,9 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-
-    //const user = process.env.EMAIL_USER;
-    //const pass = process.env.EMAIL_PASS;
-    //Username: Compensation@cottonteam.com
-    //Password: jbzycvnmdthmjhky
-
-
-    const user = 'rochaleandroleonel@gmail.com'
-    const pass = 'plweshznafjndgad'
+    
+    const user = 'Compensation@cottonteam.com'
+    const pass = 'jbzycvnmdthmjhky'
 
     if (!user || !pass) {
       return new Response(JSON.stringify({ error: 'Faltan EMAIL_USER/EMAIL_PASS' }), {
@@ -31,13 +25,14 @@ export async function POST(req: NextRequest) {
     }
 
     const transporter = nodemailer.createTransport({
-      service: "gmail", // o bien host: "smtp.gmail.com"
-      host: "smtp.gmail.com",
-      port: 587,             // STARTTLS
-      secure: false,         // debe ser false en 587
+      host: "smtp.office365.com",
+      port: 587,          // STARTTLS
+      secure: false,      // importante: false en 587
+      requireTLS: true,
+      tls: { minVersion: "TLSv1.2" },
       auth: {
-        user: "rochaleandroleonel@gmail.com",
-        pass: "plweshznafjndgad",
+        user: "compensation@cottonteam.com",  // UPN/correo completo
+        pass: "jbzycvnmdthmjhky",  
       },
     });
 

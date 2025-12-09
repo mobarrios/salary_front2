@@ -30,6 +30,9 @@ const FormEmployees: React.FC = () => {
     const [salaryValues, setSalaryValues] = useState({});
     const [meritValues, setMeritValues] = useState({});
 
+    //rating salary
+    const [ratingSalary, setRatingSalary] = useState({});
+
     const [color, setColor] = useState('trasparent');
     const [errorRemaining, setErrorRemaining] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -81,47 +84,16 @@ const FormEmployees: React.FC = () => {
         }
     }, [reviewTeam, totalSpend]);
 
-    // useEffect(() => {
-    //     console.log('1')
-    //     if (Array.isArray(ratings)) {
-    //         console.log(ratings)
-    //         teamEmployees?.forEach(employee => {
-                
-    //             console.log(employee)
-    //             //const existingRecord = ratingsTeamEmployees.find(r => r.employees_id === employee.id);
-    //             //console.log(existingRecord)
-
-    //             // rating por defecto
-    //             let merit = employee.actual_external_data.overall_score
-                
-    //             let rating = ratings.find(item => item.name == merit);
-
-    //             if (rating) {
-    //                 setRatingRanges(prevState => ({
-    //                     ...prevState,
-    //                     [employee.id]: {
-    //                         min: rating.percent_min,
-    //                         max: rating.percent_max
-    //                     }
-    //                 }));
-
-    //                 setSelectedRatings(prevState => ({
-    //                     ...prevState,
-    //                     [employee.id]: rating.id
-    //                 }));
-    //             }
-    //         });
-    //     } else {
-    //         console.warn('ratings no está definido o no es un array');
-    //     }
-    // }, [ratings, session?.user.token]);
-
-
     const updateEmployeesTeams = async (team, filterRatingEmployees) => {
-        //todos los empleados de ese teams
-        // const promises = team.employees.map(item =>
-        //     fetchData(session?.user.token, 'GET', `employees/${item.id}`)
-        // );
+
+        const newSalaryRatings = {};
+
+        filterRatingEmployees.forEach(item => {
+            console.log('TEST: ', item.employees_id, item.annual_salary);
+            newSalaryRatings[item.employees_id] = item.annual_salary;
+        });
+
+        setRatingSalary(newSalaryRatings);
 
         //aca traer todos los Ids de empleados que vengan de api/v1/reviews_teams_employees/all/
         const promises = filterRatingEmployees.map(item =>
@@ -165,14 +137,12 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
-           
+            console.log('filterRatingEmployees', filterRatingEmployees)
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
 
             // update all employees with salary
             updateEmployeesTeams(teamResponse[0], filterRatingEmployees);
-
-
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -288,8 +258,9 @@ const FormEmployees: React.FC = () => {
                 //const ratingId = selectedRatings[id];
                 const ratingId = meritChecked(id);
                 const percent = rangeValues[id];
+                const salary = salaryChecked(id);
                 const validatedPercent = percent === '' ? 0 : percent;
-
+                
                 const payload = {
                     reviews_id: reviews_id,
                     teams_id: team_id,
@@ -297,6 +268,7 @@ const FormEmployees: React.FC = () => {
                     employees_id: id,
                     price: currentSalary,
                     percent: validatedPercent,
+                    annual_salary: salary,
                 };
     
                 const existingRecord = ratingsTeamEmployees.find(r => r.employees_id === id);
@@ -326,8 +298,6 @@ const FormEmployees: React.FC = () => {
         }
     };
     
-
-
     const changeValueSelect = async (employeeId, event) => {
 
         const selectedId = event.target.value;
@@ -781,6 +751,23 @@ const FormEmployees: React.FC = () => {
         }
     };
 
+    const salaryChecked = (employeeId) => {
+   
+        let salarySelected;
+
+        //ratingSalary
+        //salaryValues
+
+        if (ratingSalary[employeeId]) {
+            salarySelected = ratingSalary[employeeId]
+            
+        } else if (salaryValues[employeeId]) {
+            salarySelected = salaryValues[employeeId]
+        }
+
+        return salarySelected;
+    }
+
     const meritChecked = (employeeId) => {
    
         let ratingSelected;
@@ -870,7 +857,8 @@ const FormEmployees: React.FC = () => {
                                                     {item.name} {item.last_name}
                                                 </td>
                                                 <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '10%' }}>
-                                                    {item.actual_external_data.annual_salary || 0}
+                                                    {/* {item.actual_external_data.annual_salary || 0} */}
+                                                    $ {salaryChecked(item.id)}
                                                 </td>
                                                 <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                     {rangeValues[item.id] || 0} %

@@ -55,7 +55,6 @@ type EmployeeInfo = {
   increment: number
   actualSalary: number
   email?: string
-  percent?: string
 }
 
 export default function EditorPDF() {
@@ -77,150 +76,170 @@ export default function EditorPDF() {
 
   const bc = [{ label: "Review Cycle" }]
 
-    useEffect(() => {
-      const load = async () => {
-        const token = session?.user?.token;
-        if (!token) return;
+  useEffect(() => {
+    const load = async () => {
+      const token = session?.user?.token
+      if (!token) return
 
-        try {
-          const rid = Array.isArray(reviews_id) ? reviews_id[0] : reviews_id ?? "";
-          const tid = Array.isArray(templates_id) ? templates_id[0] : templates_id ?? "";
+      try {
+        // ensure params are string (useParams can return string | string[] | undefined)
+        const rid = Array.isArray(reviews_id) ? reviews_id[0] : reviews_id ?? ""
+        const tid = Array.isArray(templates_id) ? templates_id[0] : templates_id ?? ""
 
-          /** ------------------------------
-           * 1. TRAER TEMPLATE
-           * ------------------------------ */
-          const templateResponse = await fetchData(token, "GET", `templates/all/?skip=0&limit=1000`);
-          const templateFiltered = templateResponse?.data?.find((t: any) => t.id == tid) ?? null;
-          setTemplate(templateFiltered);
+        // search by template
+        const templateResponse = await fetchData(token, "GET", `templates/all/?skip=0&limit=1000`)
+        const templateFiltered = Array.isArray(templateResponse?.data)
+          ? templateResponse.data.filter((item: any) => item.id == tid)
+          : []
+        setTemplate((templateFiltered[0] ?? null) as Template | null)
 
-          /** ------------------------------
-           * 2. TRAER TODOS LOS TEAMS
-           * ------------------------------ */
-          const teamsResponse = await fetchData(token, "GET", `teams/all/?skip=0&limit=1000`);
-          const userEmail = (session?.user as any)?.email;
+        // load review-team-employee (we keep it for possible future use)
+        // const reviewTeamEmployeesResponse = await fetchData(token, "GET", `reviews_teams_employees/all/?skip=0&limit=1000`)
+        // const filterRatingEmployees = Array.isArray(reviewTeamEmployeesResponse?.data)
+        //   ? reviewTeamEmployeesResponse.data.filter((item: any) => item.reviews_id == rid)
+        //   : []
+        // not used in UI directly but we fetched it successfully - no assignment to unused state
 
-          /** ------------------------------
-           * 3. TRAER LOS TEAMS DE LA REVIEW
-           * ------------------------------ */
-          const reviewTeamsResponse = await fetchData(
-            token,
-            "GET",
-            `reviews_teams/all/?skip=0&limit=1000`
-          );
+        // get list of teams
+        const teamsData = await fetchData(token, "GET", `teams/all/?skip=0&limit=1000`)
+        const userIdToFilter = (session?.user as any)?.email as string | undefined
 
-          const reviewTeams = reviewTeamsResponse?.data?.filter(
-            (item: any) => item.reviews_id === Number(rid)
-          ) ?? [];
+        const reviewTeamsResponse = await fetchData(token, "GET", `reviews_teams/all/?skip=0&limit=1000`)
+        const employeesWithIdOne = Array.isArray(reviewTeamsResponse?.data)
+          ? reviewTeamsResponse.data.filter((item: any) => item.reviews_id === Number.parseInt(rid || "0"))
+          : []
 
-          const teamsIds = reviewTeams.map((item: any) => item.teams_id);
+        // build unique teams array (cast to number[])
+        const teams = Array.from(new Set(employeesWithIdOne.map((item: any) => item.teams_id))) as number[]
 
-          /** ------------------------------
-           * 4. FILTRAR EQUIPOS DONDE EL USUARIO ESTÁ
-           * ------------------------------ */
-          const filteredTeams = teamsResponse?.data?.filter((t: any) => {
-            const isUserInTeam = t.users?.some((u: any) => u.email === userEmail);
-            return isUserInTeam && teamsIds.includes(t.id);
-          }) ?? [];
+        const teamUserFilter = Array.isArray(teamsData?.data)
+          ? teamsData.data.filter((grupo: any) =>
+              Array.isArray(grupo.users) ? grupo.users.some((user: any) => user.email === userIdToFilter) : false,
+            )
+          : []
 
-          setTeam(filteredTeams);
+        const employeeIds: number[] = []
 
-          /** ------------------------------
-           * 5. ARMAR LISTA DE EMPLEADOS ÚNICOS POR TEAM
-           * ------------------------------ */
-          const employeeIds: number[] = [];
-
-          filteredTeams.forEach((team: any) => {
-            team.employees?.forEach((emp: any) => {
-              if (!employeeIds.includes(emp.id)) {
-                employeeIds.push(emp.id);
+        const filteredTeams = teamUserFilter.filter((t: any) => teams.includes(t.id))
+        setTeam(filteredTeams as Team[])
+        
+        filteredTeams.forEach((t: any) => {
+          if (Array.isArray(t.employees)) {
+            t.employees.forEach((employee: any) => {
+              if (!employeeIds.includes(employee.id)) {
+                employeeIds.push(employee.id)
               }
-            });
-          });
+            })
+          }
+        })
 
-          /** ------------------------------
-           * 6. TRAER REVIEWS_teams_employees DE ESA REVIEW
-           * ------------------------------ */
-          const rteResponse = await fetchData(
-            token,
-            "GET",
-            `reviews_teams_employees/all/?skip=0&limit=1000`
-          );
+        const employeeData = await Promise.all(
+          employeeIds.map(async (employeeId: number) => {
+            const data = await fetchData(token, "GET", `employees/${employeeId}`)
 
-          const filteredRTE = rteResponse?.data?.filter(
-            (item: any) => item.reviews_id === Number(rid)
-          ) ?? [];
-
-         
-
-          /** ------------------------------
-           * 7. PROCESAR EMPLEADOS EN BATCHES
-           * ------------------------------ */
-
-          function chunk<T>(array: T[], size: number): T[][] {
-            const result: T[][] = [];
-            for (let i = 0; i < array.length; i += size) {
-              result.push(array.slice(i, i + size));
+            if (!data) {
+              console.error(`Error fetching employee ${employeeId}:`, (data as any)?.statusText)
+              return null
             }
-            return result;
-          }
 
-          const BATCH_SIZE = 20;
-          const employeeChunks = chunk(employeeIds, BATCH_SIZE);
+            //const salary = (formatSalary(data?.actual_external_data?.annual_salary) as number) ?? 0
+            //prod
+            //const email = data?.actual_external_data?.email as string | undefined
+            //testing
+            const email = 'leandroleonelrocha@gmail.com'
+            
+            const reviewsTeamsEmployees = await fetchData(token, "GET", `reviews_teams_employees/all/?skip=0&limit=1000`)
+            const filteredReviewsTeamsEmployees = Array.isArray(reviewsTeamsEmployees?.data)
+              ? reviewsTeamsEmployees.data.filter((item: any) => item.reviews_id == rid && item.employees_id == employeeId)
+              : []
 
-          let employeeArray: EmployeeInfo[] = [];
+            const percent = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].percent : 0
+            const salary = filteredReviewsTeamsEmployees[0] ? filteredReviewsTeamsEmployees[0].annual_salary : 0
+            const increment = (salary * percent) / 100
+            const actualSalary = salary + increment
 
-          for (const batch of employeeChunks) {
-            const batchData = await Promise.all(
-              batch.map(async (employeeId) => {
-                const empResponse = await fetchData(token, "GET", `employees/${employeeId}`);
-               
-                if (!empResponse) return null;
+            return {
+              id: employeeId,
+              salary,
+              increment,
+              actualSalary,
+              email,
+              name: data?.name,
+            } as EmployeeInfo
+          }),
+        )
 
+        // Filter nulls and build map
+        const validEmployees = (employeeData as (EmployeeInfo | null)[]).filter(
+          (emp): emp is EmployeeInfo => emp !== null,
+        )
+        const employeeMap = Object.fromEntries(validEmployees.map((emp) => [emp.id, emp])) as Record<number, EmployeeInfo>
+        setEmployeeInfo(employeeMap)
+      } catch (error) {
+        console.error("Error al cargar los datos:", error)
+      }
+    }
+    load()
+    // include reviews_id/templates_id so the effect refreshes when params change
+  }, [session?.user?.token, reviews_id, templates_id])
 
-                //const email = empResponse?.actual_external_data?.email as string | undefined
-                const email = 'nicolas.monja@gmail.com'
-                //const email = 'leandroleonelrocha@gmail.com'
+  // general event typing compatible with PrimeReact Checkbox (has checked or target.checked)
+  const handleCheckboxChange = (e: { checked?: boolean; target?: { checked?: boolean } }, employeeId: number) => {
+    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
+    if (checked) {
+      setSelectedEmployees((prev) => (prev.includes(employeeId) ? prev : [...prev, employeeId]))
+    } else {
+      setSelectedEmployees((prev) => prev.filter((id) => id !== employeeId))
+    }
+  }
 
-                const review = filteredRTE.find((r: any) => r.employees_id === employeeId);
-                const percent = review?.percent ?? 0;
-                const salary = review?.annual_salary ?? 0;
-                return {
-                  id: employeeId,
-                  name: empResponse?.name,
-                  email: email,
-                  salary,
-                  increment: (salary * percent) / 100,
-                  actualSalary: salary + (salary * percent) / 100,
-                  percent: percent
-                } as EmployeeInfo;
-              })
-            );
+  const handleTeamCheckboxChange = (
+    e: { checked?: boolean; target?: { checked?: boolean } },
+    employees?: EmployeeMinimal[],
+  ) => {
+    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
+    const list = Array.isArray(employees) ? employees : []
+    if (checked) {
+      setSelectedEmployees((prev) => {
+        const newIds = list.map((emp) => emp.id).filter((id) => !prev.includes(id))
+        return [...prev, ...newIds]
+      })
+    } else {
+      setSelectedEmployees((prev) => prev.filter((id) => !list.some((emp) => emp.id === id)))
+    }
+  }
 
-            employeeArray.push(...batchData.filter(Boolean) as EmployeeInfo[]);
+  async function sendEmailTo(employeeId: number) {
+    const emp = employeeInfo[employeeId]
+    if (!emp) throw new Error("Employee not found")
 
-            // evitar saturar backend
-            await new Promise((res) => setTimeout(res, 120));
-          }
+    const html = generateEmailHTML(emp)
+    const res = await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        html,
+        email: emp.email,
+        subject: "Important: 2026 Merit Increase Details Enclosed",
+        attachments: { header: template?.header, footer: template?.footer },
+      }),
+    })
 
-       
+    const text = await res.text()
+    let data: any = {}
+    try {
+      data = JSON.parse(text)
+    } catch {
+      /* not json */
+    }
 
-          /** ------------------------------
-           * 8. CONVERTIR A DICCIONARIO POR ID
-           * ------------------------------ */
-          const dict: Record<number, EmployeeInfo> = {};
-          employeeArray.forEach((emp) => {
-            dict[emp.id] = emp;
-          });
+    if (!res.ok) {
+      const msg = data?.error || text || `HTTP ${res.status}`
+      throw new Error(msg)
+    }
 
-          setEmployeeInfo(dict);
-
-        } catch (error) {
-          console.error("Error al cargar los datos:", error);
-        }
-      };
-
-      load();
-  }, [session?.user?.token, reviews_id, templates_id]);
+    return data
+  }
 
   const handleSubmit = async () => {
     if (isSending) return
@@ -260,95 +279,62 @@ export default function EditorPDF() {
     }
   }
 
-  async function sendEmailTo(employeeId: number) {
-    const emp = employeeInfo[employeeId]
-    if (!emp) throw new Error("Employee not found")
-
-    const html = generateEmailHTML(emp)
-    const res = await fetch("/api/send-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        html,
-        email: emp.email,
-        subject: "Important: 2026 Merit Increase Details Enclosed",
-        attachments: { header: template?.header, footer: template?.footer },
-      }),
-    })
-
-    const text = await res.text()
-    let data: any = {}
-    try {
-      data = JSON.parse(text)
-    } catch {
-      /* not json */
-    }
-
-    if (!res.ok) {
-      const msg = data?.error || text || `HTTP ${res.status}`
-      throw new Error(msg)
-    }
-
-    return data
-  }
-
   const generateEmailHTML = (employee: EmployeeInfo) => {
-    
-      const tpl = template ?? ({} as Template)
-      return `
-        <div style="padding: 20px; font-family: Arial;">
-          <div class="header">
-            <img src="__HEADER_CID__" style="width:100%" />
-          </div>
-  
-          <p style="text-align: right; font-weight: bold; font-size: 16px; color: black;">
-            ${new Date().toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "2-digit",
-            })}
-          </p>
-  
-          <p style="font-size: 16px; color: black; margin-top: 50px;">
-            ${tpl.title ?? ""} ${employee.name},
-          </p>
-  
-          <p style="font-size: 16px; color: black;">
-             ${tpl.content1 ?? ""}
-          </p>
-  
-          <div style="margin-top: 50px;">
-            <table style="width: 100%; border: 1px solid;">
-              <thead>
-                <tr style="background: #ffe598; text-align: center;">
-                  <th style="padding: 10px;">2024 Base Salary</th>
-                  <th style="padding: 10px;">Salary Change (%)</th>
-                  <th style="padding: 10px;">2025 Base Salary</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="text-align: center;">
-                  <td style="padding: 15px;">$ ${formatPrice(employee.salary)}</td>
-                  <td style="padding: 15px;"> ${formatPrice(employee.percent)} %</td>
-                  <td style="padding: 15px;">$ ${formatPrice(employee.actualSalary)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-  
-          <p style="font-size: 16px; font-weight: bold; color: black; margin-top: 50px;">
-           ${tpl.content2 ?? ""}
-          </p>
-  
-          <p style="font-size: 16px; margin-bottom: 150px; color: black;">
-            ${tpl.content3 ?? ""}
-          </p>
-  
-          <div class="footer" style="margin-top: 40px;">
-            <img src="__FOOTER_CID__" style="width:100%" />
-          </div>
+    const tpl = template ?? ({} as Template)
+    return `
+      <div style="padding: 20px; font-family: Arial;">
+        <div class="header">
+          <img src="__HEADER_CID__" style="width:100%" />
         </div>
-      `
+
+        <p style="text-align: right; font-weight: bold; font-size: 16px; color: black;">
+          ${new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "2-digit",
+          })}
+        </p>
+
+        <p style="font-size: 16px; color: black; margin-top: 50px;">
+          ${tpl.title ?? ""} ${employee.name},
+        </p>
+
+        <p style="font-size: 16px; color: black;">
+           ${tpl.content1 ?? ""}
+        </p>
+
+        <div style="margin-top: 50px;">
+          <table style="width: 100%; border: 1px solid;">
+            <thead>
+              <tr style="background: #ffe598; text-align: center;">
+                <th style="padding: 10px;">2024 Base Salary</th>
+                <th style="padding: 10px;">Salary Change (%)</th>
+                <th style="padding: 10px;">2025 Base Salary</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="text-align: center;">
+                <td style="padding: 15px;">$ ${formatPrice(employee.salary)}</td>
+                <td style="padding: 15px;"> ${formatPrice(employee.increment)} %</td>
+                <td style="padding: 15px;">$ ${formatPrice(employee.actualSalary)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="font-size: 16px; font-weight: bold; color: black; margin-top: 50px;">
+         ${tpl.content2 ?? ""}
+        </p>
+
+        <p style="font-size: 16px; margin-bottom: 150px; color: black;">
+          ${tpl.content3 ?? ""}
+        </p>
+
+        <div class="footer" style="margin-top: 40px;">
+          <img src="__FOOTER_CID__" style="width:100%" />
+        </div>
+      </div>
+    `
   }
 
   const createEmployeePdfBlob = async (employeeId: number | string) => {
@@ -446,32 +432,6 @@ export default function EditorPDF() {
     }
   }
 
-  const handleCheckboxChange = (e: { checked?: boolean; target?: { checked?: boolean } }, employeeId: number) => {
-    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
-    if (checked) {
-      setSelectedEmployees((prev) => (prev.includes(employeeId) ? prev : [...prev, employeeId]))
-    } else {
-      setSelectedEmployees((prev) => prev.filter((id) => id !== employeeId))
-    }
-  }
-
-  const handleTeamCheckboxChange = (
-    e: { checked?: boolean; target?: { checked?: boolean } },
-    employees?: EmployeeMinimal[],
-  ) => {
-    const checked = typeof e.checked === "boolean" ? e.checked : !!e.target?.checked
-    const list = Array.isArray(employees) ? employees : []
-    if (checked) {
-      setSelectedEmployees((prev) => {
-        const newIds = list.map((emp) => emp.id).filter((id) => !prev.includes(id))
-        return [...prev, ...newIds]
-      })
-    } else {
-      setSelectedEmployees((prev) => prev.filter((id) => !list.some((emp) => emp.id === id)))
-    }
-  }
-
-
   return (
     <>
       <Breadcrumb items={bc} />
@@ -484,6 +444,7 @@ export default function EditorPDF() {
           <i className="bi bi-download"></i> {isBulkDownloading ? 'Downloading' : `Download PDF (${selectedEmployees.length})`}
         </button>
       )}
+
       </Title>
 
       <table className="table">
@@ -527,9 +488,9 @@ export default function EditorPDF() {
                     <tr key={emp.id || i}>
                       <td>
                         <Checkbox
-                            onChange={(e) => handleCheckboxChange(e, emp.id)}
-                            checked={selectedEmployees.includes(emp.id)}
-                          />
+                          onChange={(e) => handleCheckboxChange(e, emp.id)}
+                          checked={selectedEmployees.includes(emp.id)}
+                        />
                       </td>
                       <td>{emp.name}</td>
                       <td>{emp.associate_id}</td>
@@ -538,10 +499,10 @@ export default function EditorPDF() {
                         {employeeInfo?.[emp.id]?.salary != null ? (
                           <>$ {formatPrice(employeeInfo[emp.id].salary)}</>
                         ) : (
-                         <span className="spinner-border spinner-border-sm" role="status" aria-label="Cargando..." />
+                          <span className="spinner-border spinner-border-sm" role="status" aria-label="Cargando..." />
                         )}
                       </td>
-                      <td>$ { formatPrice(employeeInfo[emp.id]?.increment)}</td>
+                      <td>{employeeInfo[emp.id]?.increment}</td>
                       <td>
                         {employeeInfo?.[emp.id]?.actualSalary != null ? (
                           <>$ {formatPrice(employeeInfo[emp.id].actualSalary)}</>
@@ -701,7 +662,6 @@ export default function EditorPDF() {
           </div>
         </div>
       </div>
-
     </>
   )
 }
