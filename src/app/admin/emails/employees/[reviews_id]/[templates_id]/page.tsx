@@ -176,9 +176,8 @@ export default function EditorPDF() {
                
                 if (!empResponse) return null;
 
-
-                //const email = empResponse?.actual_external_data?.email as string | undefined
-                const email = 'nicolas.monja@gmail.com'
+                const email = empResponse?.actual_external_data?.email as string | undefined
+                //const email = 'nicolas.monja@gmail.com'
                 //const email = 'leandroleonelrocha@gmail.com'
 
                 const review = filteredRTE.find((r: any) => r.employees_id === employeeId);
