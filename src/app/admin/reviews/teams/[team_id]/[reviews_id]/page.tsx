@@ -89,7 +89,6 @@ const FormEmployees: React.FC = () => {
         const newSalaryRatings = {};
 
         filterRatingEmployees.forEach(item => {
-            console.log('TEST: ', item.employees_id, item.annual_salary);
             newSalaryRatings[item.employees_id] = item.annual_salary;
         });
 
@@ -137,7 +136,7 @@ const FormEmployees: React.FC = () => {
             const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
-            console.log('filterRatingEmployees', filterRatingEmployees)
+            
             setRatingsTeamEmployees(filterRatingEmployees);
             updateRatingsEmployees(filterRatingEmployees)
 
