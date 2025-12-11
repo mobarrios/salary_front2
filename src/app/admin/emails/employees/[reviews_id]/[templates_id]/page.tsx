@@ -632,7 +632,7 @@ export default function EditorPDF() {
                         <tr style={{ textAlign: "center" }}>
                           <td style={{ padding: "15px" }}>$ {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.salary : 0)}</td>
                           <td style={{ padding: "15px" }}>
-                            {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.increment : 0)} %
+                            {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.percent : 0)} %
                           </td>
                           <td style={{ padding: "15px" }}>
                             $ {formatPrice(employeeSelected != null ? employeeInfo[employeeSelected]?.actualSalary : 0)}
