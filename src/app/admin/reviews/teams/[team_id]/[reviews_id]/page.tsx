@@ -777,16 +777,33 @@ const FormEmployees: React.FC = () => {
         } else if (meritValues[employeeId]) {
 
             let rating = ratings.find(item => item.name === meritValues[employeeId]);
-            
             let ratingsId = rating ? rating.id : null; // Devuelve el ID o null si no se encuentra
 
             ratingSelected = ratingsId
+
         } else {
             ratingSelected = ''
         }
 
         return ratingSelected;
     }
+
+    useEffect(() => {
+        Object.entries(meritValues).forEach(([employeeId, value]) => {
+            let rating = ratings.find(item => item.name === value);
+
+            if (rating) {
+                setRatingRanges(prev => ({
+                    ...prev,
+                    [employeeId]: {
+                        min: rating.percent_min,
+                        max: rating.percent_max
+                    }
+                }));
+            }
+        });
+    }, [meritValues, ratings]);
+
 
     const countNotStatusThree = teamEmployees?.filter(item => statusValues[item.id] !== 3).length;
 
