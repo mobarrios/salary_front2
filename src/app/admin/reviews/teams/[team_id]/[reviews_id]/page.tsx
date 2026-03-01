@@ -559,9 +559,10 @@ const FormEmployees: React.FC = () => {
     }
 
     const getInputClassName = (itemId) => {
+        
         const value = rangeValues[itemId];
-        const ratingId = selectedRatings[itemId];
-        const selectedRating = ratings.find(option => option.id == ratingId);
+        const currentRating = meritChecked(itemId);
+        const selectedRating = ratings.find(option => option.id == currentRating);
 
         const isOutOfRange = Number(value) > (selectedRating?.percent_max || 0) ||
             Number(value) < (selectedRating?.percent_min || 0);
@@ -569,6 +570,20 @@ const FormEmployees: React.FC = () => {
         return `form-control ${isOutOfRange ? 'text-danger' : ''}`;
 
     };
+
+    // const getInputClassName = (itemId) => {
+        
+    //     //const currentRating = meritChecked(id);
+    //     const value = rangeValues[itemId];
+    //     const ratingId = selectedRatings[itemId];
+    //     const selectedRating = ratings.find(option => option.id == ratingId);
+
+    //     const isOutOfRange = Number(value) > (selectedRating?.percent_max || 0) ||
+    //         Number(value) < (selectedRating?.percent_min || 0);
+
+    //     return `form-control ${isOutOfRange ? 'text-danger' : ''}`;
+
+    // };
 
     const canSendToApprover = (roles, reviewTeam) => {
         return roles?.some(role => ['superuser', 'administrator', 'manager'].includes(role.name)) && reviewTeam?.status === 1;
@@ -633,9 +648,9 @@ const FormEmployees: React.FC = () => {
         }
     
         // Regla 4: Caso especial por estado
-        if (isManager && (reviewTeam.status === 1 || statusValues[employeeId] === 2)) {
-            return false;
-        }
+        // if (isManager && (reviewTeam.status === 1 || statusValues[employeeId] === 2)) {
+        //     return false;
+        // }
     
         // Por defecto, deshabilitado
         return true;
