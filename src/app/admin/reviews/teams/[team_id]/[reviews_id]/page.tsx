@@ -838,7 +838,8 @@ const FormEmployees: React.FC = () => {
                             <thead>
                                 <tr>
                                     <th>Total amount to assign</th>
-                                    <th>Total percent</th>
+                                    <th></th>
+                                    {/* <th>Total percent</th> */}
                                     <th>Total Spend</th>
                                     <th>Total Remaining</th>
                                     <th>Compliant </th>
@@ -848,7 +849,8 @@ const FormEmployees: React.FC = () => {
                             <tbody>
                                 <tr>
                                     <td><strong>$ {reviewTeam ? formatPrice(reviewTeam.price) : 0}</strong></td>
-                                    <td> {totalPercent ? totalPercent : 0} %</td>
+                                    <td></td>
+                                    {/* <td> {totalPercent ? totalPercent : 0} %</td> */}
                                     <td>$ {totalSpend ? formatPrice(totalSpend) : 0}</td>
                                     <td style={{ color: color }}>
                                         $ {totalRemaining ? formatPrice(totalRemaining) : 0}
