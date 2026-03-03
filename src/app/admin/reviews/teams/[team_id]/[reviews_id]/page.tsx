@@ -133,7 +133,7 @@ const FormEmployees: React.FC = () => {
             setRatings(ratingsResponse.data);
 
             //all review teams employees
-            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=1000`);
+            const reviewTeamEmployeesResponse = await fetchData(session?.user.token, 'GET', `reviews_teams_employees/all/?skip=0&limit=10000`);
             // filter rating y employees
             const filterRatingEmployees = reviewTeamEmployeesResponse.data.filter(item => item.teams_id == team_id && item.reviews_id == reviews_id);
             
